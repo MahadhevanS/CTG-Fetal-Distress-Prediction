@@ -1,0 +1,15 @@
+# Local training configuration
+
+data:
+  raw_path: "data/raw/"
+  processed_path: "data/processed/"
+
+training:
+  checkpoint_dir: "checkpoints/"
+  batch_size: 16
+  epochs: 10
+  learning_rate: 0.001
+
+model:
+  hidden_dim: 64
+  num_layers: 2

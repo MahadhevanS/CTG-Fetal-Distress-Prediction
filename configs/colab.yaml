@@ -1,0 +1,16 @@
+# Colab training configuration
+
+data:
+  # Assuming data is uploaded to Google Drive and mounted at /content/drive/MyDrive/CTG_Data/processed/
+  processed_path: "/content/drive/MyDrive/CTG_Data/processed/"
+
+training:
+  # Assuming checkpoints will be saved directly to Google Drive
+  checkpoint_dir: "/content/drive/MyDrive/CTG_Data/checkpoints/"
+  batch_size: 64
+  epochs: 100
+  learning_rate: 0.0005
+
+model:
+  hidden_dim: 128
+  num_layers: 4
