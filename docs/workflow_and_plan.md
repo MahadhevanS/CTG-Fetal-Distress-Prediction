@@ -3,7 +3,38 @@
 ## 1. Project Overview
 This project aims to build a Knowledge-Infused Multi-Task Temporal Deep Learning Framework for CTG-based fetal distress prediction. The architecture enforces strict separation of concerns, isolating preprocessing, model definition, domain knowledge (FIGO/NICHD rules), and the training pipeline.
 
-## 2. Directory Structure and Responsibilities
+## 2. Multi-Task Architecture & Knowledge Infusion
+
+A core design decision is that the temporal encoder **does not classify FIGO classes directly** as its primary goal. Instead, the encoder learns a rich physiological representation, and the multi-task heads predict clinically meaningful outputs, guided by a single, internationally recognized clinical framework (FIGO).
+
+### Proposed Multi-Task Classification
+- **Task 1 (Primary - Early Fetal Distress Risk)**: Binary prediction (Normal fetus vs. Early fetal distress / acidemia risk based on pH < 7.15).
+- **Task 2 (Clinical Feature Prediction)**: Predicts individual components (Baseline FHR, Variability, Accelerations, and specific Decelerations like Early, Late, Variable, Prolonged).
+- **Task 3 (FIGO CTG Classification)**: 3-Class prediction (Normal / Suspicious / Pathological).
+
+### Architecture Flow
+```text
+Temporal Encoder
+        │
+        ├───────────────► Distress Head (Binary)
+        │
+        ├───────────────► Clinical Feature Head (Regression + Binary)
+        │
+        └───────────────► FIGO Head (3-Class)
+```
+
+The outputs of the Clinical Feature Head are mapped against the FIGO Rule Engine to formulate the Knowledge Loss, creating a tight feedback loop that forces the neural features to align with clinical logic.
+
+### Loss Formulation
+The total training loss becomes:
+$$L = L_{\text{distress}} + \lambda_1 L_{\text{clinical}} + \lambda_2 L_{\text{FIGO}} + \lambda_3 L_{\text{knowledge}}$$
+
+### Role of NICE and SisPorto
+To prevent conflicting supervisory signals and redundant learning:
+- **NICE Guidelines**: Removed from training entirely. NICE will be used exclusively in the evaluation phase to demonstrate model robustness across different international interpretation frameworks.
+- **SisPorto Dataset**: Not used as a knowledge source. It is reserved for validating the automated feature extraction, providing classical machine learning baselines (Random Forest, XGBoost), and external validation.
+
+## 3. Directory Structure and Responsibilities
 
 - **`src/preprocessing/`**: Handles all data preparation (signal filtering, missing-value handling, normalization, sliding window generation). Must be executed locally.
 - **`src/models/`**: Contains neural network architectures (temporal encoder, multi-task heads, clinical prior network).
@@ -13,7 +44,7 @@ This project aims to build a Knowledge-Infused Multi-Task Temporal Deep Learning
 - **`data/`**: Stores raw and locally processed datasets.
 - **`checkpoints/`**: Stores trained model weights.
 
-## 3. Workflow Specification
+## 4. Workflow Specification
 
 ### Phase 1: Local Preprocessing
 1. **Data Ingestion**: Raw datasets (`cardiotocography.zip`, `ctu-chb-intrapartum-cardiotocography-database-1.0.0.zip`) are extracted to `data/raw/`.
@@ -38,7 +69,7 @@ This project aims to build a Knowledge-Infused Multi-Task Temporal Deep Learning
 1. **Sync Back**: Checkpoints and metrics are copied from Google Drive back to the local `checkpoints/` directory.
 2. **Local Inference/Analysis**: Model evaluation, visualization, and further analysis are performed locally using the downloaded weights.
 
-## 4. Immediate Next Steps (Roadmap)
+## 5. Immediate Next Steps (Roadmap)
 1. **Extract and Explore Datasets**: Unzip and perform EDA on the raw CTG datasets.
 2. **Implement Preprocessing**: Build robust signal filtering and sliding window generation in `src/preprocessing/`.
 3. **Draft Model Architecture**: Implement the Temporal Encoder and Multi-task heads in `src/models/`.
