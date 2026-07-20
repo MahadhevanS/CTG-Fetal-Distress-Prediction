@@ -19,6 +19,10 @@ To maintain academic integrity and non-infringement alignment with GE patent US1
 - **Continuous End-to-End Encoding**: Encoders must map the raw sequence $(Batch, 2, 4800)$ directly to the latent space $\mathbb{R}^{128}$.
 - **No Longitudinal Graphical Pattern Matching**: Do **NOT** implement visual pattern bounding-box detection or cross-temporal shape-matching confirmation loops.
 
+## 2.2 📊 5-FOLD CV & STATISTICAL SIGNIFICANCE TESTING
+- **5-Fold Cross-Validation**: Evaluate all models across 5 Stratified Patient-Level Folds. Log metrics as Mean ± Std across out-of-fold validation splits.
+- **Pre- vs. Post-Knowledge Infusion Testing**: In Phase 2, perform statistical hypothesis testing (Paired t-test / Wilcoxon signed-rank test and DeLong test for AUROC) to evaluate whether the Knowledge-Infused Framework yields a statistically significant improvement ($p < 0.05$) over the standalone baseline encoder.
+
 ## 3. 📝 LOGGING INFERENCES
 - After training a model, you **MUST** update `docs/model_inferences_log.md`.
 - Fill out the specific template for your assigned model. 

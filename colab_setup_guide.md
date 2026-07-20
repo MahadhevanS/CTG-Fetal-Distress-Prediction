@@ -25,7 +25,9 @@ Every AI agent and developer working in this repository **must** strictly adhere
 2. **Universal Input Signature**: `(Batch, Channels=2, Sequence_Length=4800)` where Channel 0 = FHR and Channel 1 = UC.
 3. **Universal Latent Output**: Every encoder outputs `(Batch, Hidden_Dim=128)`. Classification heads are attached outside the encoder.
 4. **Patent Differentiation (US12094611B2)**: Continuous end-to-end signal representation directly to latent space $\mathbb{R}^{128}$ without longitudinal graphical pattern bounding boxes or shape-matching correlation loops.
-5. **Metric Logging**: Always record results (Mean ± Std over 3 seeds) and patent compliance notes in `docs/model_inferences_log.md`.
+5. **Stratified 5-Fold Cross-Validation**: All model evaluations must be executed across 5 Stratified Patient-Level Folds to prevent patient data leakage.
+6. **Pre- vs. Post-Knowledge Statistical Significance**: In Phase 2, perform statistical hypothesis testing (Paired t-test / Wilcoxon signed-rank & DeLong test for AUROC) to evaluate if Knowledge Infusion produces $p < 0.05$ statistically significant gains.
+7. **Metric Logging**: Always record 5-fold cross-validation results (Mean ± Std) and patent compliance notes in `docs/model_inferences_log.md`.
 
 ---
 
@@ -57,6 +59,7 @@ Paste and run in Colab Cell 3:
 !python src/training/train.py \
   --config configs/colab.yaml \
   --model <YOUR_MODEL_NAME> \
+  --k_folds 5 \
   --data_dir /content/drive/MyDrive/CTG_Project/data/processed/ \
   --save_dir /content/drive/MyDrive/CTG_Project/checkpoints/
 ```
@@ -82,8 +85,9 @@ Give the appropriate prompt below directly to your AI coding assistant (Antigrav
 > - Do not modify `data/processed/`.
 > - Conform strictly to input shape (Batch, 2, 4800) and output shape (Batch, 128).
 > - Maintain continuous signal encoding to comply with GE Patent US12094611B2 non-infringement.
+> - Evaluate using Stratified 5-Fold Patient-Level Cross-Validation.
 > - Ensure models can be instantiated and selected in `src/training/train.py`.
-> - Update `docs/model_inferences_log.md` sections 1 and 2 after training.
+> - Update `docs/model_inferences_log.md` sections 1 and 2 after training (reporting 5-fold Mean ± Std).
 > ```
 
 ---
@@ -101,8 +105,9 @@ Give the appropriate prompt below directly to your AI coding assistant (Antigrav
 > - Do not modify `data/processed/`.
 > - Conform strictly to input shape (Batch, 2, 4800) and output shape (Batch, 128).
 > - Maintain continuous signal encoding to comply with GE Patent US12094611B2 non-infringement.
+> - Evaluate using Stratified 5-Fold Patient-Level Cross-Validation.
 > - Ensure models can be instantiated and selected in `src/training/train.py`.
-> - Update `docs/model_inferences_log.md` sections 3 and 4 after training.
+> - Update `docs/model_inferences_log.md` sections 3 and 4 after training (reporting 5-fold Mean ± Std).
 > ```
 
 ---
@@ -120,8 +125,9 @@ Give the appropriate prompt below directly to your AI coding assistant (Antigrav
 > - Do not modify `data/processed/`.
 > - Conform strictly to input shape (Batch, 2, 4800) and output shape (Batch, 128).
 > - Maintain continuous signal encoding to comply with GE Patent US12094611B2 non-infringement.
+> - Evaluate using Stratified 5-Fold Patient-Level Cross-Validation.
 > - Ensure models can be instantiated and selected in `src/training/train.py`.
-> - Update `docs/model_inferences_log.md` sections 5 and 6 after training.
+> - Update `docs/model_inferences_log.md` sections 5 and 6 after training (reporting 5-fold Mean ± Std).
 > ```
 
 ---
@@ -140,7 +146,9 @@ Give the appropriate prompt below directly to your AI coding assistant (Antigrav
 > 
 > Strict Constraints:
 > - Do not modify `data/processed/`.
-> - Ensure Patent US12094611B2 non-infringement differentiation is logged in `docs/model_inferences_log.md` sections 7 and 8.
+> - Evaluate using Stratified 5-Fold Patient-Level Cross-Validation.
+> - Conduct Pre- vs. Post-Knowledge Infusion Statistical Significance Testing (Paired t-test/Wilcoxon & DeLong test for AUROC) comparing the standalone winning baseline encoder vs. the Knowledge-Infused Framework.
+> - Ensure Patent US12094611B2 non-infringement differentiation and statistical test p-values are logged in `docs/model_inferences_log.md` sections 7 and 8.
 > ```
 
 ---

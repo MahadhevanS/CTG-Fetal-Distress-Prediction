@@ -252,6 +252,18 @@ This document serves as the single source of truth for tracking the benchmarking
 - **Patent Differentiation Compliance (US12094611B2)**: `[Verified continuous signal encoding + Multi-Task biochemical & FIGO loss supervision]`
 - **Final Verdict**: `[Did the multi-task formulation outperform the raw baseline encoder?]`
 
+### D. Statistical Significance Analysis (Before vs. After Knowledge Infusion)
+*Comparison between the standalone winner baseline encoder (Pre-Infusion) and the Knowledge-Infused Framework (Post-Infusion) across identical 5-Fold patient splits.*
+
+| Metric | Standalone Baseline (Pre-Infusion) | Knowledge-Infused Framework (Post-Infusion) | Test Statistic ($t$ / $Z$) | $p$-value | Statistically Significant ($p < 0.05$)? |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **AUROC** | `0.00 ± 0.00` | `0.00 ± 0.00` | `[t/Z score]` | `p = 0.000` | `[Yes / No]` |
+| **AUPRC** | `0.00 ± 0.00` | `0.00 ± 0.00` | `[t/Z score]` | `p = 0.000` | `[Yes / No]` |
+| **F1 Score** | `0.00 ± 0.00` | `0.00 ± 0.00` | `[t/Z score]` | `p = 0.000` | `[Yes / No]` |
+| **Recall (Sensitivity)** | `%` | `%` | `[t/Z score]` | `p = 0.000` | `[Yes / No]` |
+| **Specificity** | `%` | `%` | `[t/Z score]` | `p = 0.000` | `[Yes / No]` |
+| **DeLong Test (ROC)** | *Reference ROC Curve* | *Comparison ROC Curve* | `[DeLong Z]` | `p = 0.000` | `[Yes / No]` |
+
 ---
 
 # Final Conclusion & Selection
@@ -259,5 +271,5 @@ This document serves as the single source of truth for tracking the benchmarking
 Based on the benchmarking results documented above, the **[Insert Model Name]** has been selected as the official Temporal Encoder backbone for the Multi-Task Framework. 
 
 **Selection Rationale**:
-- `[Explain why this model won (e.g., highest AUROC, lowest false negative rate, fast inference time).]`
+- `[Explain why this model won (e.g., highest 5-fold CV AUROC, statistically significant improvement p < 0.05, fast inference time).]`
 - `[Detail why other promising models were rejected.]`
