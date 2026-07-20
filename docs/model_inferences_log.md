@@ -196,11 +196,11 @@ This document serves as the single source of truth for tracking the benchmarking
 **Objective**: Evaluate transformer-based attention over time-series patches, representing the current general-purpose forecasting state-of-the-art.
 
 ### A. Optimal Hyperparameters
-- Learning Rate: `[To be filled]`
-- Patch Length & Stride: `[To be filled]`
-- Transformer Blocks & Heads: `[To be filled]`
-- Parameter Count: `[To be filled]`
-- Epochs to Convergence: `[To be filled]`
+- Learning Rate: `5e-4 (Cosine Annealing)`
+- Patch Length & Stride: `P=16, S=16 (300 patches / channel)`
+- Transformer Blocks & Heads: `Layers=3, Heads=8, d_model=128, d_ff=512`
+- Parameter Count: `~532,480`
+- Epochs to Convergence: `[To be logged after T4 Colab benchmark]`
 
 ### B. Statistical Metrics (Test Set)
 | Metric | Mean ± Std |
@@ -214,12 +214,12 @@ This document serves as the single source of truth for tracking the benchmarking
 | Specificity | `%` |
 
 ### C. Clinical & Computational Inferences
-- **False Positives vs False Negatives**: `[To be filled]`
-- **Training Stability**: `[To be filled]`
-- **Generalization Gap**: `[To be filled]`
-- **Computational Efficiency**: `[To be filled]`
-- **Patent Differentiation Compliance (US12094611B2)**: `[Verified continuous signal encoding without longitudinal shape correlation loops]`
-- **Final Verdict**: `[To be filled]`
+- **False Positives vs False Negatives**: `[To be filled after T4 Colab benchmark execution]`
+- **Training Stability**: `[To be filled after T4 Colab benchmark execution]`
+- **Generalization Gap**: `[To be filled after T4 Colab benchmark execution]`
+- **Computational Efficiency**: `[To be filled after T4 Colab benchmark execution]`
+- **Patent Differentiation Compliance (US12094611B2)**: `Verified continuous signal encoding R^(2x4800) -> R^128 without longitudinal shape correlation or bounding-box loops`
+- **Final Verdict**: `[To be filled after T4 Colab benchmark execution]`
 
 ---
 
