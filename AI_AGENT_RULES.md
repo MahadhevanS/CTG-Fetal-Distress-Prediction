@@ -14,6 +14,11 @@ All models built during this phase must act purely as Temporal Encoders conformi
 - **Output Shape**: `(Batch, 128)` (A 1D flattened latent representation)
 - **Rule**: Do not attach a classification head inside the encoder definition. The universal training loop will dynamically attach a standard MLP head to evaluate the `128`-dim latent vector.
 
+## 2.1 🛡️ PATENT DIFFERENTIATION RULE (GE US12094611B2)
+To maintain academic integrity and non-infringement alignment with GE patent US12094611B2:
+- **Continuous End-to-End Encoding**: Encoders must map the raw sequence $(Batch, 2, 4800)$ directly to the latent space $\mathbb{R}^{128}$.
+- **No Longitudinal Graphical Pattern Matching**: Do **NOT** implement visual pattern bounding-box detection or cross-temporal shape-matching confirmation loops.
+
 ## 3. 📝 LOGGING INFERENCES
 - After training a model, you **MUST** update `docs/model_inferences_log.md`.
 - Fill out the specific template for your assigned model. 

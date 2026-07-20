@@ -39,6 +39,24 @@ Compare the complete proposed system against the strongest standalone systems.
 
 ---
 
+### 1.1 Intellectual Property & Patent Differentiation (GE US12094611B2 Alignment)
+
+To ensure the selected models and evaluation rerun remain strictly non-infringing upon GE Healthcare's patent **US12094611B2** ("Deep Learning Based Fetal Heart Rate Analytics"), all benchmarked architectures must comply with three core design boundaries:
+
+1. **Continuous Signal Encoding vs. Graphical Pattern Matching**:
+   - GE Patent: Identifies bounding boxes / graphical shapes of FHR patterns (accelerations, decelerations).
+   - Our Model Rerun: Encodes raw continuous 20-minute multi-channel signals $(Batch, 2, 4800)$ directly into a latent vector $h \in \mathbb{R}^{128}$ without explicit graphical pattern bounding box extraction.
+
+2. **Continuous Representation vs. Longitudinal Correlation Confirmation**:
+   - GE Patent: Runs cross-temporal correlation matching to confirm whether a pattern at time $t_1$ matches a pattern at time $t_2$.
+   - Our Model Rerun: Processes the temporal window as a unified continuous representation via standard temporal backbones (1D CNN, BiLSTM, GRU, TCN, Transformers) without post-hoc shape-matching loops.
+
+3. **Terminal Biochemical Target & Multi-Task Knowledge Supervision**:
+   - GE Patent: Predicts derived graphical parameters for clinician notification.
+   - Our Model Rerun: Supervises training with terminal fetal outcome (umbilical artery pH $\le 7.15$) and regularizes network parameters via FIGO 2015 clinical rules ($L_{total} = L_{\text{distress}} + \lambda_1 L_{\text{clinical}} + \lambda_2 L_{\text{FIGO}} + \lambda_3 L_{\text{knowledge}}$).
+
+---
+
 ## 2. Model Building & Training Protocol
 
 To ensure a fair and scientifically rigorous comparison, all models will be subjected to the following strict constraints:

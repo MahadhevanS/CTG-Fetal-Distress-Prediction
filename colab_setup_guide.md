@@ -1,50 +1,159 @@
-# Team Guide: Running Your Models on Google Colab 🚀
+# Team Execution & Colab Setup Guide 🚀
 
-Hey team! To make sure our models train fast and our benchmarking is 100% fair, we are training **all models** on Google Colab using free GPUs.
+This document provides step-by-step instructions for our **4-member team** to implement, train, and evaluate our assigned temporal models on **Google Colab (T4 GPU)**.
 
-Here is a super simple, 5-minute guide on how to run your code on Colab.
+Each team member is assigned **2 models** and a dedicated **Git branch**. Follow the instructions below to set up your environment and use the pre-formatted **AI Agent Prompts** to build and benchmark your models seamlessly.
 
 ---
 
-### Step 1: Open Colab and Turn on the GPU
-1. Go to [colab.research.google.com](https://colab.research.google.com/) and click **New Notebook**.
-2. In the top menu, click **Runtime** $\rightarrow$ **Change runtime type**.
-3. Under **Hardware accelerator**, select **T4 GPU** and click Save.
+## 1. 👥 Team Workload & Branch Allocation
 
-### Step 2: Connect to the Shared Google Drive
-We have already processed the CTG data into PyTorch `.pt` files. They are saved in a Google Drive folder. You just need to connect your Colab notebook to Drive.
+| Member | Assigned Models | Git Branch | Key Task |
+| :--- | :--- | :--- | :--- |
+| **Member 1** | 1. 1D CNN<br>2. BiLSTM | `models_set_1` | Implement & benchmark local convolution & bidirectional recurrence baselines. |
+| **Member 2** | 3. GRU<br>4. TCN | `models_set_2` | Implement & benchmark gated recurrence & causal dilated convolution baselines. |
+| **Member 3** | 5. Multi-Scale LSTM<br>6. PatchCTG | `models_set_3` | Implement & benchmark multi-resolution LSTM & CTG patch-transformer baselines. |
+| **Member 4**| 7. PatchTST<br>8. Knowledge-Infused Framework | `models_set_4` | Implement PatchTST & combine winning encoder into the multi-task framework. |
 
-Paste this code into the first cell and click the "Play" button to run it:
+---
+
+## 2. 🚨 Universal Constraints (Must Follow)
+
+Every AI agent and developer working in this repository **must** strictly adhere to these rules:
+
+1. **Frozen Dataset**: Do **NOT** modify files in `data/processed/` or `src/preprocessing/`.
+2. **Universal Input Signature**: `(Batch, Channels=2, Sequence_Length=4800)` where Channel 0 = FHR and Channel 1 = UC.
+3. **Universal Latent Output**: Every encoder outputs `(Batch, Hidden_Dim=128)`. Classification heads are attached outside the encoder.
+4. **Patent Differentiation (US12094611B2)**: Continuous end-to-end signal representation directly to latent space $\mathbb{R}^{128}$ without longitudinal graphical pattern bounding boxes or shape-matching correlation loops.
+5. **Metric Logging**: Always record results (Mean ± Std over 3 seeds) and patent compliance notes in `docs/model_inferences_log.md`.
+
+---
+
+## 3. ☁️ Google Colab Execution Setup (5-Minute Walkthrough)
+
+### Step 1: Open Colab & Enable GPU
+1. Navigate to [colab.research.google.com](https://colab.research.google.com/) $\rightarrow$ **New Notebook**.
+2. Click **Runtime** $\rightarrow$ **Change runtime type** $\rightarrow$ Select **T4 GPU**.
+
+### Step 2: Mount Shared Google Drive
+Paste and run in Colab Cell 1:
 ```python
 from google.colab import drive
 drive.mount('/content/drive')
 ```
-*(A popup will ask for permission to access your Google Drive. Click Allow.)*
 
-### Step 3: Clone Your Code from GitHub
-You will write your model code on your laptop and push it to your specific GitHub branch (e.g., `models_set_1`). Colab just downloads your branch and runs it!
-
-Paste this into the next cell, change `<your-repo-url>` and `<your-branch-name>`, and run it:
+### Step 3: Clone Repo & Checkout Your Branch
+Paste and run in Colab Cell 2:
 ```bash
-!git clone <your-repo-url>
-%cd CTG
-!git checkout <your-branch-name>
+!git clone https://github.com/MahadhevanS/CTG-Fetal-Distress-Prediction.git
+%cd CTG-Fetal-Distress-Prediction
+!git checkout <YOUR_BRANCH_NAME>   # e.g., models_set_1
 !pip install -r requirements.txt
 ```
-*(This downloads your code into the Colab environment and installs PyTorch, etc.)*
 
-### Step 4: Train Your Model!
-Now you just run the Python script you wrote to train your model. Make sure to point the script to where the data lives on Google Drive, and make sure your script saves the `.pth` model weights back to Drive so you don't lose them!
-
-Paste this into the final cell and run it:
+### Step 4: Run Training Script via CLI
+Paste and run in Colab Cell 3:
 ```bash
-!python src/models/train_YOUR_MODEL.py --data_dir /content/drive/MyDrive/CTG_Project/data/processed/ --save_dir /content/drive/MyDrive/CTG_Project/models/
+!python src/training/train.py \
+  --config configs/colab.yaml \
+  --model <YOUR_MODEL_NAME> \
+  --data_dir /content/drive/MyDrive/CTG_Project/data/processed/ \
+  --save_dir /content/drive/MyDrive/CTG_Project/checkpoints/
 ```
-*(Replace `MyDrive/CTG_Project/` with wherever the team lead saved the shared folder).*
 
 ---
 
-### 💡 Quick Tips:
-- **Write code locally, run on Colab**: Don't write 500 lines of code in Colab. Write it in VSCode, push to your branch, and use Colab just for the GPU power.
-- **Don't touch the data**: The dataset is completely frozen. If your model throws a shape error (e.g., expecting `[Batch, 4800, 2]` instead of `[Batch, 2, 4800]`), **fix your model's code**, do not change the dataset!
-- **Log your results**: Once your model finishes training, copy the final AUROC and F1 scores into the `docs/model_inferences_log.md` file and push it to GitHub!
+## 4. 🤖 Ready-to-Use AI Agent Prompts
+
+Give the appropriate prompt below directly to your AI coding assistant (Antigravity / Cursor / Copilot) to implement your assigned models.
+
+---
+
+### 🟢 Member 1 Prompt (`models_set_1`)
+> **Task**: Implement Model 1 (1D CNN) and Model 2 (BiLSTM).  
+> **Copy & Paste this to your AI Agent**:
+> ```text
+> I am Member 1 working on branch `models_set_1`. 
+> Please implement two PyTorch temporal encoders in `src/models/`:
+> 1. `CNN1DEncoder`: 1D CNN with residual blocks accepting input (Batch, 2, 4800) and returning (Batch, 128).
+> 2. `BiLSTMEncoder`: Bidirectional LSTM network accepting input (Batch, 2, 4800) and returning (Batch, 128).
+> 
+> Strict Constraints:
+> - Do not modify `data/processed/`.
+> - Conform strictly to input shape (Batch, 2, 4800) and output shape (Batch, 128).
+> - Maintain continuous signal encoding to comply with GE Patent US12094611B2 non-infringement.
+> - Ensure models can be instantiated and selected in `src/training/train.py`.
+> - Update `docs/model_inferences_log.md` sections 1 and 2 after training.
+> ```
+
+---
+
+### 🔵 Member 2 Prompt (`models_set_2`)
+> **Task**: Implement Model 3 (GRU) and Model 4 (TCN).  
+> **Copy & Paste this to your AI Agent**:
+> ```text
+> I am Member 2 working on branch `models_set_2`. 
+> Please implement two PyTorch temporal encoders in `src/models/`:
+> 1. `GRUEncoder`: Multi-layer Gated Recurrent Unit network accepting input (Batch, 2, 4800) and returning (Batch, 128).
+> 2. `TCNEncoder`: Temporal Convolutional Network with causal dilated convolutions accepting input (Batch, 2, 4800) and returning (Batch, 128).
+> 
+> Strict Constraints:
+> - Do not modify `data/processed/`.
+> - Conform strictly to input shape (Batch, 2, 4800) and output shape (Batch, 128).
+> - Maintain continuous signal encoding to comply with GE Patent US12094611B2 non-infringement.
+> - Ensure models can be instantiated and selected in `src/training/train.py`.
+> - Update `docs/model_inferences_log.md` sections 3 and 4 after training.
+> ```
+
+---
+
+### 🟣 Member 3 Prompt (`models_set_3`)
+> **Task**: Implement Model 5 (Multi-Scale LSTM) and Model 6 (PatchCTG).  
+> **Copy & Paste this to your AI Agent**:
+> ```text
+> I am Member 3 working on branch `models_set_3`. 
+> Please implement two PyTorch temporal encoders in `src/models/`:
+> 1. `MultiScaleLSTMEncoder`: Multi-scale temporal pooling + parallel LSTM paths accepting input (Batch, 2, 4800) and returning (Batch, 128).
+> 2. `PatchCTGEncoder`: Patchified sequence Transformer encoder accepting input (Batch, 2, 4800) and returning (Batch, 128).
+> 
+> Strict Constraints:
+> - Do not modify `data/processed/`.
+> - Conform strictly to input shape (Batch, 2, 4800) and output shape (Batch, 128).
+> - Maintain continuous signal encoding to comply with GE Patent US12094611B2 non-infringement.
+> - Ensure models can be instantiated and selected in `src/training/train.py`.
+> - Update `docs/model_inferences_log.md` sections 5 and 6 after training.
+> ```
+
+---
+
+### 🔴 Member 4 Prompt (`models_set_4`)
+> **Task**: Implement Model 7 (PatchTST) and Model 8 (Knowledge-Infused Multi-Task Framework).  
+> **Copy & Paste this to your AI Agent**:
+> ```text
+> I am Member 4 working on branch `models_set_4`. 
+> Please implement:
+> 1. `PatchTSTEncoder`: Channel-independent patch time-series transformer accepting input (Batch, 2, 4800) and returning (Batch, 128).
+> 2. `KnowledgeInfusedMultiTaskFramework`: Proposed framework wrapping the winning Phase 1 encoder with:
+>    - Distress Prediction Head (Binary classification for pH <= 7.15)
+>    - Clinical Feature Head (Regression for baseline, STV, LTV, decelerations)
+>    - FIGO Knowledge Head (3-class classification + FIGO rule loss from `src/knowledge/figo.py`)
+> 
+> Strict Constraints:
+> - Do not modify `data/processed/`.
+> - Ensure Patent US12094611B2 non-infringement differentiation is logged in `docs/model_inferences_log.md` sections 7 and 8.
+> ```
+
+---
+
+## 5. 📤 End-of-Task Git Protocol (Pushing Your Work)
+
+Once your models have been trained and logged in `docs/model_inferences_log.md`:
+
+```bash
+git checkout <YOUR_BRANCH_NAME>
+git add src/models/ docs/model_inferences_log.md
+git commit -m "feat: implement and benchmark assigned temporal models"
+git push origin <YOUR_BRANCH_NAME>
+```
+
+> ⚠️ **Important**: Do **not** merge directly to `main`. 

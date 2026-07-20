@@ -32,6 +32,7 @@ This document serves as the single source of truth for tracking the benchmarking
 - **Training Stability**: `[Did the loss converge smoothly? Were there spiking gradients?]`
 - **Generalization Gap**: `[Difference between Validation AUROC and Test AUROC.]`
 - **Computational Efficiency**: `[Training time per epoch, inference speed.]`
+- **Patent Differentiation Compliance (US12094611B2)**: `[Verified continuous signal encoding without longitudinal shape correlation loops]`
 - **Final Verdict**: `[Strengths, weaknesses, and suitability for the final framework.]`
 
 ---
@@ -62,6 +63,7 @@ This document serves as the single source of truth for tracking the benchmarking
 - **Training Stability**: `[To be filled]`
 - **Generalization Gap**: `[To be filled]`
 - **Computational Efficiency**: `[To be filled]`
+- **Patent Differentiation Compliance (US12094611B2)**: `[Verified continuous signal encoding without longitudinal shape correlation loops]`
 - **Final Verdict**: `[To be filled]`
 
 ---
@@ -92,6 +94,7 @@ This document serves as the single source of truth for tracking the benchmarking
 - **Training Stability**: `[To be filled]`
 - **Generalization Gap**: `[To be filled]`
 - **Computational Efficiency**: `[To be filled]`
+- **Patent Differentiation Compliance (US12094611B2)**: `[Verified continuous signal encoding without longitudinal shape correlation loops]`
 - **Final Verdict**: `[To be filled]`
 
 ---
@@ -122,6 +125,7 @@ This document serves as the single source of truth for tracking the benchmarking
 - **Training Stability**: `[To be filled]`
 - **Generalization Gap**: `[To be filled]`
 - **Computational Efficiency**: `[To be filled]`
+- **Patent Differentiation Compliance (US12094611B2)**: `[Verified continuous signal encoding without longitudinal shape correlation loops]`
 - **Final Verdict**: `[To be filled]`
 
 ---
@@ -152,6 +156,7 @@ This document serves as the single source of truth for tracking the benchmarking
 - **Training Stability**: `[To be filled]`
 - **Generalization Gap**: `[To be filled]`
 - **Computational Efficiency**: `[To be filled]`
+- **Patent Differentiation Compliance (US12094611B2)**: `[Verified continuous signal encoding without longitudinal shape correlation loops]`
 - **Final Verdict**: `[To be filled]`
 
 ---
@@ -182,6 +187,7 @@ This document serves as the single source of truth for tracking the benchmarking
 - **Training Stability**: `[To be filled]`
 - **Generalization Gap**: `[To be filled]`
 - **Computational Efficiency**: `[To be filled]`
+- **Patent Differentiation Compliance (US12094611B2)**: `[Verified continuous signal encoding without longitudinal shape correlation loops]`
 - **Final Verdict**: `[To be filled]`
 
 ---
@@ -212,6 +218,7 @@ This document serves as the single source of truth for tracking the benchmarking
 - **Training Stability**: `[To be filled]`
 - **Generalization Gap**: `[To be filled]`
 - **Computational Efficiency**: `[To be filled]`
+- **Patent Differentiation Compliance (US12094611B2)**: `[Verified continuous signal encoding without longitudinal shape correlation loops]`
 - **Final Verdict**: `[To be filled]`
 
 ---
@@ -242,6 +249,7 @@ This document serves as the single source of truth for tracking the benchmarking
 - **Training Stability**: `[To be filled]`
 - **Generalization Gap**: `[To be filled]`
 - **Computational Efficiency**: `[To be filled]`
+- **Patent Differentiation Compliance (US12094611B2)**: `[Verified continuous signal encoding + Multi-Task biochemical & FIGO loss supervision]`
 - **Final Verdict**: `[Did the multi-task formulation outperform the raw baseline encoder?]`
 
 ---
