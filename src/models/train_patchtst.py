@@ -3,6 +3,7 @@ Training and 5-Fold Patient-Level Stratified Cross-Validation Benchmark for Patc
 
 Conforms to Phase 3 Model Evaluation Protocol:
 - Stratified 5-Fold Patient-Level CV on train set
+- Interactive tqdm Progress Bars for Epochs and Batches
 - Evaluates on official held-out val_dataset.pt and test_dataset.pt
 - Evaluates Metrics: Accuracy, Precision, Recall (Sensitivity), Specificity, F1, AUROC, AUPRC
 - Handles missing dataset gracefully via synthetic dry-run verification mode
@@ -21,6 +22,7 @@ from sklearn.metrics import (
     accuracy_score, precision_score, recall_score, f1_score,
     roc_auc_score, precision_recall_curve, auc, confusion_matrix
 )
+from tqdm import tqdm
 
 from patchtst import PatchTSTEncoder, PatchTSTForClassification
 
@@ -89,10 +91,11 @@ def generate_synthetic_data(num_samples=100, num_patients=20):
     return X, y, patient_ids
 
 
-def train_epoch(model, train_loader, optimizer, criterion, device):
+def train_epoch(model, train_loader, optimizer, criterion, device, desc="[Train]"):
     model.train()
     train_loss = 0.0
-    for X_batch, y_batch in train_loader:
+    pbar = tqdm(train_loader, desc=desc, leave=False)
+    for X_batch, y_batch in pbar:
         X_batch, y_batch = X_batch.to(device), y_batch.to(device)
         optimizer.zero_grad()
         logits = model(X_batch).squeeze(-1)
@@ -100,15 +103,18 @@ def train_epoch(model, train_loader, optimizer, criterion, device):
         loss.backward()
         torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
         optimizer.step()
-        train_loss += loss.item() * len(y_batch)
+        batch_loss = loss.item()
+        train_loss += batch_loss * len(y_batch)
+        pbar.set_postfix({'loss': f'{batch_loss:.4f}'})
     return train_loss / len(train_loader.dataset)
 
 
-def evaluate(model, eval_loader, device):
+def evaluate(model, eval_loader, device, desc="[Eval]"):
     model.eval()
     val_preds, val_targets = [], []
+    pbar = tqdm(eval_loader, desc=desc, leave=False)
     with torch.no_grad():
-        for X_batch, y_batch in eval_loader:
+        for X_batch, y_batch in pbar:
             X_batch = X_batch.to(device)
             logits = model(X_batch).squeeze(-1)
             probs = torch.sigmoid(logits).cpu().numpy()
@@ -201,10 +207,11 @@ def main():
         best_val_auroc = 0.0
         best_val_metrics = None
 
-        for epoch in range(1, epochs_run + 1):
-            loss = train_epoch(model, train_loader, optimizer, criterion, device)
+        epoch_pbar = tqdm(range(1, epochs_run + 1), desc=f"Fold {fold}/{n_splits} Epochs", unit="epoch")
+        for epoch in epoch_pbar:
+            loss = train_epoch(model, train_loader, optimizer, criterion, device, desc=f"Fold {fold} Ep {epoch} [Train]")
             scheduler.step()
-            val_metrics = evaluate(model, val_loader, device)
+            val_metrics = evaluate(model, val_loader, device, desc=f"Fold {fold} Ep {epoch} [Val]")
 
             if val_metrics['auroc'] > best_val_auroc:
                 best_val_auroc = val_metrics['auroc']
@@ -212,10 +219,16 @@ def main():
                 ckpt_path = os.path.join(args.checkpoint_dir, f"patchtst_fold_{fold}_best.pth")
                 torch.save(model.state_dict(), ckpt_path)
 
+            epoch_pbar.set_postfix({
+                'loss': f'{loss:.4f}',
+                'val_auroc': f'{val_metrics["auroc"]:.4f}',
+                'val_f1': f'{val_metrics["f1"]:.4f}'
+            })
+
         metrics = best_val_metrics if best_val_metrics is not None else val_metrics
         fold_metrics.append(metrics)
-        print(f"Fold {fold} | AUROC: {metrics['auroc']:.4f} | AUPRC: {metrics['auprc']:.4f} | "
-              f"Sens: {metrics['recall']:.4f} | Spec: {metrics['specificity']:.4f} | F1: {metrics['f1']:.4f}")
+        print(f"\nFold {fold} Best | AUROC: {metrics['auroc']:.4f} | AUPRC: {metrics['auprc']:.4f} | "
+              f"Sens: {metrics['recall']:.4f} | Spec: {metrics['specificity']:.4f} | F1: {metrics['f1']:.4f}\n")
 
     elapsed_time = time.time() - start_time
     print(f"\nCompleted {n_splits}-Fold CV in {elapsed_time:.2f} seconds.")
@@ -240,7 +253,7 @@ def main():
             ckpt_path = os.path.join(args.checkpoint_dir, f"patchtst_fold_{fold}_best.pth")
             if os.path.exists(ckpt_path):
                 model.load_state_dict(torch.load(ckpt_path, weights_only=False))
-                tm = evaluate(model, test_loader, device)
+                tm = evaluate(model, test_loader, device, desc=f"Test Eval Fold {fold}")
                 test_fold_metrics.append(tm)
 
         if test_fold_metrics:
