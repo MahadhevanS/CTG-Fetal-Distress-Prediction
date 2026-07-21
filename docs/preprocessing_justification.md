@@ -96,7 +96,7 @@ To ground the justifications, we refer to the following papers listed in the pro
 
 ---
 
-## 2.8 Patient-Level Stratified Splitting
+### 2.8 Patient-Level Stratified Splitting
 * **The "Why" (Signal & ML Justification)**:
   CTG recordings are continuous, and consecutive sliding windows from the same patient are highly correlated. If windows from the same patient are split across train and test sets, the model will memorize patient-specific signatures (such as baseline, unique noise patterns, or heart rate characteristics) rather than learning generalized clinical rules. This leads to severe data leakage and inflated, ungeneralizable performance.
 * **Clinical Justification**:
@@ -127,3 +127,53 @@ To ground the justifications, we refer to the following papers listed in the pro
 * **References**:
   * **[Ref 5] Zhang et al. (2022)** demonstrates that multimodal information fusion and predicting intermediate clinical parameters alongside outcomes leads to superior predictive performance.
   * **[Ref 4] Cao et al. (2023)** utilizes a combination of raw signals and clinical features to guide diagnostic output.
+
+---
+
+### 2.11 Spike Removal (> 25 bpm/sec Limit)
+* **The "Why" (Signal & ML Justification)**:
+  Unphysiological single-sample spikes caused by ultrasound transducer loss-of-lock or movement artifact introduce steep impulse spikes in the first derivative. If left uncleaned, these impulse artifacts trigger false acceleration and deceleration detection routines. `remove_spikes()` zero-out deltas $> 6.25 \text{ bpm/sample}$ (25 bpm/sec at 4 Hz) so they are reconstructed smoothly by cubic spline interpolation.
+* **Clinical Justification**:
+  Human cardiac autonomic regulation cannot physically accelerate or decelerate fetal heart rate instantaneously by $>25 \text{ bpm}$ in a single second. Spikes are non-biological artifacts.
+* **References**:
+  * **[Ref 1] Mendis et al. (2025)** and **[Ref 4] Cao et al. (2023)** emphasize artifact rejection prior to peak-detection routines.
+
+---
+
+### 2.12 Strict 30-Minute Prediction Horizon (GAP 2 FIX)
+* **The "Why" (Signal & ML Justification)**:
+  Assigning `y_primary = 1` to windows extracted 45–60 minutes before delivery in acidemic pregnancies causes weak supervision label noise. Fetal reserve depletes progressively; early windows may reflect fully compensated, physiologically normal states.
+* **Clinical Justification**:
+  Intrapartum fetal acidemia ($\text{pH} \le 7.15$) manifests in the terminal stage of labor during acute uterine stress. Enforcing `PREDICTION_HORIZON_MINUTES = 30` ensures the binary target represents true uncompensated hypoxia.
+* **References**:
+  * **[Ref 6] McCoy et al. (2024)** models acidemia strictly within terminal delivery horizons.
+
+---
+
+### 2.13 Sampling Frequency Validation & Polyphase Resampling
+* **The "Why" (Signal & ML Justification)**:
+  Fixed-kernel 1D CNNs and Temporal Transformers require identical temporal sampling resolution across all input vectors. If input recordings differ in sampling rate, fixed-length windows span different physical durations, distorting feature filters. Polyphase integer-ratio resampling (`resample_poly`) resamples signals cleanly to 4.0 Hz without aliasing.
+* **Clinical Justification**:
+  Clinical parameters (STV, LTV, 15-second acceleration windows) are defined in physical time units. Standardizing sampling rates guarantees exact clinical metric extraction.
+* **References**:
+  * **[Ref 2] Khan et al. (2025)** and **[Ref 1] Mendis et al. (2025)** mandate uniform sampling frequency across CTG datasets.
+
+---
+
+### 2.14 Leak-Free Per-Channel Z-Score Normalization
+* **The "Why" (Signal & ML Justification)**:
+  Channel amplitudes (Baseline-corrected FHR diff and raw UC mmHg) have different scales. Normalizing both channels to $\mu=0, \sigma=1$ prevents gradient domination by higher-magnitude channels. Computing scaling parameters $\mu, \sigma$ exclusively on the training split prevents data leakage.
+* **Clinical Justification**:
+  Uterine contraction transducers (toco) use relative pressure units that vary across clinical hardware. Z-score normalization standardizes contraction amplitude dynamics across different clinics.
+* **References**:
+  * **[Ref 2] Khan et al. (2025)** applies channel-wise standardization for temporal deep learning.
+
+---
+
+### 2.15 UCI SisPorto Dataset Classical ML Baseline Role
+* **The "Why" (Signal & ML Justification)**:
+  The UCI SisPorto dataset provides 2,126 pre-extracted 21-feature tabular samples. Preprocessing it with `StandardScaler` (fit on train only) enables benchmarking classical tabular models (Random Forest, XGBoost) as baseline comparators against our temporal deep learning encoder.
+* **Clinical Justification**:
+  Demonstrates whether end-to-end temporal deep learning on raw continuous signals outperforms traditional system-extracted morphological features (SisPorto 2.0).
+* **References**:
+  * **[Ref 4] Cao et al. (2023)** benchmarks deep learning architectures against tabular ML baselines.

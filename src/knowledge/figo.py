@@ -54,8 +54,8 @@ def figo_rule_loss(pred_features: torch.Tensor,
     Computes the Knowledge-Infused FIGO Loss for multi-task training.
     
     Args:
-        pred_features: Tensor of shape (Batch, 7) containing predicted clinical features:
-                       [Baseline, LTV, Accel_Count, Early_Decel, Late_Decel, Var_Decel, Prolonged_Decel]
+        pred_features: Tensor of shape (Batch, 8) containing predicted clinical features:
+                       [Baseline, STV, LTV, Accel_Count, Early_Decel, Late_Decel, Var_Decel, Prolonged_Decel]
         pred_figo_logits: Tensor of shape (Batch, 3) containing 3-class logits for FIGO (Normal=0, Suspicious=1, Pathological=2).
         target_figo: Optional Tensor of shape (Batch,) with ground-truth FIGO class targets (0, 1, 2).
         lambda_consistency: Weight factor for soft clinical consistency penalties.
@@ -75,11 +75,12 @@ def figo_rule_loss(pred_features: torch.Tensor,
     p_normal = probs[:, 0]
     p_pathological = probs[:, 2]
     
-    # Extract predicted clinical feature columns
+    # Extract predicted clinical feature columns (8-column mapping)
     baseline = pred_features[:, 0]
-    ltv = pred_features[:, 1]
-    late_decels = pred_features[:, 4]
-    prolonged_decels = pred_features[:, 6]
+    stv = pred_features[:, 1]
+    ltv = pred_features[:, 2]
+    late_decels = pred_features[:, 5]
+    prolonged_decels = pred_features[:, 7]
     
     # 2. Differentiable Rule Consistency Penalties
     
