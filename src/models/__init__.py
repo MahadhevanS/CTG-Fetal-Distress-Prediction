@@ -1,9 +1,14 @@
 """
 Models module for CTG fetal distress prediction.
 Responsible for:
-- Temporal encoders (1D CNN, BiLSTM, GRU, TCN, PatchTST, etc.)
-- Multi-task heads (Distress Head, FIGO Head, Clinical Feature Head)
+- Temporal encoders (PatchTST, 1D CNN, BiLSTM, etc.)
+- Multi-task heads
 - Multi-task framework architectures
 """
 
-__all__ = []
+from .patchtst import PatchTSTEncoder, PatchTSTForClassification
+
+__all__ = [
+    "PatchTSTEncoder",
+    "PatchTSTForClassification",
+]
