@@ -1,4 +1,4 @@
-# Centralized Model Inference & Evaluation Log
+# Centralized Model Inference & Evaluation Logs
 
 This document serves as the single source of truth for tracking the benchmarking results, hyperparameter configurations, and clinical observations for all evaluated temporal encoders.
 
