@@ -139,7 +139,7 @@ def train_single_fold(
     optimizer = torch.optim.AdamW(model.parameters(), lr=lr, weight_decay=1e-4)
     scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=epochs)
     use_amp = (device.type == 'cuda')
-    scaler = torch.cuda.amp.GradScaler(enabled=use_amp)
+    scaler = torch.amp.GradScaler('cuda', enabled=use_amp)
 
     best_val_auroc = -1.0
     best_metrics = {}
@@ -151,7 +151,7 @@ def train_single_fold(
             X_batch, y_batch = X_batch.to(device), y_batch.to(device)
 
             optimizer.zero_grad()
-            with torch.cuda.amp.autocast(enabled=use_amp):
+            with torch.amp.autocast('cuda', enabled=use_amp):
                 logits = model(X_batch).squeeze(-1)
                 loss = criterion(logits, y_batch)
 
@@ -169,7 +169,7 @@ def train_single_fold(
         with torch.no_grad():
             for X_batch, y_batch in val_loader:
                 X_batch = X_batch.to(device)
-                with torch.cuda.amp.autocast(enabled=use_amp):
+                with torch.amp.autocast('cuda', enabled=use_amp):
                     logits = model(X_batch).squeeze(-1)
                     probs = torch.sigmoid(logits)
                 
