@@ -138,7 +138,7 @@ $$\mathbf{z} = \text{LayerNorm}\left(\text{Linear}_{128 \to 128}\left(\text{Drop
 | **Encoder Layers ($n_{layers}$)** | `3` | Pre-LN Transformer blocks |
 | **Activation Function** | `GELU` | Gaussian Error Linear Unit |
 | **Dropout Rate** | `0.1` (encoder) / `0.2` (classifier) | Prevents overfitting |
-| **Total Trainable Parameters** | **`532,480`** | Compact, memory-efficient encoder |
+| **Total Trainable Parameters** | **`685,056`** | Encoder + standardized classification head |
 
 ---
 
