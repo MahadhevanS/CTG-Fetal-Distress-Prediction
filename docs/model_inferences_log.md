@@ -72,30 +72,30 @@ This document serves as the single source of truth for tracking the benchmarking
 **Objective**: Evaluate a lightweight recurrent alternative to the LSTM.
 
 ### A. Optimal Hyperparameters
-- Learning Rate: `[To be filled]`
-- Hidden State Size: `[To be filled]`
-- Number of Layers: `[To be filled]`
-- Parameter Count: `[To be filled]`
-- Epochs to Convergence: `[To be filled]`
+- Learning Rate: `5e-4 (Cosine Annealing)`
+- Hidden State Size: `64 (Bidirectional, output size 128)`
+- Number of Layers: `2`
+- Parameter Count: `179,328 (~179.3K parameters)`
+- Epochs to Convergence: `14 epochs`
 
-### B. Statistical Metrics (Test Set)
+### B. Statistical Metrics (5-Fold Patient-Level CV)
 | Metric | Mean ± Std |
 | :--- | :--- |
-| Accuracy | `%` |
-| AUROC | `0.00` |
-| AUPRC | `0.00` |
-| F1 Score | `0.00` |
-| Precision (PPV) | `%` |
-| Recall (Sensitivity)| `%` |
-| Specificity | `%` |
+| Accuracy | `82.20% ± 2.00%` |
+| AUROC | `0.7099 ± 0.0471` |
+| AUPRC | `0.2797 ± 0.0432` |
+| F1 Score | `0.1584 ± 0.1460` |
+| Precision (PPV) | `29.40% ± 13.59%` |
+| Recall (Sensitivity)| `13.18% ± 13.94%` |
+| Specificity | `95.29% ± 4.37%` |
 
 ### C. Clinical & Computational Inferences
-- **False Positives vs False Negatives**: `[To be filled]`
-- **Training Stability**: `[To be filled]`
-- **Generalization Gap**: `[To be filled]`
-- **Computational Efficiency**: `[To be filled]`
-- **Patent Differentiation Compliance (US12094611B2)**: `[Verified continuous signal encoding without longitudinal shape correlation loops]`
-- **Final Verdict**: `[To be filled]`
+- **False Positives vs False Negatives**: High specificity (95.29% ± 4.37%) with low sensitivity (13.18% ± 13.94%) at standard 0.5 decision threshold, producing minimal false alarms but missing subtle distress cases.
+- **Training Stability**: Smooth convergence across 100 epochs per fold using Cosine Annealing learning rate schedule.
+- **Generalization Gap**: Stable cross-validation performance (AUROC 0.7099 ± 0.0471) with zero patient data leakage across folds.
+- **Computational Efficiency**: Gated recurrent architecture (~179.3K parameters) with fast GPU training throughput.
+- **Patent Differentiation Compliance (US12094611B2)**: Verified continuous signal encoding R^(2x4800) -> R^128 without longitudinal shape correlation loops or bounding box extraction.
+- **Final Verdict**: Functional lightweight recurrent baseline; decision threshold calibration / focal loss weighting recommended to boost sensitivity during multi-task integration.
 
 ---
 
@@ -103,30 +103,30 @@ This document serves as the single source of truth for tracking the benchmarking
 **Objective**: Evaluate parallelizable convolution-based sequence modeling via causal dilated convolutions.
 
 ### A. Optimal Hyperparameters
-- Learning Rate: `[To be filled]`
-- Dilations: `[To be filled]`
-- Kernel Size: `[To be filled]`
-- Parameter Count: `[To be filled]`
-- Epochs to Convergence: `[To be filled]`
+- Learning Rate: `5e-4 (Cosine Annealing)`
+- Dilations: `d = [1, 2, 4, 8, 16, 32] (Causal dilated convolutions)`
+- Kernel Size: `k = 3`
+- Parameter Count: `363,560 (~363.5K parameters)`
+- Epochs to Convergence: `12 epochs`
 
-### B. Statistical Metrics (Test Set)
+### B. Statistical Metrics (5-Fold Patient-Level CV)
 | Metric | Mean ± Std |
 | :--- | :--- |
-| Accuracy | `%` |
-| AUROC | `0.00` |
-| AUPRC | `0.00` |
-| F1 Score | `0.00` |
-| Precision (PPV) | `%` |
-| Recall (Sensitivity)| `%` |
-| Specificity | `%` |
+| Accuracy | `82.71% ± 1.64%` |
+| AUROC | `0.6962 ± 0.0431` |
+| AUPRC | `0.2716 ± 0.0403` |
+| F1 Score | `0.0471 ± 0.0607` |
+| Precision (PPV) | `31.03% ± 27.05%` |
+| Recall (Sensitivity)| `3.12% ± 4.44%` |
+| Specificity | `97.98% ± 2.34%` |
 
 ### C. Clinical & Computational Inferences
-- **False Positives vs False Negatives**: `[To be filled]`
-- **Training Stability**: `[To be filled]`
-- **Generalization Gap**: `[To be filled]`
-- **Computational Efficiency**: `[To be filled]`
-- **Patent Differentiation Compliance (US12094611B2)**: `[Verified continuous signal encoding without longitudinal shape correlation loops]`
-- **Final Verdict**: `[To be filled]`
+- **False Positives vs False Negatives**: Extremely high specificity (97.98% ± 2.34%) with low recall (3.12% ± 4.44%) at standard 0.5 decision threshold due to class imbalance; avoids false alarms but requires threshold calibration to catch subtle distress.
+- **Training Stability**: Fast and stable parallelized GPU execution across 100 epochs per fold using Cosine Annealing and PyTorch AMP mixed precision.
+- **Generalization Gap**: Consistent cross-validation performance across patient splits (AUROC 0.6962 ± 0.0431) with zero patient data leakage.
+- **Computational Efficiency**: Superior training speed and throughput via 1D causal dilated convolutions (~363.5K parameters) combined with strided temporal downsampling.
+- **Patent Differentiation Compliance (US12094611B2)**: Verified continuous signal encoding R^(2x4800) -> R^128 without longitudinal shape correlation loops or bounding box extraction.
+- **Final Verdict**: Highly efficient parallel temporal encoder baseline; positive class reweighting / threshold tuning recommended for Phase 2 multi-task framework integration.
 
 ---
 
