@@ -138,6 +138,8 @@ def train_single_fold(
     criterion = nn.BCEWithLogitsLoss(pos_weight=pos_weight)
     optimizer = torch.optim.AdamW(model.parameters(), lr=lr, weight_decay=1e-4)
     scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=epochs)
+    use_amp = (device.type == 'cuda')
+    scaler = torch.cuda.amp.GradScaler(enabled=use_amp)
 
     best_val_auroc = -1.0
     best_metrics = {}
@@ -149,10 +151,13 @@ def train_single_fold(
             X_batch, y_batch = X_batch.to(device), y_batch.to(device)
 
             optimizer.zero_grad()
-            logits = model(X_batch).squeeze(-1)
-            loss = criterion(logits, y_batch)
-            loss.backward()
-            optimizer.step()
+            with torch.cuda.amp.autocast(enabled=use_amp):
+                logits = model(X_batch).squeeze(-1)
+                loss = criterion(logits, y_batch)
+
+            scaler.scale(loss).backward()
+            scaler.step(optimizer)
+            scaler.update()
 
             train_loss += loss.item() * len(y_batch)
 
@@ -164,8 +169,9 @@ def train_single_fold(
         with torch.no_grad():
             for X_batch, y_batch in val_loader:
                 X_batch = X_batch.to(device)
-                logits = model(X_batch).squeeze(-1)
-                probs = torch.sigmoid(logits)
+                with torch.cuda.amp.autocast(enabled=use_amp):
+                    logits = model(X_batch).squeeze(-1)
+                    probs = torch.sigmoid(logits)
                 
                 val_targets.extend(y_batch.numpy())
                 val_probs.extend(probs.cpu().numpy())
@@ -211,7 +217,7 @@ def train_and_evaluate(
         train_ds = CTGWindowDataset(X_all[train_idx], y_all[train_idx], [patient_ids[i] for i in train_idx])
         val_ds = CTGWindowDataset(X_all[val_idx], y_all[val_idx], [patient_ids[i] for i in val_idx])
 
-        train_loader = DataLoader(train_ds, batch_size=batch_size, shuffle=True)
+        train_loader = DataLoader(train_ds, batch_size=batch_size, shuffle=True, drop_last=True)
         val_loader = DataLoader(val_ds, batch_size=batch_size, shuffle=False)
 
         # Instantiate fresh model for each fold

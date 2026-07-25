@@ -78,24 +78,24 @@ This document serves as the single source of truth for tracking the benchmarking
 - Parameter Count: `179,328 (~179.3K parameters)`
 - Epochs to Convergence: `14 epochs`
 
-### B. Statistical Metrics (Test Set)
+### B. Statistical Metrics (5-Fold Patient-Level CV)
 | Metric | Mean ± Std |
 | :--- | :--- |
-| Accuracy | `76.40% ± 2.15%` |
-| AUROC | `0.7782 ± 0.0214` |
-| AUPRC | `0.6514 ± 0.0286` |
-| F1 Score | `0.6825 ± 0.0241` |
-| Precision (PPV) | `69.30% ± 2.85%` |
-| Recall (Sensitivity)| `67.24% ± 3.12%` |
-| Specificity | `81.15% ± 2.40%` |
+| Accuracy | `82.20% ± 2.00%` |
+| AUROC | `0.7099 ± 0.0471` |
+| AUPRC | `0.2797 ± 0.0432` |
+| F1 Score | `0.1584 ± 0.1460` |
+| Precision (PPV) | `29.40% ± 13.59%` |
+| Recall (Sensitivity)| `13.18% ± 13.94%` |
+| Specificity | `95.29% ± 4.37%` |
 
 ### C. Clinical & Computational Inferences
-- **False Positives vs False Negatives**: `Demonstrated balanced sensitivity (67.24%) and specificity (81.15%), capturing early pathological patterns while maintaining a low false alarm rate.`
-- **Training Stability**: `Loss converged smoothly with stable gradient norms; Cosine Annealing learning rate schedule effectively prevented exploding gradients typical in long sequence recurrence.`
-- **Generalization Gap**: `Low generalization gap (1.8% AUROC difference between out-of-fold validation and test split), indicating robust patient-level cross-validation performance.`
-- **Computational Efficiency**: `High computational efficiency due to gated recurrent architecture; fast execution speed with low memory footprint (~179.3K parameters).`
-- **Patent Differentiation Compliance (US12094611B2)**: `Verified continuous signal encoding R^(2x4800) -> R^128 without longitudinal shape correlation loops or bounding box extraction.`
-- **Final Verdict**: `Strong lightweight recurrent baseline for CTG signal modeling; highly effective candidate for multi-task integration.`
+- **False Positives vs False Negatives**: High specificity (95.29% ± 4.37%) with low sensitivity (13.18% ± 13.94%) at standard 0.5 decision threshold, producing minimal false alarms but missing subtle distress cases.
+- **Training Stability**: Smooth convergence across 100 epochs per fold using Cosine Annealing learning rate schedule.
+- **Generalization Gap**: Stable cross-validation performance (AUROC 0.7099 ± 0.0471) with zero patient data leakage across folds.
+- **Computational Efficiency**: Gated recurrent architecture (~179.3K parameters) with fast GPU training throughput.
+- **Patent Differentiation Compliance (US12094611B2)**: Verified continuous signal encoding R^(2x4800) -> R^128 without longitudinal shape correlation loops or bounding box extraction.
+- **Final Verdict**: Functional lightweight recurrent baseline; decision threshold calibration / focal loss weighting recommended to boost sensitivity during multi-task integration.
 
 ---
 

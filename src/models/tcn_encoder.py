@@ -94,11 +94,18 @@ class TCNEncoder(nn.Module):
             # 6 dilated layers with channels 32, 64, 64, 128, 128, 128
             num_channels = [32, 64, 64, 128, 128, 128]
 
+        # Temporal downsampling stem: (Batch, 2, 4800) -> (Batch, num_channels[0], 2400)
+        self.stem = nn.Sequential(
+            nn.Conv1d(in_channels, num_channels[0], kernel_size=7, stride=2, padding=3),
+            nn.BatchNorm1d(num_channels[0]),
+            nn.ReLU(inplace=True)
+        )
+
         layers = []
         num_levels = len(num_channels)
         for i in range(num_levels):
             dilation_size = 2 ** i
-            in_ch = in_channels if i == 0 else num_channels[i - 1]
+            in_ch = num_channels[i - 1] if i > 0 else num_channels[0]
             out_ch = num_channels[i]
             layers.append(
                 TemporalBlock(
@@ -131,8 +138,11 @@ class TCNEncoder(nn.Module):
         if x.dim() != 3 or x.shape[1] != self.in_channels:
             raise ValueError(f"Expected input shape (Batch, {self.in_channels}, {self.seq_len}), got {tuple(x.shape)}")
 
-        # 1. Causal Dilated Convolutions: (Batch, 2, 4800) -> (Batch, last_ch, 4800)
-        features = self.tcn(x)
+        # 1. Temporal stem downsampling: (Batch, 2, 4800) -> (Batch, num_channels[0], 2400)
+        x_stem = self.stem(x)
+
+        # 2. Causal Dilated Convolutions: (Batch, num_channels[0], 2400) -> (Batch, last_ch, 2400)
+        features = self.tcn(x_stem)
 
         # 2. Global Mean + Max Pooling across time dimension
         mean_pool = torch.mean(features, dim=2)
