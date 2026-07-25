@@ -221,14 +221,14 @@ Both models were trained and benchmarked across identical 5-fold patient splits 
 | Model Architecture | Total Trainable Parameters | Out-of-Fold Val AUROC | Test AUROC | Test AUPRC | Test F1 Score | Test Specificity | Test Sensitivity (Recall) | Test Accuracy |
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
 | **Model 5: Multi-Scale LSTM** | `622,464` | `0.5389 ± 0.0216` | `0.5186 ± 0.0152` | `0.2555 ± 0.0097` | `0.2858 ± 0.0463` | `75.31% ± 8.17%` | `33.78% ± 9.54%` | `66.87% ± 4.40%` |
-| **Model 6: PatchCTG Transformer** | `512,128` | `0.5332 ± 0.0270` | `0.5054 ± 0.0163` | `0.2476 ± 0.0097` | `0.2828 ± 0.0526` | `75.65% ± 7.75%` | `33.51% ± 10.97%` | `67.23% ± 4.09%` |
+| **Model 6: PatchCTG Transformer (50 Ep)** | `670,720` | `0.6738 ± 0.0574` | `0.6825 ± 0.0583` | `0.1044 ± 0.0248` | `0.1734 ± 0.0411` | `81.68% ± 5.29%` | `40.00% ± 19.01%` | `79.27% ± 3.94%` |
 
 ### 6.2 Computational Efficiency & Speed
 
-| Model Architecture | Parameter Count | Epochs to Convergence | CPU Time per Fold (5 Epochs) | GPU (T4) Estimated Epoch Time |
+| Model Architecture | Parameter Count | Epochs to Convergence | Total 5-Fold Execution Time (CPU) | GPU (T4) Estimated Epoch Time |
 | :--- | :---: | :---: | :---: | :---: |
-| **Multi-Scale LSTM** | 622,464 | 5 | ~160 seconds | ~1.8 seconds |
-| **PatchCTG Transformer** | 512,128 | 5 | ~22 seconds | ~0.4 seconds |
+| **Multi-Scale LSTM** | 622,464 | 5 | ~800 seconds (5 epochs/fold) | ~1.8 seconds |
+| **PatchCTG Transformer** | 670,720 | 50 | 2013.69 seconds (~33.5 min for 50 ep/fold) | ~0.4 seconds |
 
 *Inference Observation*: PatchCTG is approximately **7.2x faster** in per-epoch execution compared to Multi-Scale LSTM due to parallelized matrix self-attention operations across patches versus sequential recurrent step execution.
 
