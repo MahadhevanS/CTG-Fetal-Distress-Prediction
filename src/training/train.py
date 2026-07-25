@@ -1,3 +1,10 @@
+"""
+Universal Model Training & Evaluation Module for CTG Fetal Distress Prediction
+================================================================================
+Supports patient-level stratified 5-fold cross-validation, dynamic model selection,
+PyTorch Automatic Mixed Precision (AMP), and standardized metric evaluation.
+"""
+
 import os
 import sys
 import argparse
@@ -11,7 +18,46 @@ from typing import Dict, List, Tuple
 # Ensure root directory is in sys.path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
 
+# Import core models
 from src.models import GRUEncoder, TCNEncoder, UniversalClassifier
+
+# Registry for dynamic model instantiation
+MODEL_REGISTRY = {
+    'gru': GRUEncoder,
+    'tcn': TCNEncoder,
+}
+
+# Dynamically register additional models if available from other team set branches
+try:
+    from src.models import CNN1DEncoder
+    MODEL_REGISTRY['cnn1d'] = CNN1DEncoder
+except ImportError:
+    pass
+
+try:
+    from src.models import BiLSTMEncoder
+    MODEL_REGISTRY['bilstm'] = BiLSTMEncoder
+except ImportError:
+    pass
+
+try:
+    from src.models import MultiScaleLSTMEncoder
+    MODEL_REGISTRY['multiscale_lstm'] = MultiScaleLSTMEncoder
+except ImportError:
+    pass
+
+try:
+    from src.models import PatchCTGEncoder
+    MODEL_REGISTRY['patchctg'] = PatchCTGEncoder
+except ImportError:
+    pass
+
+try:
+    from src.models import PatchTSTEncoder
+    MODEL_REGISTRY['patchtst'] = PatchTSTEncoder
+except ImportError:
+    pass
+
 
 class CTGWindowDataset(Dataset):
     """PyTorch Dataset wrapper for CTG 20-minute signal windows."""
@@ -43,7 +89,6 @@ def calculate_metrics(y_true: np.ndarray, y_probs: np.ndarray, threshold: float 
     specificity = tn / (tn + fp) if (tn + fp) > 0 else 0.0
     f1 = 2 * precision * recall / (precision + recall) if (precision + recall) > 0 else 0.0
 
-    # Scikit-learn AUROC & AUPRC if available, else trapezoidal approximation
     try:
         from sklearn.metrics import roc_auc_score, precision_recall_curve, auc
         auroc = roc_auc_score(y_true, y_probs) if len(np.unique(y_true)) > 1 else 0.5
@@ -90,7 +135,6 @@ def create_patient_level_folds(patient_ids: List[str], y_all: torch.Tensor, k_fo
     """Generates Stratified K-Fold indices based on unique patient IDs."""
     unique_patients = np.array(sorted(list(set(patient_ids))))
     
-    # Compute max label per patient for stratification
     patient_labels = []
     patient_ids_np = np.array(patient_ids)
     y_all_np = y_all.numpy()
@@ -113,7 +157,6 @@ def create_patient_level_folds(patient_ids: List[str], y_all: torch.Tensor, k_fo
             folds.append((train_indices, val_indices))
         return folds
     except ImportError:
-        # Fallback simple split if sklearn not installed
         n_samples = len(patient_ids)
         fold_size = n_samples // k_folds
         indices = np.arange(n_samples)
@@ -187,6 +230,34 @@ def train_single_fold(
     return best_metrics
 
 
+def build_encoder(model_name: str) -> nn.Module:
+    """Instantiates encoder instance based on model_name."""
+    name_clean = model_name.lower().strip()
+    if name_clean not in MODEL_REGISTRY:
+        raise ValueError(f"Unsupported model_name '{model_name}'. Registered options: {list(MODEL_REGISTRY.keys())}")
+    
+    encoder_cls = MODEL_REGISTRY[name_clean]
+    if name_clean == 'gru':
+        return encoder_cls(hidden_dim=128, gru_hidden=64, num_layers=2, dropout=0.2)
+    elif name_clean == 'tcn':
+        return encoder_cls(hidden_dim=128, kernel_size=3, dropout=0.2)
+    else:
+        # Flexible fallback for various team encoder signatures
+        init_options = [
+            {},
+            {'latent_dim': 128},
+            {'hidden_dim': 128},
+            {'in_channels': 2, 'seq_len': 4800},
+            {'in_channels': 2, 'seq_len': 4800, 'latent_dim': 128}
+        ]
+        for kwargs in init_options:
+            try:
+                return encoder_cls(**kwargs)
+            except TypeError:
+                continue
+        return encoder_cls()
+
+
 def train_and_evaluate(
     model_name: str,
     data_dir: str,
@@ -221,13 +292,7 @@ def train_and_evaluate(
         val_loader = DataLoader(val_ds, batch_size=batch_size, shuffle=False)
 
         # Instantiate fresh model for each fold
-        if model_name.lower() == 'gru':
-            encoder = GRUEncoder(hidden_dim=128, gru_hidden=64, num_layers=2, dropout=0.2)
-        elif model_name.lower() == 'tcn':
-            encoder = TCNEncoder(hidden_dim=128, kernel_size=3, dropout=0.2)
-        else:
-            raise ValueError(f"Unsupported model_name '{model_name}'. Choose 'gru' or 'tcn'.")
-
+        encoder = build_encoder(model_name)
         model = UniversalClassifier(encoder=encoder, latent_dim=128).to(device)
 
         metrics = train_single_fold(model, train_loader, val_loader, epochs=epochs, lr=lr, device=device)
@@ -260,9 +325,10 @@ def train_and_evaluate(
 
 
 def main():
+    available_choices = list(MODEL_REGISTRY.keys()) + ['all']
     parser = argparse.ArgumentParser(description="Train CTG Fetal Distress Temporal Encoders")
     parser.add_argument("--config", type=str, default="configs/local.yaml", help="Path to config yaml")
-    parser.add_argument("--model", type=str, choices=['gru', 'tcn', 'all'], default='gru', help="Model architecture")
+    parser.add_argument("--model", type=str, choices=available_choices, default='gru', help="Model architecture")
     parser.add_argument("--k_folds", type=int, default=5, help="Number of patient-level cross validation folds")
     parser.add_argument("--data_dir", type=str, default="data/processed", help="Path to preprocessed .pt files")
     parser.add_argument("--save_dir", type=str, default="checkpoints", help="Path to save trained weights")
@@ -282,7 +348,7 @@ def main():
             args.lr = cfg['training'].get('learning_rate', args.lr)
             args.save_dir = cfg['training'].get('checkpoint_dir', args.save_dir)
 
-    models_to_train = ['gru', 'tcn'] if args.model == 'all' else [args.model]
+    models_to_train = list(MODEL_REGISTRY.keys()) if args.model == 'all' else [args.model]
 
     for m in models_to_train:
         train_and_evaluate(
