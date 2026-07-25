@@ -109,24 +109,24 @@ This document serves as the single source of truth for tracking the benchmarking
 - Parameter Count: `363,560 (~363.5K parameters)`
 - Epochs to Convergence: `12 epochs`
 
-### B. Statistical Metrics (Test Set)
+### B. Statistical Metrics (5-Fold Patient-Level CV)
 | Metric | Mean ± Std |
 | :--- | :--- |
-| Accuracy | `78.15% ± 1.85%` |
-| AUROC | `0.8015 ± 0.0192` |
-| AUPRC | `0.6842 ± 0.0235` |
-| F1 Score | `0.7084 ± 0.0210` |
-| Precision (PPV) | `71.80% ± 2.45%` |
-| Recall (Sensitivity)| `69.90% ± 2.78%` |
-| Specificity | `82.60% ± 1.95%` |
+| Accuracy | `82.71% ± 1.64%` |
+| AUROC | `0.6962 ± 0.0431` |
+| AUPRC | `0.2716 ± 0.0403` |
+| F1 Score | `0.0471 ± 0.0607` |
+| Precision (PPV) | `31.03% ± 27.05%` |
+| Recall (Sensitivity)| `3.12% ± 4.44%` |
+| Specificity | `97.98% ± 2.34%` |
 
 ### C. Clinical & Computational Inferences
-- **False Positives vs False Negatives**: `Higher sensitivity (69.90%) and precision (71.80%) compared to standard RNNs, reducing missed fetal distress cases while avoiding unnecessary intervention alerts.`
-- **Training Stability**: `Extremely stable parallelized training across epochs; residual skip connections and causal padding prevented vanishing gradients over long temporal receptive fields.`
-- **Generalization Gap**: `Minimal generalization gap (1.2% AUROC diff across out-of-fold splits), showcasing strong robustness across heterogeneous patient cohorts.`
-- **Computational Efficiency**: `Highly efficient training due to parallel 1D causal convolutions; faster training epoch throughput than recurrent architectures.`
-- **Patent Differentiation Compliance (US12094611B2)**: `Verified continuous signal encoding R^(2x4800) -> R^128 without longitudinal shape correlation loops or bounding box extraction.`
-- **Final Verdict**: `Exceptional convolution-based temporal encoder for CTG modeling, providing superior AUROC (0.8015) and parallel computation.`
+- **False Positives vs False Negatives**: Extremely high specificity (97.98% ± 2.34%) with low recall (3.12% ± 4.44%) at standard 0.5 decision threshold due to class imbalance; avoids false alarms but requires threshold calibration to catch subtle distress.
+- **Training Stability**: Fast and stable parallelized GPU execution across 100 epochs per fold using Cosine Annealing and PyTorch AMP mixed precision.
+- **Generalization Gap**: Consistent cross-validation performance across patient splits (AUROC 0.6962 ± 0.0431) with zero patient data leakage.
+- **Computational Efficiency**: Superior training speed and throughput via 1D causal dilated convolutions (~363.5K parameters) combined with strided temporal downsampling.
+- **Patent Differentiation Compliance (US12094611B2)**: Verified continuous signal encoding R^(2x4800) -> R^128 without longitudinal shape correlation loops or bounding box extraction.
+- **Final Verdict**: Highly efficient parallel temporal encoder baseline; positive class reweighting / threshold tuning recommended for Phase 2 multi-task framework integration.
 
 ---
 

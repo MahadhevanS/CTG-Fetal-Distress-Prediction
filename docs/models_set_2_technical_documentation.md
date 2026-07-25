@@ -142,22 +142,25 @@ Dropout                        │
 Input (Batch, 2, 4800)
        │
        ▼
-Temporal Block 0: Dilated Conv (in=2, out=32, k=3, d=1)   => (Batch, 32, 4800)
+1D Conv Downsampling Stem (Conv1d(2, 32, k=7, s=2, p=3) -> BN -> ReLU) => (Batch, 32, 2400)
        │
        ▼
-Temporal Block 1: Dilated Conv (in=32, out=64, k=3, d=2)  => (Batch, 64, 4800)
+Temporal Block 0: Dilated Conv (in=32, out=32, k=3, d=1)   => (Batch, 32, 2400)
        │
        ▼
-Temporal Block 2: Dilated Conv (in=64, out=64, k=3, d=4)  => (Batch, 64, 4800)
+Temporal Block 1: Dilated Conv (in=32, out=64, k=3, d=2)  => (Batch, 64, 2400)
        │
        ▼
-Temporal Block 3: Dilated Conv (in=64, out=128, k=3, d=8) => (Batch, 128, 4800)
+Temporal Block 2: Dilated Conv (in=64, out=64, k=3, d=4)  => (Batch, 64, 2400)
        │
        ▼
-Temporal Block 4: Dilated Conv (in=128, out=128, k=3, d=16)=> (Batch, 128, 4800)
+Temporal Block 3: Dilated Conv (in=64, out=128, k=3, d=8) => (Batch, 128, 2400)
        │
        ▼
-Temporal Block 5: Dilated Conv (in=128, out=128, k=3, d=32)=> (Batch, 128, 4800)
+Temporal Block 4: Dilated Conv (in=128, out=128, k=3, d=16)=> (Batch, 128, 2400)
+       │
+       ▼
+Temporal Block 5: Dilated Conv (in=128, out=128, k=3, d=32)=> (Batch, 128, 2400)
        │
        ▼
 Dual Global Temporal Pooling (Global Mean Pool + Global Max Pool across dim 2)
@@ -173,14 +176,15 @@ Output Latent Representation: (Batch, 128)
 ```
 
 ### 3.4 Detailed Parameter Breakdown
-- **Block 0 (2 $\to$ 32, d=1)**: $3,552$
+- **Stem Conv (2 $\to$ 32, s=2)**: $(2 \times 32 \times 7) + 32 + 64 \text{ (BN)} = 544$
+- **Block 0 (32 $\to$ 32, d=1)**: $6,336$
 - **Block 1 (32 $\to$ 64, d=2)**: $20,928$
 - **Block 2 (64 $\to$ 64, d=4)**: $24,960$
 - **Block 3 (64 $\to$ 128, d=8)**: $82,824$
 - **Block 4 (128 $\to$ 128, d=16)**: $99,072$
 - **Block 5 (128 $\to$ 128, d=32)**: $99,072$
 - **Projection Head**: $(256 \times 128) + 128 + 256 = 33,152$
-- **Total `TCNEncoder` Parameters**: **`363,560`** (~363.5K)
+- **Total `TCNEncoder` Parameters**: **`366,888`** (~366.9K)
 
 ---
 
@@ -205,32 +209,38 @@ To prevent data leakage caused by adjacent 20-minute windows from the same patie
   where $w_{pos} = 2.0$.
 - **Optimizer**: `AdamW` ($\text{lr} = 5 \times 10^{-4}, \text{weight\_decay} = 1 \times 10^{-4}$).
 - **Scheduler**: `CosineAnnealingLR` over $T_{max} = E_{epochs}$.
+- **Mixed Precision Acceleration**: PyTorch Automatic Mixed Precision (`torch.amp.autocast('cuda')` & `torch.amp.GradScaler('cuda')`) enabled for high GPU throughput on NVIDIA T4 GPUs.
+- **Batch Normalization Safeguard**: `drop_last=True` on `train_loader` to prevent single-sample remainder batches during `model.train()`.
 
 ---
 
-## 5. Architectural Comparison Summary
+## 5. Architectural & Benchmarking Comparison Summary
 
 | Metric / Parameter | Model 3: `GRUEncoder` | Model 4: `TCNEncoder` |
 | :--- | :--- | :--- |
 | **Model Paradigm** | Multi-Layer Gated Recurrent Unit (RNN) | Causal Dilated Convolutional Network (TCN) |
 | **Input Shape** | `(Batch, 2, 4800)` | `(Batch, 2, 4800)` |
 | **Output Latent Shape** | `(Batch, 128)` | `(Batch, 128)` |
-| **Sequence Downsampling** | 1D Conv Stem ($4800 \to 2400 \to 1200$) | Causal Dilated Convolutions (full length 4800) |
+| **Sequence Downsampling** | 1D Conv Stem ($4800 \to 2400 \to 1200$) | 1D Conv Stem ($4800 \to 2400$) |
 | **Receptive Field Mechanism**| Sequential Hidden State Recurrence | Causal Dilated Residual Blocks ($d = 1 \dots 32$) |
-| **Total Parameter Count** | `179,328` (~179.3K) | `363,560` (~363.5K) |
+| **Total Parameter Count** | `179,328` (~179.3K) | `366,888` (~366.9K) |
 | **Computation Style** | Sequential step-by-step recurrence | Highly parallelized 1D matrix convolutions |
 | **Patent Non-Infringement** | Continuous encoding $\mathbb{R}^{2 \times 4800} \to \mathbb{R}^{128}$ | Continuous encoding $\mathbb{R}^{2 \times 4800} \to \mathbb{R}^{128}$ |
-| **5-Fold CV AUROC** | `0.7782 ± 0.0214` | `0.8015 ± 0.0192` |
-| **5-Fold CV AUPRC** | `0.6514 ± 0.0286` | `0.6842 ± 0.0235` |
-| **5-Fold CV F1 Score** | `0.6825 ± 0.0241` | `0.7084 ± 0.0210` |
+| **5-Fold CV Accuracy** | `82.20% ± 2.00%` | `82.71% ± 1.64%` |
+| **5-Fold CV AUROC** | `0.7099 ± 0.0471` | `0.6962 ± 0.0431` |
+| **5-Fold CV AUPRC** | `0.2797 ± 0.0432` | `0.2716 ± 0.0403` |
+| **5-Fold CV F1 Score** | `0.1584 ± 0.1460` | `0.0471 ± 0.0607` |
+| **5-Fold CV Precision** | `29.40% ± 13.59%` | `31.03% ± 27.05%` |
+| **5-Fold CV Recall** | `13.18% ± 13.94%` | `3.12% ± 4.44%` |
+| **5-Fold CV Specificity** | `95.29% ± 4.37%` | `97.98% ± 2.34%` |
 
 ---
 
 ## 6. Implementation Code File Links
 
-1. **GRU Encoder Implementation**: [src/models/gru_encoder.py](file:///d:/ClgProject/CTG-Fetal-Distress-Prediction/src/models/gru_encoder.py)
-2. **TCN Encoder Implementation**: [src/models/tcn_encoder.py](file:///d:/ClgProject/CTG-Fetal-Distress-Prediction/src/models/tcn_encoder.py)
-3. **Universal Classifier Head**: [src/models/classifier.py](file:///d:/ClgProject/CTG-Fetal-Distress-Prediction/src/models/classifier.py)
-4. **Models Export Init**: [src/models/__init__.py](file:///d:/ClgProject/CTG-Fetal-Distress-Prediction/src/models/__init__.py)
-5. **Stratified 5-Fold Training Script**: [src/training/train.py](file:///d:/ClgProject/CTG-Fetal-Distress-Prediction/src/training/train.py)
-6. **Centralized Inferences Log**: [docs/model_inferences_log.md](file:///d:/ClgProject/CTG-Fetal-Distress-Prediction/docs/model_inferences_log.md)
+1. **GRU Encoder Implementation**: [src/models/gru_encoder.py](file:///c:/Users/ELCOT/Desktop/CTG-Fetal-Distress-Prediction/src/models/gru_encoder.py)
+2. **TCN Encoder Implementation**: [src/models/tcn_encoder.py](file:///c:/Users/ELCOT/Desktop/CTG-Fetal-Distress-Prediction/src/models/tcn_encoder.py)
+3. **Universal Classifier Head**: [src/models/classifier.py](file:///c:/Users/ELCOT/Desktop/CTG-Fetal-Distress-Prediction/src/models/classifier.py)
+4. **Models Export Init**: [src/models/__init__.py](file:///c:/Users/ELCOT/Desktop/CTG-Fetal-Distress-Prediction/src/models/__init__.py)
+5. **Stratified 5-Fold Training Script**: [src/training/train.py](file:///c:/Users/ELCOT/Desktop/CTG-Fetal-Distress-Prediction/src/training/train.py)
+6. **Centralized Inferences Log**: [docs/model_inferences_log.md](file:///c:/Users/ELCOT/Desktop/CTG-Fetal-Distress-Prediction/docs/model_inferences_log.md)
