@@ -28,8 +28,8 @@ Due to severe class imbalance (Pathological fetal distress is rare compared to N
 - **Clinically Relevant Horizon**: Windows extracted from the **last 60 minutes** prior to delivery (`LAST_HOUR_SAMPLES = 14,400`).
 - **Strict 30-Minute Prediction Horizon (GAP 2 FIX)**: Only windows starting within the final **30 minutes** before delivery (`PREDICTION_HORIZON_SAMPLES = 7,200`) receive `y_primary = 1` for distress patients. Windows starting earlier receive `y_primary = 0` to eliminate weak supervision label noise.
 - **Training Stride**: 
-  - Distress cases: 2-minute stride (heavy overlap/oversampling).
-  - Normal cases: 10-minute stride (sparse overlap).
+  - Distress cases: 30-second (0.5 minute) stride (heavy overlap/oversampling for minority class, creating ~1,200 distress windows).
+  - Normal cases: 10-minute stride (sparse overlap, creating ~2,000 normal windows).
 - **Validation/Test Stride**: Fixed 10-minute stride for all cases to ensure metrics reflect true, unbiased real-world distributions.
 
 ---
@@ -53,7 +53,7 @@ Located in `data/processed/`:
   - **Per-Channel Z-Score Normalization**: Fitted on training set only, persisted in `ctu_signal_scaler.npz`.
 
 ### B. Primary Target Tensor (`y_primary`)
-- **Shape**: `(N,)`, Data Type: `torch.long`
+- **Shape**: `(N,)`, Data Type: `torch.float32` (stored as `torch.long` in `.pt`, cast to `float32` for `BCEWithLogitsLoss`).
 - **Meaning**: Binary Terminal Acidemia Outcome (0 = Normal / pH > 7.15, 1 = Distress / Acidemia / pH $\leq$ 7.15 within 30-min horizon).
 
 ### C. Knowledge-Guided Supervisory Targets (`y_figo` and `y_features`)

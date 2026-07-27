@@ -13,6 +13,7 @@ from src.models.tcn_encoder import TCNEncoder
 from src.models.classifier import UniversalClassifier    
 from src.models.multiscale_lstm import MultiScaleLSTMEncoder, MultiScaleLSTMForClassification
 from src.models.patchctg import PatchCTGEncoder, PatchCTGForClassification
+from src.models.patchtst import PatchTSTEncoder, PatchTSTForClassification
 
 __all__ = [
     "CNN1DEncoder",
@@ -21,7 +22,10 @@ __all__ = [
     "MultiScaleLSTMForClassification",
     "PatchCTGEncoder",
     "PatchCTGForClassification",
+    "PatchTSTEncoder",
+    "PatchTSTForClassification",
     "GRUEncoder",
     "TCNEncoder",
     "UniversalClassifier",
 ]
+

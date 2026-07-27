@@ -9,7 +9,6 @@ Phase 3 Model 7: PatchTST Baseline Encoder conforming to:
   encoding without longitudinal graphical pattern matching or bounding-box loops.
 """
 
-import math
 import torch
 import torch.nn as nn
 import torch.nn.functional as F

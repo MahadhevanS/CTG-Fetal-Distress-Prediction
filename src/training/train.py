@@ -119,7 +119,7 @@ class CTGWindowDataset(Dataset):
 def calculate_metrics(
     y_true: np.ndarray, y_probs: np.ndarray, threshold: float = 0.5
 ) -> Dict[str, float]:
-    """Calculate 7 standard classification metrics."""
+    """Calculate standard classification metrics including Sensitivity @ 90% Specificity."""
     y_pred = (y_probs >= threshold).astype(int)
 
     tp = np.sum((y_pred == 1) & (y_true == 1))
@@ -135,14 +135,23 @@ def calculate_metrics(
     f1 = 2 * precision * recall / (precision + recall) if (precision + recall) > 0 else 0.0
 
     try:
-        from sklearn.metrics import auc, precision_recall_curve, roc_auc_score
+        from sklearn.metrics import auc, precision_recall_curve, roc_auc_score, roc_curve
 
         auroc = roc_auc_score(y_true, y_probs) if len(np.unique(y_true)) > 1 else 0.5
         p_vals, r_vals, _ = precision_recall_curve(y_true, y_probs)
         auprc = auc(r_vals, p_vals) if len(np.unique(y_true)) > 1 else 0.0
+
+        if len(np.unique(y_true)) > 1:
+            fpr, tpr, _ = roc_curve(y_true, y_probs)
+            spec_arr = 1.0 - fpr
+            idx = np.where(spec_arr >= 0.90)[0]
+            sens_at_90spec = float(tpr[idx[-1]]) * 100.0 if len(idx) > 0 else 0.0
+        else:
+            sens_at_90spec = 0.0
     except ImportError:
         auroc = 0.5
         auprc = 0.0
+        sens_at_90spec = 0.0
 
     return {
         "accuracy": accuracy * 100.0,
@@ -152,6 +161,7 @@ def calculate_metrics(
         "precision": precision * 100.0,
         "recall": recall * 100.0,
         "specificity": specificity * 100.0,
+        "sens_at_90spec": sens_at_90spec,
     }
 
 
@@ -246,16 +256,20 @@ def build_encoder(model_name: str) -> nn.Module:
 
     encoder_cls = MODEL_REGISTRY[matched_key]
     if matched_key == "gru":
-        return encoder_cls(hidden_dim=128, gru_hidden=64, num_layers=2, dropout=0.2)
+        return encoder_cls(in_channels=2, seq_len=4800, hidden_dim=128, gru_hidden=64, num_layers=2, dropout=0.2)
     elif matched_key == "tcn":
-        return encoder_cls(hidden_dim=128, kernel_size=3, dropout=0.2)
+        return encoder_cls(in_channels=2, seq_len=4800, hidden_dim=128, kernel_size=3, dropout=0.2)
+    elif matched_key in ["cnn1d", "1dcnn", "cnn", "cnn1dencoder"]:
+        return encoder_cls(in_channels=2, seq_len=4800, latent_dim=128)
+    elif matched_key in ["bilstm", "bilstmencoder", "lstm"]:
+        return encoder_cls(in_channels=2, seq_len=4800, latent_dim=128, hidden_size=64, num_layers=2, dropout=0.2)
     else:
         init_options = [
-            {},
+            {"in_channels": 2, "seq_len": 4800, "latent_dim": 128},
             {"latent_dim": 128},
             {"hidden_dim": 128},
             {"in_channels": 2, "seq_len": 4800},
-            {"in_channels": 2, "seq_len": 4800, "latent_dim": 128},
+            {},
         ]
         for kwargs in init_options:
             try:
@@ -272,9 +286,15 @@ def train_single_fold(
     epochs: int,
     lr: float,
     device: torch.device,
+    pos_weight: torch.Tensor = None,
+    save_path: str = None,
 ) -> Dict[str, float]:
     """Trains a model on one fold and returns best validation metrics."""
-    pos_weight = torch.tensor([2.0]).to(device)  # Weighting for positive distress cases
+    if pos_weight is None:
+        pos_weight = torch.tensor([1.0]).to(device)
+    else:
+        pos_weight = pos_weight.to(device)
+
     criterion = nn.BCEWithLogitsLoss(pos_weight=pos_weight)
     optimizer = torch.optim.AdamW(model.parameters(), lr=lr, weight_decay=1e-4)
     scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=epochs)
@@ -322,7 +342,9 @@ def train_single_fold(
 
         if metrics["auroc"] > best_val_auroc:
             best_val_auroc = metrics["auroc"]
-            best_metrics = metrics
+            best_metrics = metrics.copy()
+            if save_path:
+                torch.save(model.state_dict(), save_path)
 
     return best_metrics
 
@@ -388,13 +410,19 @@ def train_and_evaluate(
 
     folds = create_patient_level_folds(patient_ids, y_all, k_folds=k_folds)
     fold_results = {
-        m: [] for m in ["accuracy", "auroc", "auprc", "f1", "precision", "recall", "specificity"]
+        m: [] for m in ["accuracy", "auroc", "auprc", "f1", "precision", "recall", "specificity", "sens_at_90spec"]
     }
 
     os.makedirs(save_dir, exist_ok=True)
 
     for fold_idx, (train_idx, val_idx) in enumerate(folds, 1):
         print(f"--- Fold {fold_idx}/{k_folds} (Train: {len(train_idx)}, Val: {len(val_idx)}) ---")
+
+        # Dynamic pos_weight calculation from fold's training labels
+        n_pos = float(y_all[train_idx].sum().item())
+        n_neg = float(len(train_idx)) - n_pos
+        pos_weight = torch.tensor([n_neg / max(n_pos, 1.0)])
+        print(f" Dynamic pos_weight: {pos_weight.item():.2f} (n_pos={int(n_pos)}, n_neg={int(n_neg)})")
 
         train_ds = CTGWindowDataset(
             X_all[train_idx], y_all[train_idx], [patient_ids[i] for i in train_idx]
@@ -410,22 +438,28 @@ def train_and_evaluate(
         encoder = build_encoder(model_name)
         model = UniversalClassifier(encoder=encoder, latent_dim=128).to(device)
 
+        fold_save_path = os.path.join(save_dir, f"{model_name.lower()}_fold{fold_idx}_best.pth")
+
         metrics = train_single_fold(
-            model, train_loader, val_loader, epochs=epochs, lr=lr, device=device
+            model=model,
+            train_loader=train_loader,
+            val_loader=val_loader,
+            epochs=epochs,
+            lr=lr,
+            device=device,
+            pos_weight=pos_weight,
+            save_path=fold_save_path,
         )
 
         for m_key in fold_results:
-            fold_results[m_key].append(metrics[m_key])
+            if m_key in metrics:
+                fold_results[m_key].append(metrics[m_key])
 
         print(
             f" Fold {fold_idx} Metrics -> AUROC: {metrics['auroc']:.4f} | AUPRC: {metrics['auprc']:.4f} | "
             f"F1: {metrics['f1']:.4f} | Acc: {metrics['accuracy']:.2f}% | "
-            f"Sens: {metrics['recall']:.2f}% | Spec: {metrics['specificity']:.2f}%"
-        )
-
-        # Save checkpoint
-        torch.save(
-            model.state_dict(), os.path.join(save_dir, f"{model_name.lower()}_fold{fold_idx}.pth")
+            f"Sens: {metrics['recall']:.2f}% | Spec: {metrics['specificity']:.2f}% | "
+            f"Sens@90%Spec: {metrics.get('sens_at_90spec', 0.0):.2f}%"
         )
 
     summary = {}
@@ -436,10 +470,10 @@ def train_and_evaluate(
         mean_val = float(np.mean(vals))
         std_val = float(np.std(vals))
         summary[m_key] = (mean_val, std_val)
-        if m_key in ["accuracy", "precision", "recall", "specificity"]:
-            print(f" {m_key.capitalize():<12}: {mean_val:.2f}% ± {std_val:.2f}%")
+        if m_key in ["accuracy", "precision", "recall", "specificity", "sens_at_90spec"]:
+            print(f" {m_key.capitalize():<15}: {mean_val:.2f}% ± {std_val:.2f}%")
         else:
-            print(f" {m_key.upper():<12}: {mean_val:.4f} ± {std_val:.4f}")
+            print(f" {m_key.upper():<15}: {mean_val:.4f} ± {std_val:.4f}")
     print("=" * 60 + "\n")
 
     return summary

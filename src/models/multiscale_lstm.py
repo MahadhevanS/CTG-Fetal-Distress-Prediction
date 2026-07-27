@@ -112,8 +112,10 @@ class MultiScaleLSTMEncoder(nn.Module):
             torch.Tensor: Latent representation of shape (Batch, 128)
         """
         B, C, L = x.shape
-        assert C == self.in_channels, f"Expected {self.in_channels} channels, got {C}"
-        assert L == self.seq_len, f"Expected sequence length {self.seq_len}, got {L}"
+        if C != self.in_channels:
+            raise ValueError(f"Expected {self.in_channels} channels, got {C}")
+        if L != self.seq_len:
+            raise ValueError(f"Expected sequence length {self.seq_len}, got {L}")
 
         # 1. Multi-scale Convolutional Feature Extraction
         # Scale 1: (B, 32, 2400)
