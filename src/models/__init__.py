@@ -6,6 +6,8 @@ Responsible for:
 - Multi-task framework architectures
 """
 
+from .cnn1d_encoder import CNN1DEncoder
+from .bilstm_encoder import BiLSTMEncoder
 from src.models.gru_encoder import GRUEncoder
 from src.models.tcn_encoder import TCNEncoder
 from src.models.classifier import UniversalClassifier    
@@ -13,6 +15,8 @@ from src.models.multiscale_lstm import MultiScaleLSTMEncoder, MultiScaleLSTMForC
 from src.models.patchctg import PatchCTGEncoder, PatchCTGForClassification
 
 __all__ = [
+    "CNN1DEncoder",
+    "BiLSTMEncoder",
     "MultiScaleLSTMEncoder",
     "MultiScaleLSTMForClassification",
     "PatchCTGEncoder",
