@@ -53,8 +53,10 @@ Paste and run in Colab Cell 2:
 !pip install -r requirements.txt
 ```
 
-### Step 4: Run Training Script via CLI
+### Step 4: Run Training or Hyperparameter Tuning via CLI
 Paste and run in Colab Cell 3:
+
+**A. Standard 5-Fold Training:**
 ```bash
 !python src/training/train.py \
   --config configs/colab.yaml \
@@ -63,6 +65,18 @@ Paste and run in Colab Cell 3:
   --data_dir /content/drive/MyDrive/CTG_Project/data/processed/ \
   --save_dir /content/drive/MyDrive/CTG_Project/checkpoints/
 ```
+
+**B. Automated Hyperparameter Tuning (All Encoders or Selected Model):**
+```bash
+!python src/training/tune_hyperparameters.py \
+  --model all \
+  --n-trials 5 \
+  --epochs 15 \
+  --k-folds 5 \
+  --data-dir /content/drive/MyDrive/CTG_Project/data/processed/ \
+  --output-config configs/tuned_hyperparameters.yaml
+```
+
 
 ---
 

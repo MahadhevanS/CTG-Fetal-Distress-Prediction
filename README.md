@@ -16,19 +16,19 @@ This project introduces a **Knowledge-Infused Multi-Task Deep Learning Framework
 
 ## 🔬 Benchmark Results Summary (Phase 3)
 
-All 7 temporal encoders were evaluated under patient-stratified 5-fold cross-validation ($70/15/15$ patient-level split) with dynamic class weighting ($N_{\text{neg}} / N_{\text{pos}}$) to eliminate patient data leakage and address severe class imbalance.
+All 7 temporal encoders were evaluated under Stratified 5-Fold Patient-Level Cross-Validation (6,917 total windows across 546 unique patients) with dynamic class weighting ($N_{\text{neg}} / N_{\text{pos}} \approx 5.08 - 5.29$) to strictly eliminate patient data leakage and address severe class imbalance.
 
-| Model | Architecture Type | Params | Val AUROC | Val AUPRC | Val F1 | Held-out Test AUROC | Key Clinical Trait |
-| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| **CNN1D** | 1D Residual CNN | 135K | *0.712 ± 0.04* | *0.291 ± 0.04* | *0.210 ± 0.06* | — | Ultra-fast local convolution stem |
-| **BiLSTM** | Bidirectional LSTM | 159K | *0.705 ± 0.05* | *0.284 ± 0.05* | *0.195 ± 0.07* | — | Global sequential temporal context |
-| **GRU** | Gated Recurrent Unit | 179K | 0.710 ± 0.05 | 0.280 ± 0.04 | 0.158 ± 0.15 | — | Downsampled stem + dual pooling |
-| **TCN** | Temporal Conv Network | 363K | 0.696 ± 0.04 | 0.272 ± 0.04 | 0.047 ± 0.06 | — | Causal dilated conv (63s receptive field) |
-| **MS-LSTM** | Multi-Scale BiLSTM | 584K | 0.746 ± 0.07 | 0.377 ± 0.11 | 0.383 ± 0.04 | 0.606 ± 0.07 | Multi-resolution temporal receptive fields |
-| **PatchCTG** | Joint-Channel Patch Transformer | 671K | 0.674 ± 0.06 | 0.290 ± 0.05 | 0.302 ± 0.08 | 0.683 ± 0.06 | FHR-UC cross-channel patch attention |
-| **PatchTST** 🏆 | Channel-Independent Patch Transformer | 685K | **0.746 ± 0.04** | **0.362 ± 0.07** | **0.402 ± 0.07** | **0.701 ± 0.02** | **SOTA Winner**: Superior generalization & 2.4x speedup |
+| Model | Architecture Type | Params | 5-Fold CV AUROC | 5-Fold CV AUPRC | 5-Fold CV F1 | Recall / Sens (%) | Specificity (%) | Sens @ 90% Spec (%) | Key Clinical Trait |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **CNN1D** | 1D Residual CNN | 135K | 0.6860 ± 0.0503 | 0.2560 ± 0.0544 | 0.3304 ± 0.0511 | 42.09 ± 11.19 | 78.68 ± 7.85 | 21.09 ± 10.76 | Ultra-fast local convolution stem |
+| **BiLSTM** | Bidirectional LSTM | 159K | 0.6544 ± 0.0409 | 0.2697 ± 0.0426 | 0.3435 ± 0.0338 | 61.55 ± 7.10 | 61.87 ± 7.70 | 24.19 ± 6.92 | Global sequential tracking (High Recall) |
+| **GRU** | Gated Recurrent Unit | 179K | 0.6881 ± 0.0627 | 0.2812 ± 0.0839 | 0.3027 ± 0.1080 | 34.00 ± 19.05 | 85.44 ± 9.22 | 25.05 ± 9.96 | Gated recurrence + high specificity |
+| **TCN** | Temporal Conv Network | 363K | 0.7154 ± 0.0797 | 0.2846 ± 0.0840 | 0.2413 ± 0.1079 | 21.28 ± 11.05 | **90.57 ± 3.90** | 25.65 ± 13.36 | Causal dilated conv (Peak fold AUROC 0.843) |
+| **MS-LSTM** | Multi-Scale BiLSTM | 584K | 0.7263 ± 0.1103 | 0.3140 ± 0.0962 | 0.3668 ± 0.0666 | **69.68 ± 24.77** | 61.61 ± 12.62 | 29.94 ± 12.13 | Multi-resolution temporal receptive fields |
+| **PatchCTG** | Joint-Channel Patch Trans. | 671K | 0.6533 ± 0.0781 | 0.2963 ± 0.0829 | 0.3351 ± 0.0687 | 68.46 ± 21.20 | 53.38 ± 23.73 | 24.36 ± 11.15 | FHR-UC cross-channel patch attention |
+| **PatchTST** 🏆 | Channel-Ind. Patch Trans. | 685K | **0.7504 ± 0.0378** | **0.3820 ± 0.0800** | **0.4102 ± 0.0446** | 63.74 ± 12.12 | 71.54 ± 9.69 | **35.09 ± 6.65** | **SOTA Winner**: Highest AUROC, AUPRC & Sens@90%Spec |
 
-*Note: PatchTST demonstrated superior 5-fold cross-validation AUROC (0.7456) and held-out test set AUROC (0.7014), establishing it as the official temporal encoder backbone for the Phase 4 Knowledge-Infused Multi-Task Framework.*
+*Note: PatchTST achieved the highest 5-Fold Patient-Level CV AUROC (0.7504 ± 0.0378), AUPRC (0.3820 ± 0.0800), F1 Score (0.4102 ± 0.0446), and Sensitivity at 90% Specificity (35.09% ± 6.65%), establishing it as the official temporal encoder backbone for the Phase 4 Knowledge-Infused Multi-Task Framework.*
 
 ---
 

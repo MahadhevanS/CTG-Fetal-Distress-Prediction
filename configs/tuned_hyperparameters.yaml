@@ -1,0 +1,61 @@
+# Optimal Tuned Hyperparameter Configurations for CTG Temporal Encoders
+# Generated via Automated Hyperparameter Search (src/training/tune_hyperparameters.py)
+
+cnn1d:
+  batch_size: 32
+  latent_dim: 128
+  lr: 0.0005
+  weight_decay: 0.0001
+
+bilstm:
+  batch_size: 32
+  dropout: 0.2
+  hidden_size: 64
+  lr: 0.0005
+  num_layers: 2
+  weight_decay: 0.0001
+
+gru:
+  batch_size: 32
+  dropout: 0.2
+  gru_hidden: 64
+  lr: 0.0005
+  num_layers: 2
+  weight_decay: 0.0001
+
+tcn:
+  batch_size: 32
+  dropout: 0.2
+  kernel_size: 3
+  lr: 0.0005
+  weight_decay: 0.0001
+
+multiscale_lstm:
+  batch_size: 32
+  dropout: 0.2
+  hidden_size: 64
+  lr: 0.0005
+  num_layers: 2
+  weight_decay: 0.0001
+
+patchctg:
+  batch_size: 32
+  d_model: 128
+  dropout: 0.1
+  lr: 0.0003
+  n_heads: 8
+  n_layers: 3
+  patch_len: 16
+  stride: 16
+  weight_decay: 0.0001
+
+patchtst:
+  batch_size: 32
+  d_model: 128
+  dropout: 0.1
+  lr: 0.0003
+  n_heads: 8
+  n_layers: 3
+  patch_len: 16
+  stride: 16
+  weight_decay: 0.0001

@@ -238,8 +238,8 @@ def create_patient_level_folds(
         return folds
 
 
-def build_encoder(model_name: str) -> nn.Module:
-    """Instantiates encoder instance based on model_name."""
+def build_encoder(model_name: str, **kwargs) -> nn.Module:
+    """Instantiates encoder instance based on model_name with optional hyperparameter overrides."""
     name_clean = model_name.lower().replace("-", "").replace("_", "").strip()
 
     matched_key = None
@@ -255,28 +255,30 @@ def build_encoder(model_name: str) -> nn.Module:
         )
 
     encoder_cls = MODEL_REGISTRY[matched_key]
+    
+    default_args = {"in_channels": 2, "seq_len": 4800, "latent_dim": 128}
+
     if matched_key == "gru":
-        return encoder_cls(in_channels=2, seq_len=4800, hidden_dim=128, gru_hidden=64, num_layers=2, dropout=0.2)
+        default_args.update({"hidden_dim": 128, "gru_hidden": 64, "num_layers": 2, "dropout": 0.2})
     elif matched_key == "tcn":
-        return encoder_cls(in_channels=2, seq_len=4800, hidden_dim=128, kernel_size=3, dropout=0.2)
+        default_args.update({"hidden_dim": 128, "kernel_size": 3, "dropout": 0.2})
     elif matched_key in ["cnn1d", "1dcnn", "cnn", "cnn1dencoder"]:
-        return encoder_cls(in_channels=2, seq_len=4800, latent_dim=128)
+        default_args.update({"latent_dim": 128})
     elif matched_key in ["bilstm", "bilstmencoder", "lstm"]:
-        return encoder_cls(in_channels=2, seq_len=4800, latent_dim=128, hidden_size=64, num_layers=2, dropout=0.2)
-    else:
-        init_options = [
-            {"in_channels": 2, "seq_len": 4800, "latent_dim": 128},
-            {"latent_dim": 128},
-            {"hidden_dim": 128},
-            {"in_channels": 2, "seq_len": 4800},
-            {},
-        ]
-        for kwargs in init_options:
-            try:
-                return encoder_cls(**kwargs)
-            except TypeError:
-                continue
-        return encoder_cls()
+        default_args.update({"hidden_size": 64, "num_layers": 2, "dropout": 0.2})
+    elif matched_key == "multiscale_lstm":
+        default_args.update({"hidden_size": 64, "num_layers": 2, "dropout": 0.2})
+    elif matched_key in ["patchctg", "patchtst"]:
+        default_args.update({"patch_len": 16, "stride": 16, "d_model": 128, "n_heads": 8, "n_layers": 3, "dropout": 0.1})
+
+    default_args.update(kwargs)
+
+    import inspect
+    sig = inspect.signature(encoder_cls.__init__)
+    valid_params = set(sig.parameters.keys()) - {"self"}
+    filtered_kwargs = {k: v for k, v in default_args.items() if k in valid_params}
+
+    return encoder_cls(**filtered_kwargs)
 
 
 def train_single_fold(
@@ -286,6 +288,7 @@ def train_single_fold(
     epochs: int,
     lr: float,
     device: torch.device,
+    weight_decay: float = 1e-4,
     pos_weight: torch.Tensor = None,
     save_path: str = None,
 ) -> Dict[str, float]:
@@ -296,7 +299,7 @@ def train_single_fold(
         pos_weight = pos_weight.to(device)
 
     criterion = nn.BCEWithLogitsLoss(pos_weight=pos_weight)
-    optimizer = torch.optim.AdamW(model.parameters(), lr=lr, weight_decay=1e-4)
+    optimizer = torch.optim.AdamW(model.parameters(), lr=lr, weight_decay=weight_decay)
     scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=epochs)
     use_amp = device.type == "cuda"
     scaler = torch.amp.GradScaler("cuda", enabled=use_amp)
@@ -349,11 +352,11 @@ def train_single_fold(
     return best_metrics
 
 
-def run_dry_run(model_name: str, batch_size: int, lr: float, device: torch.device):
+def run_dry_run(model_name: str, batch_size: int, lr: float, device: torch.device, encoder_kwargs: dict = None):
     """Executes a dry-run forward/backward pass using dummy tensors."""
     print("\n" + "=" * 60)
     print(f"[DRY RUN MODE] Initializing Model: {model_name}")
-    encoder = build_encoder(model_name)
+    encoder = build_encoder(model_name, **(encoder_kwargs or {}))
     model = UniversalClassifier(encoder=encoder, latent_dim=128).to(device)
     param_count = sum(p.numel() for p in model.parameters() if p.requires_grad)
     print(f"Trainable Parameters: {param_count:,}")
@@ -384,6 +387,8 @@ def train_and_evaluate(
     epochs: int = 15,
     batch_size: int = 32,
     lr: float = 0.0005,
+    weight_decay: float = 1e-4,
+    encoder_kwargs: dict = None,
     save_dir: str = "checkpoints",
     dry_run: bool = False,
 ) -> Dict[str, Tuple[float, float]]:
@@ -391,12 +396,12 @@ def train_and_evaluate(
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     if dry_run:
-        run_dry_run(model_name, batch_size, lr, device)
+        run_dry_run(model_name, batch_size, lr, device, encoder_kwargs=encoder_kwargs)
         return {}
 
     print("\n" + "=" * 60)
     print(f" Starting Stratified {k_folds}-Fold Patient-Level CV: {model_name.upper()}")
-    print(f" Device: {device} | Epochs: {epochs} | Batch Size: {batch_size} | LR: {lr}")
+    print(f" Device: {device} | Epochs: {epochs} | Batch Size: {batch_size} | LR: {lr} | Weight Decay: {weight_decay}")
     print("=" * 60 + "\n")
 
     try:
@@ -405,7 +410,7 @@ def train_and_evaluate(
     except FileNotFoundError as e:
         print(f"[WARNING] {e}")
         print("Running quick dry-run test on dummy data instead...")
-        run_dry_run(model_name, batch_size, lr, device)
+        run_dry_run(model_name, batch_size, lr, device, encoder_kwargs=encoder_kwargs)
         return {}
 
     folds = create_patient_level_folds(patient_ids, y_all, k_folds=k_folds)
@@ -435,7 +440,7 @@ def train_and_evaluate(
         val_loader = DataLoader(val_ds, batch_size=batch_size, shuffle=False)
 
         # Instantiate fresh model for each fold
-        encoder = build_encoder(model_name)
+        encoder = build_encoder(model_name, **(encoder_kwargs or {}))
         model = UniversalClassifier(encoder=encoder, latent_dim=128).to(device)
 
         fold_save_path = os.path.join(save_dir, f"{model_name.lower()}_fold{fold_idx}_best.pth")
@@ -447,6 +452,7 @@ def train_and_evaluate(
             epochs=epochs,
             lr=lr,
             device=device,
+            weight_decay=weight_decay,
             pos_weight=pos_weight,
             save_path=fold_save_path,
         )
