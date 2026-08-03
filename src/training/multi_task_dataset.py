@@ -176,7 +176,7 @@ def load_all_multitask_splits(
     print(
         f"[MultiTaskCTGDataset] Loaded {len(dataset)} windows | "
         f"{len(set(pids_list))} unique patients | "
-        f"Distress prevalence: {yp_all.mean().item():.3f}"
+        f"Distress prevalence: {yp_all.float().mean().item():.3f}"
     )
     return dataset, pids_list
 
