@@ -104,13 +104,13 @@ A learnable 1D truncated-normal positional embedding $\mathbf{W}_{pos} \in \math
 $$\mathbf{H}_0 = \text{Dropout}\left(\mathbf{E} + \mathbf{W}_{pos}\right) \in \mathbb{R}^{(B \cdot C) \times N \times d_{model}}$$
 
 #### Step 4: Pre-LayerNorm Multi-Head Self-Attention (Transformer Encoder)
-The sequence of patch representations is passed through $L_{enc} = 3$ Transformer encoder layers. Each layer consists of Multi-Head Self-Attention ($\text{MHSA}$) and Feed-Forward Networks ($\text{FFN}$) using Pre-Layer Normalization ($\text{Pre-LN}$) and $\text{GELU}$ activations:
+The sequence of patch representations is passed through $L_{enc} = 4$ Transformer encoder layers (**tuned value**; model default is 3). Each layer consists of Multi-Head Self-Attention ($\text{MHSA}$) and Feed-Forward Networks ($\text{FFN}$) using Pre-Layer Normalization ($\text{Pre-LN}$) and $\text{GELU}$ activations:
 
 $$\mathbf{H}_l' = \text{MHSA}(\text{LayerNorm}(\mathbf{H}_{l-1})) + \mathbf{H}_{l-1}$$
-$$\mathbf{H}_l = \text{FFN}(\text{LayerNorm}(\mathbf{H}_l')) + \mathbf{H}_l' \quad \text{for } l = 1, \dots, 3$$
+$$\mathbf{H}_l = \text{FFN}(\text{LayerNorm}(\mathbf{H}_l')) + \mathbf{H}_l' \quad \text{for } l = 1, \dots, 4$$
 
-Where for each head $k \in \{1, \dots, 8\}$:
-$$\text{Attention}(\mathbf{Q}_k, \mathbf{K}_k, \mathbf{V}_k) = \text{Softmax}\left(\frac{\mathbf{Q}_k \mathbf{K}_k^T}{\sqrt{d_k}}\right) \mathbf{V}_k, \quad d_k = \frac{d_{model}}{n_{heads}} = \frac{128}{8} = 16$$
+Where for each head $k \in \{1, \dots, 4\}$ (**tuned value**; model default is 8 heads):
+$$\text{Attention}(\mathbf{Q}_k, \mathbf{K}_k, \mathbf{V}_k) = \text{Softmax}\left(\frac{\mathbf{Q}_k \mathbf{K}_k^T}{\sqrt{d_k}}\right) \mathbf{V}_k, \quad d_k = \frac{d_{model}}{n_{heads}} = \frac{128}{4} = 32$$
 
 #### Step 5: Adaptive Global Patch Pooling & Channel Recombination
 Global temporal aggregation across the $N=300$ patch tokens is performed via 1D Adaptive Average Pooling:
@@ -126,6 +126,8 @@ $$\mathbf{z} = \text{LayerNorm}\left(\text{Linear}_{128 \to 128}\left(\text{Drop
 
 ### 2.3 Hyperparameter Specification Summary
 
+> **Note**: Values marked *(Tuned)* reflect the winning hyperparameter configuration from the automated search (Trial 1). Values marked *(Default)* are the model's original defaults. The Phase 4 Model 8 backbone uses the **Tuned** configuration.
+
 | Component / Parameter | Configuration / Value | Description / Rationale |
 | :--- | :--- | :--- |
 | **Input Signal Dimension** | `(B, 2, 4800)` | 2 Channels (FHR, UC), 20 min @ 4 Hz |
@@ -133,11 +135,13 @@ $$\mathbf{z} = \text{LayerNorm}\left(\text{Linear}_{128 \to 128}\left(\text{Drop
 | **Patch Stride ($S$)** | `16` samples | Non-overlapping temporal tokenization |
 | **Num Patches ($N$)** | `300` patches / channel | $N = (4800 - 16)/16 + 1$ |
 | **Model Hidden Dim ($d_{model}$)** | `128` | Transformer token representation dimension |
-| **Feedforward Dim ($d_{ff}$)** | `512` | Expansion ratio = 4 in MLP blocks |
-| **Attention Heads ($n_{heads}$)** | `8` | Head dimension $d_k = 16$ |
-| **Encoder Layers ($n_{layers}$)** | `3` | Pre-LN Transformer blocks |
+| **Feedforward Dim ($d_{ff}$)** | `512` | Expansion ratio = 4× in MLP blocks |
+| **Attention Heads ($n_{heads}$)** | **`4`** *(Tuned; Default: 8)* | Head dimension $d_k = 128/4 = 32$ |
+| **Encoder Layers ($n_{layers}$)** | **`4`** *(Tuned; Default: 3)* | Pre-LN Transformer blocks; deeper encoder improves long-range CTG pattern capture |
 | **Activation Function** | `GELU` | Gaussian Error Linear Unit |
-| **Dropout Rate** | `0.1` (encoder) / `0.2` (classifier) | Prevents overfitting |
+| **Dropout Rate** | `0.2` *(Tuned; Default: 0.1)* | Tuned for regularization on CTG dataset size |
+| **Batch Size** | **`64`** *(Tuned; Default: 32)* | Larger batches stabilize transformer attention training |
+| **Learning Rate** | **`1e-4`** *(Tuned)* | AdamW + CosineAnnealingLR |
 | **Total Trainable Parameters** | **`685,056`** | Encoder + standardized classification head |
 
 ---

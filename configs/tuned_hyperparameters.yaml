@@ -1,34 +1,43 @@
 # Optimal Tuned Hyperparameter Configurations for CTG Temporal Encoders
 # Generated via Automated Hyperparameter Search (src/training/tune_hyperparameters.py)
+#
+# Tuning Notes:
+#   - BiLSTM: hidden_size=32 yields 64-dim bidirectional concat -> projected to 128.
+#             This is a bottleneck config; chosen by tuner for reduced overfitting on
+#             the small dataset. Explains lower AUROC (0.6544) vs deeper models.
+#   - GRU:    num_layers=1 (single-layer BiGRU) with gru_hidden=128. Single-layer
+#             avoids compounding vanishing gradients across long CTG sequences.
+#   - TCN:    kernel_size=3 matches the default; tuner converged on this as optimal.
+#             Dropout=0.3 (higher than default 0.2) helps regularize at lr=0.001.
 
 cnn1d:
-  batch_size: 32
+  batch_size: 16
   latent_dim: 128
-  lr: 0.0005
+  lr: 0.0001
   weight_decay: 0.0001
 
 bilstm:
-  batch_size: 32
-  dropout: 0.2
-  hidden_size: 64
-  lr: 0.0005
+  batch_size: 64
+  dropout: 0.1
+  hidden_size: 32  # 32*2 bidirectional = 64 concat, projected to latent_dim=128
+  lr: 0.001
   num_layers: 2
-  weight_decay: 0.0001
+  weight_decay: 1.0e-05
 
 gru:
   batch_size: 32
-  dropout: 0.2
-  gru_hidden: 64
+  dropout: 0.3
+  gru_hidden: 128  # single-layer bidirectional: 128*2=256 -> mean+max pooled -> projected
   lr: 0.0005
-  num_layers: 2
-  weight_decay: 0.0001
+  num_layers: 1
+  weight_decay: 1.0e-05
 
 tcn:
-  batch_size: 32
-  dropout: 0.2
-  kernel_size: 3
-  lr: 0.0005
-  weight_decay: 0.0001
+  batch_size: 64
+  dropout: 0.3
+  kernel_size: 3  # same as default; tuner confirms 3 is optimal for 4 Hz CTG signals
+  lr: 0.001
+  weight_decay: 1.0e-05
 
 multiscale_lstm:
   batch_size: 32
@@ -41,21 +50,26 @@ multiscale_lstm:
 patchctg:
   batch_size: 32
   d_model: 128
-  dropout: 0.1
-  lr: 0.0003
-  n_heads: 8
-  n_layers: 3
-  patch_len: 16
-  stride: 16
-  weight_decay: 0.0001
+  dropout: 0.2
+  latent_dim: 128  # explicit (matches PatchCTGEncoder default)
+  lr: 0.0001
+  n_heads: 4
+  n_layers: 2
+  patch_len: 8
+  stride: 16  # non-overlapping; overlapping (stride=8) tested in Trial 3 and underperformed
+  weight_decay: 1.0e-05
 
 patchtst:
-  batch_size: 32
+  # SOTA WINNER (Trial 1): AUROC 0.7504 ± 0.0378 | Sens@90%Spec 35.09% ± 6.65%
+  # This is the Phase 4 backbone config for the Knowledge-Infused Framework (Model 8).
+  # Note: n_heads=4 and n_layers=4 are tuned values; model defaults are n_heads=8, n_layers=3.
+  batch_size: 64
   d_model: 128
-  dropout: 0.1
-  lr: 0.0003
-  n_heads: 8
-  n_layers: 3
+  dropout: 0.2
+  latent_dim: 128
+  lr: 0.0001
+  n_heads: 4   # tuned (default: 8); d_head = 128/4 = 32
+  n_layers: 4  # tuned (default: 3); deeper encoder captures longer CTG dependencies
   patch_len: 16
   stride: 16
   weight_decay: 0.0001

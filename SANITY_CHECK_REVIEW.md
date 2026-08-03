@@ -104,7 +104,7 @@ $$\mathbf{X} \in \mathbb{R}^{B \times 2 \times 4800} \longrightarrow \mathbf{z} 
 3. **GRU** ([gru_encoder.py](file:///d:/projects/CTG-Fetal-Distress-Prediction/src/models/gru_encoder.py)): 1D Conv downsample stem ($4\times$) + 2-layer GRU (~179K params).
 4. **TCN** ([tcn_encoder.py](file:///d:/projects/CTG-Fetal-Distress-Prediction/src/models/tcn_encoder.py)): Strictly causal dilated residual blocks with receptive field of 253 steps (~63s) (~363K params).
 5. **MS-LSTM** ([multiscale_lstm.py](file:///d:/projects/CTG-Fetal-Distress-Prediction/src/models/multiscale_lstm.py)): 3 parallel BiLSTM branches operating at STV, contraction, and LTV timescales (~584K params).
-6. **PatchCTG** ([patchctg.py](file:///d:/projects/CTG-Fetal-Distress-Prediction/src/models/patchctg.py)): Joint-channel patching ($C \times P = 32$) Transformer (~671K params).
+6. **PatchCTG** ([patchctg.py](file:///d:/projects/CTG-Fetal-Distress-Prediction/src/models/patchctg.py)): Joint-channel patching ($P=8, S=16$) Transformer (~479K params).
 7. **PatchTST** ([patchtst.py](file:///d:/projects/CTG-Fetal-Distress-Prediction/src/models/patchtst.py)): Channel-independent patching Transformer (~685K params). **Exported in `src/models/__init__.py`**.
 
 ---
@@ -158,12 +158,12 @@ All 7 architectures evaluated across 6,917 CTG windows and 546 unique patients:
 | **GRU** | Gated Recurrent Unit | 179K | 77.14 ± 5.05 | 0.6881 ± 0.0627 | 0.2812 ± 0.0839 | 0.3027 ± 0.1080 | 34.00 ± 19.05 | 85.44 ± 9.22 | 25.05 ± 9.96 |
 | **TCN** | Temporal Conv Network | 363K | 79.47 ± 2.55 | 0.7154 ± 0.0797 | 0.2846 ± 0.0840 | 0.2413 ± 0.1079 | 21.28 ± 11.05 | **90.57 ± 3.90** | 25.65 ± 13.36 |
 | **MS-LSTM** | Multi-Scale BiLSTM | 584K | 62.95 ± 6.88 | 0.7263 ± 0.1103 | 0.3140 ± 0.0962 | 0.3668 ± 0.0666 | **69.68 ± 24.77** | 61.61 ± 12.62 | 29.94 ± 12.13 |
-| **PatchCTG** | Joint Patch Transformer | 671K | 55.53 ± 17.65 | 0.6533 ± 0.0781 | 0.2963 ± 0.0829 | 0.3351 ± 0.0687 | 68.46 ± 21.20 | 53.38 ± 23.73 | 24.36 ± 11.15 |
+| **PatchCTG** | Joint Patch Transformer | 479K | 72.43 ± 5.62 | 0.6668 ± 0.0161 | 0.2872 ± 0.0334 | 0.3322 ± 0.0418 | 43.19 ± 11.69 | 77.85 ± 8.34 | 28.63 ± 5.06 |
 | **PatchTST** 🏆 | Channel-Ind. Patch Trans. | 685K | 70.23 ± 6.61 | **0.7504 ± 0.0378** | **0.3820 ± 0.0800** | **0.4102 ± 0.0446** | 63.74 ± 12.12 | 71.54 ± 9.69 | **35.09 ± 6.65** |
 
 ### Key Scientific Takeaways:
 1. **PatchTST is the Undisputed SOTA Winner**: Achieves top performance across AUROC (**0.7504**), AUPRC (**0.3820**), F1 Score (**0.4102**), and Sens@90%Spec (**35.09%**).
-2. **Channel-Independent Tokenization Value**: Separating FHR and UC tokenization in PatchTST outperforms joint tokenization (PatchCTG AUROC 0.6533) by **+0.0971 AUROC**.
+2. **Channel-Independent Tokenization Value**: Separating FHR and UC tokenization in PatchTST outperforms joint tokenization (PatchCTG AUROC 0.6668) by **+0.0836 AUROC**.
 3. **Fair Evaluation Enforced**: With dynamic `pos_weight` applied across all 7 models, PatchTST's superiority is scientifically validated and unconfounded.
 
 ---

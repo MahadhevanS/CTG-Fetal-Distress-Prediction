@@ -25,7 +25,7 @@ All 7 temporal encoders were evaluated under Stratified 5-Fold Patient-Level Cro
 | **GRU** | Gated Recurrent Unit | 179K | 0.6881 ± 0.0627 | 0.2812 ± 0.0839 | 0.3027 ± 0.1080 | 34.00 ± 19.05 | 85.44 ± 9.22 | 25.05 ± 9.96 | Gated recurrence + high specificity |
 | **TCN** | Temporal Conv Network | 363K | 0.7154 ± 0.0797 | 0.2846 ± 0.0840 | 0.2413 ± 0.1079 | 21.28 ± 11.05 | **90.57 ± 3.90** | 25.65 ± 13.36 | Causal dilated conv (Peak fold AUROC 0.843) |
 | **MS-LSTM** | Multi-Scale BiLSTM | 584K | 0.7263 ± 0.1103 | 0.3140 ± 0.0962 | 0.3668 ± 0.0666 | **69.68 ± 24.77** | 61.61 ± 12.62 | 29.94 ± 12.13 | Multi-resolution temporal receptive fields |
-| **PatchCTG** | Joint-Channel Patch Trans. | 671K | 0.6533 ± 0.0781 | 0.2963 ± 0.0829 | 0.3351 ± 0.0687 | 68.46 ± 21.20 | 53.38 ± 23.73 | 24.36 ± 11.15 | FHR-UC cross-channel patch attention |
+| **PatchCTG** | Joint-Channel Patch Trans. | 479K | 0.6668 ± 0.0161 | 0.2872 ± 0.0334 | 0.3322 ± 0.0418 | 43.19 ± 11.69 | 77.85 ± 8.34 | 28.63 ± 5.06 | Joint-channel patch transformer baseline |
 | **PatchTST** 🏆 | Channel-Ind. Patch Trans. | 685K | **0.7504 ± 0.0378** | **0.3820 ± 0.0800** | **0.4102 ± 0.0446** | 63.74 ± 12.12 | 71.54 ± 9.69 | **35.09 ± 6.65** | **SOTA Winner**: Highest AUROC, AUPRC & Sens@90%Spec |
 
 *Note: PatchTST achieved the highest 5-Fold Patient-Level CV AUROC (0.7504 ± 0.0378), AUPRC (0.3820 ± 0.0800), F1 Score (0.4102 ± 0.0446), and Sensitivity at 90% Specificity (35.09% ± 6.65%), establishing it as the official temporal encoder backbone for the Phase 4 Knowledge-Infused Multi-Task Framework.*
