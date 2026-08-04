@@ -1,8 +1,19 @@
 # Model 8 Configuration: Knowledge-Infused Multi-Task Framework
 # =============================================================
-# Phase 4 training configuration for the KnowledgeInfusedFramework.
+# Phase 4+ enhanced training configuration for the KnowledgeInfusedFramework.
 # Backbone: PatchTSTEncoder with tuned hyperparameters (from configs/tuned_hyperparameters.yaml).
 # All lambda values are starting points; tune by sweeping on validation AUROC.
+#
+# NEW in Phase 4+:
+#   - loss_weighting: dynamic multi-task loss balancing (uncertainty/dwa/gradnorm/fixed)
+#   - scheduler: warmup + cosine or onecycle
+#   - ema: exponential moving average of weights for validation
+#   - swa: stochastic weight averaging at end of fold
+#   - sampling: balanced batches and hard example mining
+#   - augmentation: physiologically safe CTG signal augmentation
+#   - calibration: threshold optimization and temperature scaling
+#   - curriculum: progressive task inclusion schedule
+#   - ablation_extended: 6-variant expanded ablation study
 
 # -------------------------------------------------------------------
 # Backbone: PatchTST Encoder (tuned config — SOTA winner from Phase 3)
@@ -37,8 +48,18 @@ training:
   weight_decay: 0.0001
   k_folds: 5          # stratified patient-level cross-validation folds
   gradient_clip: 1.0  # max gradient norm for clipping (applied after backward)
-  scheduler: cosine   # CosineAnnealingLR with T_max = epochs
   optimizer: adamw
+
+# -------------------------------------------------------------------
+# Learning Rate Scheduler (NEW in Phase 4+)
+# -------------------------------------------------------------------
+scheduler:
+  type: warmup_cosine   # Options: 'cosine' (original), 'warmup_cosine', 'onecycle'
+  warmup_epochs: 5      # Linear warmup for first N epochs (only for warmup_cosine)
+  eta_min: 1.0e-6       # Minimum LR at end of cosine decay
+  # OneCycleLR params (only used when type: onecycle):
+  onecycle_max_lr: 0.001
+  onecycle_pct_start: 0.3   # Fraction of cycle spent increasing LR
 
 # -------------------------------------------------------------------
 # Loss Weights (Multi-Task Balancing)
@@ -46,16 +67,8 @@ training:
 # L_total = L_distress + lambda_figo * L_FIGO + lambda_features * L_features
 #           + lambda_knowledge * L_knowledge
 #
-# Starting values selected based on:
-#   - L_distress is primary — other terms act as regularizers (weights < 1.0)
-#   - L_FIGO (3-class CE) carries clear supervised signal → moderate weight
-#   - L_features (8-feature MSE) has higher variance → lower weight
-#   - L_knowledge (soft FIGO rule penalty) is unsupervised → lowest weight
-#
-# Tuning guide: start here, then sweep on validation fold AUROC:
-#   lambda_figo:      [0.1, 0.2, 0.3, 0.5]
-#   lambda_features:  [0.05, 0.1, 0.2, 0.3]
-#   lambda_knowledge: [0.05, 0.1, 0.2]
+# Starting values — these are used by FixedWeighting.
+# Dynamic methods (uncertainty/dwa/gradnorm) learn their own weights.
 loss:
   lambda_figo: 0.3
   lambda_features: 0.2
@@ -63,19 +76,100 @@ loss:
   lambda_consistency: 0.5  # internal weight inside figo_rule_loss_normalized()
 
 # -------------------------------------------------------------------
-# Ablation Variants
-# Run with: --ablation [distress_only | plus_figo | plus_features | full]
+# Dynamic Loss Weighting (NEW in Phase 4+)
 # -------------------------------------------------------------------
-# distress_only:  L = L_distress only                    (Model 7 baseline reproduction)
-# plus_figo:      L = L_distress + lambda_figo*L_FIGO
-# plus_features:  L = L_distress + lambda_figo*L_FIGO + lambda_features*L_features
-# full:           L = L_distress + lambda_figo*L_FIGO + lambda_features*L_features
-#                   + lambda_knowledge*L_knowledge        (complete Model 8)
+loss_weighting:
+  method: fixed         # Options: 'fixed', 'uncertainty', 'dwa', 'gradnorm'
+  # uncertainty params:
+  uncertainty_init_log_sigma2: 0.0
+  # dwa params:
+  dwa_temperature: 2.0
+  # gradnorm params:
+  gradnorm_alpha: 1.5
+  gradnorm_shared_layer: encoder
+
+# -------------------------------------------------------------------
+# EMA (Exponential Moving Average) — NEW in Phase 4+
+# -------------------------------------------------------------------
+ema:
+  enabled: true
+  decay: 0.9995         # Shadow weight decay rate (0.999–0.9999 typical range)
+  use_for_validation: true  # If true, validation uses EMA weights
+
+# -------------------------------------------------------------------
+# SWA (Stochastic Weight Averaging) — NEW in Phase 4+
+# -------------------------------------------------------------------
+swa:
+  enabled: true
+  max_checkpoints: 10   # Max checkpoint snapshots to average per fold
+  start_epoch: 30       # Begin collecting snapshots from this epoch
+  evaluate_swa: true    # Also evaluate SWA model at fold end
+
+# -------------------------------------------------------------------
+# Batch Sampling Strategy — NEW in Phase 4+
+# -------------------------------------------------------------------
+sampling:
+  method: balanced      # Options: 'default' (original), 'balanced', 'hard_mining'
+  # Hard Example Mining params (active when method: hard_mining):
+  hard_mining_warmup_epochs: 5    # Epochs before mining activates
+  hard_mining_ema_decay: 0.9      # Per-sample loss EMA decay
+  hard_mining_hard_ratio: 0.6     # 60% batch weight from hard examples
+
+# -------------------------------------------------------------------
+# Curriculum Training — NEW in Phase 4+
+# -------------------------------------------------------------------
+# Progressively introduces auxiliary tasks to stabilize early training.
+# Each entry: [start_epoch, ablation_variant]
+# Example: epochs 0–4 = distress only, epoch 5+ = full multi-task
+curriculum:
+  enabled: false        # Set to true to enable curriculum schedule
+  schedule:
+    - [0, "distress_only"]
+    - [5, "plus_features"]
+    - [10, "full"]
+
+# -------------------------------------------------------------------
+# Physiological Signal Augmentation — NEW in Phase 4+
+# -------------------------------------------------------------------
+augmentation:
+  enabled: true
+  p: 0.5                  # Global probability of augmenting each sample
+  noise_std: 0.02         # Gaussian noise std (normalized units)
+  drift_max_amp: 0.05     # Max baseline drift amplitude (normalized units)
+  scale_range: [0.97, 1.03]   # Multiplicative scaling range (±3%)
+  jitter_max: 5           # Max temporal shift in samples (5 samples = 1.25 s)
+  missing_max_ratio: 0.03 # Max fraction of signal to zero out (3%)
+  missing_block_max: 48   # Max contiguous block to zero (48 samples = 12 s)
+
+# -------------------------------------------------------------------
+# Calibration — NEW in Phase 4+
+# -------------------------------------------------------------------
+calibration:
+  optimize_threshold: true            # Search for optimal decision threshold per fold
+  threshold_objective: f1             # Options: 'f1', 'sens_at_90spec', 'balanced_f1'
+  temperature_scaling: true           # Fit temperature scaler and report ECE/Brier Score
+  report_calibration_metrics: true
+
+# -------------------------------------------------------------------
+# Ablation Variants (original 4 + 2 extended)
+# Run with: --ablation [distress_only | plus_figo | plus_features | full |
+#                        distress_features_only | distress_figo_only]
+# -------------------------------------------------------------------
 ablation_variants:
-  - distress_only
-  - plus_figo
-  - plus_features
-  - full
+  - distress_only           # A: L_distress only (baseline reproduction)
+  - plus_figo               # B: + L_FIGO
+  - distress_features_only  # C: + L_features (no FIGO head)
+  - plus_features           # D: + L_FIGO + L_features
+  - distress_figo_only      # E: + L_FIGO + L_knowledge (no feature regression)
+  - full                    # E: + L_FIGO + L_features + L_knowledge (complete Model 8)
+
+# -------------------------------------------------------------------
+# Error Analysis — NEW in Phase 4+
+# -------------------------------------------------------------------
+error_analysis:
+  enabled: true
+  save_per_fold: true   # Save JSON report per fold
+  results_dir: checkpoints/model8/results/error_analysis/
 
 # -------------------------------------------------------------------
 # Paths
@@ -88,3 +182,4 @@ paths:
   feature_scaler_path: data/processed/feature_scaler.npz
   checkpoint_dir: checkpoints/model8/
   results_dir: checkpoints/model8/results/
+  horizon_analysis_dir: checkpoints/model8/results/horizon_analysis/

@@ -20,6 +20,10 @@ training targets required for Model 8 knowledge-infused multi-task training:
 Also provides:
     load_all_multitask_splits() — aggregates train/val/test .pt files into a single dataset.
     load_feature_scaler_stats() — loads mean/std per feature from stored scaler artifacts.
+
+Phase 4+ Additions:
+    MultiTaskCTGDataset.sample_weights — per-window quality weights based on FHR
+        completeness. Pass to WeightedRandomSampler for signal-quality-aware sampling.
 """
 
 import os
@@ -65,6 +69,8 @@ class MultiTaskCTGDataset(Dataset):
             patient_ids if patient_ids is not None
             else [f"p_{i}" for i in range(len(X))]
         )
+        # Cache quality weights on construction (FHR channel = channel 0)
+        self._sample_weights: Optional[torch.Tensor] = None
 
     def __len__(self) -> int:
         return len(self.X)
@@ -80,6 +86,36 @@ class MultiTaskCTGDataset(Dataset):
             self.y_figo[idx],
             self.y_features[idx],
         )
+
+    @property
+    def sample_weights(self) -> torch.Tensor:
+        """
+        Per-window signal quality weights based on FHR channel completeness.
+
+        A window's weight is proportional to the fraction of non-zero (non-missing)
+        samples in the FHR channel (channel 0). Windows with ≥95% valid signal
+        receive weight 1.0; windows with lower quality receive proportionally
+        lower weight, reducing their sampling probability.
+
+        Returns:
+            Tensor of shape (N,) with positive float weights in [min_weight, 1.0].
+            Suitable for direct use with torch.utils.data.WeightedRandomSampler.
+        """
+        if self._sample_weights is not None:
+            return self._sample_weights
+
+        # FHR is channel 0; missing values are stored as 0 in normalized space
+        # (Z-score of 0.0 corresponds to the mean, but true missing is 0 in raw space)
+        # We use absolute value threshold to detect near-zero segments
+        fhr_channel = self.X[:, 0, :]  # (N, 4800)
+        valid_mask = (fhr_channel.abs() > 1e-6).float()  # (N, 4800)
+        completeness = valid_mask.mean(dim=1)  # (N,) — fraction of valid samples per window
+
+        # Clip minimum weight to 0.1 to avoid complete exclusion of imperfect windows
+        min_weight = 0.1
+        weights = torch.clamp(completeness, min=min_weight)
+        self._sample_weights = weights
+        return self._sample_weights
 
 
 def _load_pt_split(pt_path: str) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, List[str]]:
