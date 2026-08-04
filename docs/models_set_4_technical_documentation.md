@@ -221,14 +221,25 @@ Model 8 enhances the winning standalone encoder by introducing **Clinical Knowle
 2. **FIGO 2015 Auxiliary Classifier**: Multi-class classification (Normal, Suspicious, Pathological) according to FIGO clinical guidelines.
 3. **Biochemical Feature Regressor**: Reconstructs clinical baseline parameters (e.g., basal FHR, signal variability, acceleration/deceleration statistics).
 
-### 5.2 Multi-Task Loss Formulation
-$$\mathcal{L}_{total} = \lambda_1 \mathcal{L}_{primary} + \lambda_2 \mathcal{L}_{FIGO} + \lambda_3 \mathcal{L}_{biochemical}$$
-Where $\lambda_1, \lambda_2, \lambda_3$ are task-balancing hyperparameters tuned during Phase 3.
+### 5.3 Empirical Benchmark & Ablation Results
+
+> **Status**: Completed under Phase 4 (5-Fold Stratified Patient CV on 6,917 CTG windows / 546 patients).
+
+| Variant / Model | AUROC | AUPRC | F1 Score | Recall / Sens (%) | Specificity (%) | Sens@90%Spec (%) |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| `distress_only` | 0.7462 ± 0.0430 | 0.3597 ± 0.0528 | 0.3911 ± 0.0518 | 58.43 ± 15.86 | 73.66 ± 10.71 | 31.94 ± 7.51 |
+| `plus_figo` | 0.7462 ± 0.0408 | 0.3567 ± 0.0878 | 0.3703 ± 0.0616 | 70.56 ± 21.51 | 59.84 ± 18.51 | 32.45 ± 11.24 |
+| `plus_features` (Folds 1–4) | 0.7939 ± 0.0328 | 0.4202 ± 0.0911 | 0.3871 ± 0.0410 | 66.82 ± 10.25 | 65.13 ± 7.82 | 41.11 ± 6.87 |
+| **`full` (Model 8 KI-MTF)** 🎯 | **0.7774 ± 0.0303** | **0.3913 ± 0.0523** | **0.4030 ± 0.0352** | **75.04 ± 11.71** | 61.95 ± 9.43 | **40.36 ± 2.92** |
+
+- **Statistical Significance**: Paired Wilcoxon signed-rank test confirms statistically significant AUROC improvement ($W = 15.0, p = 0.03125$) over `distress_only` across all 5 validation folds (100% fold consistency).
 
 ---
 
 ## 6. Verification & File References
 
-- **PatchTST Model Class**: [src/models/patchtst.py](file:///c:/Users/ELCOT/Desktop/CTG-Fetal-Distress-Prediction/src/models/patchtst.py)
-- **PatchTST Training Script**: [src/models/train_patchtst.py](file:///c:/Users/ELCOT/Desktop/CTG-Fetal-Distress-Prediction/src/models/train_patchtst.py)
-- **Centralized Model Inference Log**: [docs/model_inferences_log.md](file:///c:/Users/ELCOT/Desktop/CTG-Fetal-Distress-Prediction/docs/model_inferences_log.md)
+- **PatchTST Model Class**: [src/models/patchtst.py](file:///d:/projects/CTG-Fetal-Distress-Prediction/src/models/patchtst.py)
+- **Knowledge-Infused Framework**: [src/models/knowledge_infused_framework.py](file:///d:/projects/CTG-Fetal-Distress-Prediction/src/models/knowledge_infused_framework.py)
+- **Model 8 Technical Documentation**: [docs/model8_technical_documentation.md](file:///d:/projects/CTG-Fetal-Distress-Prediction/docs/model8_technical_documentation.md)
+- **Centralized Model Inference Log**: [docs/model_inferences_log.md](file:///d:/projects/CTG-Fetal-Distress-Prediction/docs/model_inferences_log.md)
+
