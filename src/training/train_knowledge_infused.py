@@ -154,6 +154,9 @@ def compute_multitask_loss(
     lambda_knowledge: float = 0.1,
     lambda_consistency: float = 0.5,
     ablation: str = "full",
+    use_focal_loss: bool = False,
+    focal_gamma: float = 2.0,
+    aux_warmup_factor: float = 1.0,
 ) -> Tuple[Dict[str, torch.Tensor], Dict[str, float]]:
     """
     Computes individual loss components for the selected ablation variant.
@@ -165,29 +168,39 @@ def compute_multitask_loss(
           - component_floats:  Dict[str, float]  — detached float values for logging
     """
     device = distress_logit.device
-    criterion_bce = nn.BCEWithLogitsLoss(pos_weight=pos_weight.to(device))
 
-    # Primary Task: Binary Distress
-    l_distress = criterion_bce(distress_logit.squeeze(-1), y_primary)
+    # Primary Task: Binary Distress (Focal Loss or BCEWithLogits)
+    if use_focal_loss:
+        bce = nn.functional.binary_cross_entropy_with_logits(
+            distress_logit.squeeze(-1), y_primary, pos_weight=pos_weight.to(device), reduction="none"
+        )
+        probs = torch.sigmoid(distress_logit.squeeze(-1))
+        p_t = probs * y_primary + (1.0 - probs) * (1.0 - y_primary)
+        focal_weight = (1.0 - p_t) ** focal_gamma
+        l_distress = (focal_weight * bce).mean()
+    else:
+        criterion_bce = nn.BCEWithLogitsLoss(pos_weight=pos_weight.to(device))
+        l_distress = criterion_bce(distress_logit.squeeze(-1), y_primary)
+
     component_tensors = {"distress": l_distress}
     component_floats = {"l_distress": l_distress.item()}
 
     if ablation == "distress_only":
         return component_tensors, component_floats
 
-    # Auxiliary Task 1: FIGO 3-class Classification
+    # Auxiliary Task 1: FIGO 3-class Classification (with curriculum warmup)
     if ablation in ("plus_figo", "plus_features", "distress_figo_only", "full"):
-        l_figo = nn.functional.cross_entropy(figo_logits, y_figo)
+        l_figo = nn.functional.cross_entropy(figo_logits, y_figo) * aux_warmup_factor
         component_tensors["figo"] = l_figo
         component_floats["l_figo"] = l_figo.item()
 
-    # Auxiliary Task 2: Physiological Feature Regression
+    # Auxiliary Task 2: Physiological Feature Regression (with curriculum warmup)
     if ablation in ("distress_features_only", "plus_features", "full"):
-        l_features = nn.functional.mse_loss(feature_preds_norm, y_features)
+        l_features = nn.functional.mse_loss(feature_preds_norm, y_features) * aux_warmup_factor
         component_tensors["features"] = l_features
         component_floats["l_features"] = l_features.item()
 
-    # Auxiliary Task 3: FIGO Knowledge Consistency Penalty
+    # Auxiliary Task 3: FIGO Knowledge Consistency Penalty (with curriculum warmup)
     if ablation in ("distress_figo_only", "full"):
         l_knowledge = figo_rule_loss_normalized(
             pred_features_norm=feature_preds_norm,
@@ -196,7 +209,7 @@ def compute_multitask_loss(
             feature_stds=feature_stds.to(device),
             target_figo=None,
             lambda_consistency=lambda_consistency,
-        )
+        ) * aux_warmup_factor
         component_tensors["knowledge"] = l_knowledge
         component_floats["l_knowledge"] = l_knowledge.item()
 
@@ -359,6 +372,10 @@ def train_single_fold_multitask(
         epoch_component_sums: Dict[str, float] = {}
         n_batches = 0
 
+        # --- Auxiliary curriculum warmup factor (10 epochs) ---
+        aux_warmup_epochs = 10
+        aux_warmup_factor = min(1.0, epoch / float(aux_warmup_epochs)) if epoch <= aux_warmup_epochs else 1.0
+
         for batch in train_loader:
             X_batch, yp_batch, yf_batch, yfeat_batch = batch
             X_batch = X_batch.to(device)
@@ -389,6 +406,9 @@ def train_single_fold_multitask(
                     lambda_knowledge=lambda_knowledge,
                     lambda_consistency=lambda_consistency,
                     ablation=active_ablation,
+                    use_focal_loss=True,
+                    focal_gamma=2.0,
+                    aux_warmup_factor=aux_warmup_factor,
                 )
 
             # Apply loss weighting
