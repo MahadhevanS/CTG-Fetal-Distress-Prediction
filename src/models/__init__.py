@@ -14,6 +14,7 @@ from src.models.classifier import UniversalClassifier
 from src.models.multiscale_lstm import MultiScaleLSTMEncoder, MultiScaleLSTMForClassification
 from src.models.patchctg import PatchCTGEncoder, PatchCTGForClassification
 from src.models.patchtst import PatchTSTEncoder, PatchTSTForClassification
+from src.models.ctg_crossformer import CTGCrossformerEncoder, CTGCrossformerForClassification
 from src.models.knowledge_infused_framework import (
     KnowledgeInfusedFramework,
     DistressHead,
@@ -33,6 +34,8 @@ __all__ = [
     "PatchCTGForClassification",
     "PatchTSTEncoder",
     "PatchTSTForClassification",
+    "CTGCrossformerEncoder",
+    "CTGCrossformerForClassification",
     "UniversalClassifier",
     # Phase 4 Multi-Task Framework
     "KnowledgeInfusedFramework",

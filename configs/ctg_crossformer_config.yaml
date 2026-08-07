@@ -1,0 +1,29 @@
+# Standalone CTG-CrossFormer Configuration
+# =========================================
+# Hyperparameters from Dang et al. (2026) paper:
+# "A Hybrid CNN-Transformer with Cross-Attention for Automated Fetal Distress Detection"
+# Section 3.2 & Section 3.3
+
+model:
+  in_channels: 2
+  seq_len: 4800
+  cnn_channels: 128
+  n_heads_cross: 4
+  n_heads_tf: 8
+  n_tf_layers: 4
+  d_ff: 512
+  dropout: 0.1
+  latent_dim: 128
+  classifier_hidden_dim: 128
+  classifier_dropout: 0.3
+
+training:
+  epochs: 50
+  batch_size: 32
+  lr: 0.0003            # OneCycleLR max_lr from Section 3.3
+  weight_decay: 0.00001 # 10^-5 from Section 3.3
+  k_folds: 5
+  focal_loss_gamma: 2.0 # Section 3.3
+  patience: 15          # Early stopping patience on validation AUROC
+  optimizer: adamw
+  use_weighted_sampler: true # sqrt-inverse frequency oversampling

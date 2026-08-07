@@ -62,6 +62,7 @@ if BASE_DIR not in sys.path:
     sys.path.insert(0, BASE_DIR)
 
 from src.models.patchtst import PatchTSTEncoder
+from src.models.ctg_crossformer import CTGCrossformerEncoder
 from src.models.knowledge_infused_framework import KnowledgeInfusedFramework
 from src.knowledge.figo import figo_rule_loss_normalized
 from src.training.multi_task_dataset import (
@@ -635,6 +636,35 @@ def run_dry_run(device: torch.device, ablation: str = "full") -> None:
     print(f"{'='*65}\n")
 
 
+def build_encoder(backbone_cfg: Optional[Dict] = None) -> nn.Module:
+    backbone_cfg = backbone_cfg or {}
+    model_name = backbone_cfg.get("model", "patchtst")
+    if model_name == "ctg_crossformer":
+        return CTGCrossformerEncoder(
+            in_channels=backbone_cfg.get("in_channels", 2),
+            seq_len=backbone_cfg.get("seq_len", 4800),
+            cnn_channels=backbone_cfg.get("cnn_channels", 128),
+            n_heads_cross=backbone_cfg.get("n_heads_cross", 4),
+            n_heads_tf=backbone_cfg.get("n_heads_tf", 8),
+            n_tf_layers=backbone_cfg.get("n_tf_layers", 4),
+            d_ff=backbone_cfg.get("d_ff", 512),
+            dropout=backbone_cfg.get("dropout", 0.1),
+            latent_dim=backbone_cfg.get("latent_dim", 128),
+        )
+    else:
+        return PatchTSTEncoder(
+            in_channels=backbone_cfg.get("in_channels", 2),
+            seq_len=backbone_cfg.get("seq_len", 4800),
+            patch_len=backbone_cfg.get("patch_len", 16),
+            stride=backbone_cfg.get("stride", 16),
+            d_model=backbone_cfg.get("d_model", 128),
+            n_heads=backbone_cfg.get("n_heads", 4),
+            n_layers=backbone_cfg.get("n_layers", 4),
+            dropout=backbone_cfg.get("dropout", 0.2),
+            latent_dim=backbone_cfg.get("latent_dim", 128),
+        )
+
+
 # =============================================================================
 # Main Training Loop
 # =============================================================================
@@ -657,6 +687,7 @@ def train_and_evaluate_model8(
     lambda_consistency: float,
     dry_run: bool,
     # Phase 4+ config dicts
+    backbone_cfg: Optional[Dict] = None,
     loss_weighting_cfg: Optional[Dict] = None,
     scheduler_cfg: Optional[Dict] = None,
     ema_cfg: Optional[Dict] = None,
@@ -668,6 +699,7 @@ def train_and_evaluate_model8(
     error_analysis_cfg: Optional[Dict] = None,
 ) -> Dict[str, Tuple[float, float]]:
     """Runs full 5-fold patient-level CV for a given ablation variant."""
+    backbone_cfg = backbone_cfg or {}
     loss_weighting_cfg = loss_weighting_cfg or {}
     scheduler_cfg = scheduler_cfg or {}
     ema_cfg = ema_cfg or {}
@@ -781,10 +813,7 @@ def train_and_evaluate_model8(
         )
 
         # --- Build fresh model for each fold ---
-        encoder = PatchTSTEncoder(
-            in_channels=2, seq_len=4800, patch_len=16, stride=16,
-            d_model=128, n_heads=4, n_layers=4, dropout=0.2, latent_dim=128,
-        )
+        encoder = build_encoder(backbone_cfg)
         model = KnowledgeInfusedFramework(encoder=encoder).to(device)
         fold_save = os.path.join(save_dir, f"model8_{ablation}_fold{fold_idx}_best.pth")
 
@@ -893,6 +922,7 @@ def main():
         with open(args.config, "r") as f:
             cfg = yaml.safe_load(f) or {}
 
+    backbone_cfg = cfg.get("backbone", {})
     train_cfg = cfg.get("training", {})
     loss_cfg = cfg.get("loss", {})
     path_cfg = cfg.get("paths", {})
@@ -963,6 +993,7 @@ def main():
             lambda_knowledge=lambda_knowledge,
             lambda_consistency=lambda_consistency,
             dry_run=args.dry_run,
+            backbone_cfg=backbone_cfg,
             loss_weighting_cfg=loss_weighting_cfg,
             scheduler_cfg=scheduler_cfg,
             ema_cfg=ema_cfg,

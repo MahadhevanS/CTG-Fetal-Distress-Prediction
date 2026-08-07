@@ -1,0 +1,49 @@
+# Model 8 Configuration: Knowledge-Infused Multi-Task Framework
+# Backbone: CTG-CrossFormer (Dang et al., 2026)
+# =============================================================
+# Replacing PatchTST with CTG-CrossFormer as the temporal backbone encoder.
+# Universal latent representation z in R^128 remains unchanged.
+
+backbone:
+  model: ctg_crossformer
+  in_channels: 2
+  seq_len: 4800
+  cnn_channels: 128
+  n_heads_cross: 4
+  n_heads_tf: 8
+  n_tf_layers: 4
+  d_ff: 512
+  dropout: 0.1
+  latent_dim: 128
+
+heads:
+  hidden_dim: 64    # shared MLP hidden dim for all 3 multi-task heads
+  dropout: 0.2
+
+training:
+  epochs: 50
+  batch_size: 32      # Paper recommended batch size
+  lr: 0.0003          # OneCycleLR max LR
+  weight_decay: 0.00001
+  k_folds: 5
+  gradient_clip: 1.0
+  optimizer: adamw
+
+scheduler:
+  type: warmup_cosine
+  warmup_epochs: 5
+  eta_min: 1.0e-6
+
+loss:
+  lambda_figo: 0.3
+  lambda_features: 0.2
+  lambda_knowledge: 0.1
+  lambda_consistency: 0.5
+
+loss_weighting:
+  method: fixed
+
+ema:
+  enabled: true
+  decay: 0.9995
+  use_for_validation: true
