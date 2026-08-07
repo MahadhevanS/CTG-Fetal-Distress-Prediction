@@ -40,6 +40,14 @@ NORMAL_STRIDE_MINUTES   = 10   # Sparse overlap → majority undersampling (~2,0
 # Fixed evaluation stride (val + test must reflect real-world distribution)
 EVAL_STRIDE_MINUTES = 10
 
+# BUG FIX (knowledge-infusion audit, 2026-08-07): physiological FHR bounds used
+# to clamp interpolate_missing()'s cubic-spline fill values. Without this,
+# extrapolate=True spline gaps can overshoot to thousands of bpm, corrupting
+# baseline/STV/LTV feature extraction and the downstream Z-score signal scaler.
+# Range covers severe bradycardia to severe tachycardia; real FHR never exceeds it.
+FHR_MIN_BPM = 50.0
+FHR_MAX_BPM = 240.0
+
 
 def process_pipeline(raw_data_dir: str, metadata_path: str, output_dir: str) -> None:
     """
@@ -177,7 +185,7 @@ def process_pipeline(raw_data_dir: str, metadata_path: str, output_dir: str) -> 
                 fhr_win = remove_spikes(fhr_win, fs=fs)
 
                 # Step 2 — Interpolate short gaps (≤ 15 sec / 60 samples)
-                fhr_win = interpolate_missing(fhr_win)
+                fhr_win = interpolate_missing(fhr_win, clip_min=FHR_MIN_BPM, clip_max=FHR_MAX_BPM)
 
                 # Step 3 — Smooth residual high-frequency noise
                 fhr_win = apply_lowpass_filter(fhr_win, fs=fs)

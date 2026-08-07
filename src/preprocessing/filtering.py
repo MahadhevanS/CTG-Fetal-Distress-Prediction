@@ -59,7 +59,9 @@ def remove_spikes(signal: np.ndarray, fs: float = 4.0,
 # ---------------------------------------------------------------------------
 
 def interpolate_missing(signal: np.ndarray, missing_value: float = 0.0,
-                        max_gap_samples: int = 60) -> np.ndarray:
+                        max_gap_samples: int = 60,
+                        clip_min: Optional[float] = None,
+                        clip_max: Optional[float] = None) -> np.ndarray:
     """
     Interpolates short gaps in the signal using cubic spline interpolation.
 
@@ -74,11 +76,29 @@ def interpolate_missing(signal: np.ndarray, missing_value: float = 0.0,
         natural acceleration and deceleration limits of the fetal heart.
         (preprocessing_justification.md §2.2)
 
+    BUG FIX (knowledge-infusion audit, 2026-08-07):
+        CubicSpline is fit with extrapolate=True so that gap edges touching the
+        signal boundary can still be filled. Unconstrained cubic extrapolation is
+        unstable near sparse or boundary knots and can overshoot far beyond the
+        valid signal range (observed: fitted values in the thousands of bpm on a
+        signal whose real range is ~50-240 bpm), which then propagates into every
+        downstream statistic (baseline, STV, LTV, Z-score scalers). clip_min/
+        clip_max bound the *interpolated fill values only* — real, already-valid
+        samples are never touched — so a repaired gap can never be more
+        unphysiological than the artifact it was meant to replace.
+
     Args:
         signal (np.ndarray): The 1D signal array (e.g., FHR).
         missing_value (float): Value representing missing data (usually 0.0).
         max_gap_samples (int): Maximum continuous missing samples to interpolate.
                                (e.g., 15 seconds at 4Hz = 60 samples).
+        clip_min (float, optional): Lower physiological bound to clamp interpolated
+                                    fill values to (e.g., 50.0 bpm for FHR). None
+                                    disables lower clamping (default; preserves
+                                    prior behaviour for non-FHR callers).
+        clip_max (float, optional): Upper physiological bound to clamp interpolated
+                                    fill values to (e.g., 240.0 bpm for FHR). None
+                                    disables upper clamping.
 
     Returns:
         np.ndarray: The interpolated signal.
@@ -128,6 +148,8 @@ def interpolate_missing(signal: np.ndarray, missing_value: float = 0.0,
         spline = interpolate.CubicSpline(valid_x, valid_y, extrapolate=True)
         x_interp = x[interp_mask]
         interp_vals = spline(x_interp)
+        if clip_min is not None or clip_max is not None:
+            interp_vals = np.clip(interp_vals, clip_min, clip_max)
         processed_signal[interp_mask] = np.nan_to_num(interp_vals, nan=0.0)
 
     # Hard safety guard: ensure no NaN values remain
