@@ -722,10 +722,17 @@ def train_and_evaluate_model8(
         print(f"\n--- Fold {fold_idx}/{k_folds} (Train: {len(train_idx)}, Val: {len(val_idx)}) ---")
 
         # Dynamic positive class weight
-        n_pos = float(y_all[train_idx].sum().item())
-        n_neg = float(len(train_idx)) - n_pos
-        pos_weight = torch.tensor([n_neg / max(n_pos, 1.0)])
-        print(f" pos_weight: {pos_weight.item():.2f} (n_pos={int(n_pos)}, n_neg={int(n_neg)})")
+        sampling_method = sampling_cfg.get("method", "default")
+        if sampling_method == "balanced":
+            # Batch sampler already balances positive/negative 50/50.
+            # Setting pos_weight=1.0 prevents double-counting pos_weight in BCEWithLogitsLoss.
+            pos_weight = torch.tensor([1.0])
+            print(f" pos_weight: 1.00 (BalancedBatchSampler active — 50/50 batch ratio)")
+        else:
+            n_pos = float(y_all[train_idx].sum().item())
+            n_neg = float(len(train_idx)) - n_pos
+            pos_weight = torch.tensor([n_neg / max(n_pos, 1.0)])
+            print(f" pos_weight: {pos_weight.item():.2f} (n_pos={int(n_pos)}, n_neg={int(n_neg)})")
 
         train_sub = Subset(dataset, train_idx)
         val_sub = Subset(dataset, val_idx)

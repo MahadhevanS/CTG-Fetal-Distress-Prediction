@@ -433,3 +433,68 @@ Step 4: λ sweep if needed                 (~2 hrs per sweep)
 - Fold 5: `0.7474` (FULL) vs `0.6877` (Distress Only) $\to$ **+0.0597**
 
 **Key Finding**: Knowledge infusion produces a consistent out-of-fold AUROC gain across **100% of validation splits (5/5 folds)**, establishing a statistically significant overall discrimination improvement ($p = 0.03125$) while reducing fold-to-fold AUROC standard deviation from $\pm 0.0430$ to $\pm 0.0303$.
+
+---
+
+## 13. Phase 4+ Enhanced Optimization Suite & Diagnostic Evaluation
+
+> **Execution Completed**: 5-Fold Stratified Patient-Level CV with Phase 4+ Suite (`WarmupCosineScheduler`, `ExponentialMovingAverage`, `StochasticWeightAveraging`, `BalancedBatchSampler`, `ThresholdOptimizer`, `TemperatureScaler`, `ErrorAnalyzer`).
+
+### 13.1 Phase 4+ Benchmark Metrics (Model 8 FULL)
+
+| Metric | Phase 4 Baseline | Phase 4+ Optimized Suite | Delta / Impact |
+| :--- | :---: | :---: | :--- |
+| **F1 Score** | 0.4030 ± 0.0352 | **0.4602 ± 0.0261** | **+5.72% Gain** (Superior harmonic precision-recall balance) |
+| **Specificity** | 61.95% ± 9.43% | **82.76% ± 6.05%** | **+20.81% Gain** (Drastic reduction in false alarms) |
+| **Precision (PPV)** | 28.50% ± 3.32% | **40.08% ± 3.87%** | **+11.58% Gain** (Higher true distress reliability) |
+| **AUROC** | 0.7774 ± 0.0303 | **0.7725 ± 0.0243** | **Stable** (Preserved global ranking within 1 $\sigma$) |
+| **Sens @ 90% Spec** | 40.36% ± 2.92% | **38.13% ± 4.87%** | **Stable** (Preserved high-specificity operating point) |
+| **Recall / Sensitivity** | 75.04% ± 11.71% | **57.17% ± 12.51%** | Trade-off due to optimal threshold elevation |
+| **Optimal Threshold** | 0.500 (Fixed) | **0.868 ± 0.088** | Dynamically selected by `ThresholdOptimizer` |
+| **Calibration ECE** | — | **0.3176 ± 0.1257** | Higher raw logit confidence |
+| **Brier Score** | — | **0.2669 ± 0.0734** | Mean probability error metric |
+
+### 13.2 Technical Diagnostic Analysis (Root Cause Inferences)
+
+#### 1. The "Double-Balancing" Logit Inflation Mechanism
+- **Configuration**: The run executed with `BalancedBatchSampler` (50% positive / 50% negative mini-batches) while simultaneously retaining `pos_weight ≈ 5.1–5.28` inside `BCEWithLogitsLoss`.
+- **Mathematical Impact**: 
+  - `BalancedBatchSampler` upsamples positive windows by $\approx 3.1\times$ (given 16.2% dataset distress prevalence).
+  - Combined with `pos_weight ≈ 5.2`, positive gradients received an effective compound weighting factor of $\approx 3.1 \times 5.2 = \mathbf{16.1\times}$.
+- **Effect on Probabilities**: Model output logits were shifted heavily toward $+1.0$, producing high raw probability estimates on positive predictions (mean confidence on False Positives reached **0.907–0.964**).
+
+#### 2. Compensatory Threshold Elevation
+- To maximize the F1 objective on validation folds, `ThresholdOptimizer` correctly shifted the optimal classification threshold upward to **0.868 ± 0.088** (ranging from **0.700** up to **0.930** across folds).
+- This high threshold effectively filtered out high-confidence false alarms, driving **Specificity to 82.76%** and **F1 to 0.4602**. However, borderline distress cases fell below the 0.868 cutoff, moderating Recall to **57.17%**.
+
+#### 3. Clinical Error Analysis Insights
+- **False Negative Breakdown**: Across all folds, **70.8% to 100% of missed distress cases (FN)** were categorized in the **FIGO Suspicious** tier (borderline baseline/LTV abnormalities), while explicitly **FIGO Pathological** cases were captured reliably (0% missed in Fold 1, only 4.6% in Fold 3).
+- **False Positive Characterization**: False alarms exhibited a high mean confidence (0.907–0.964) due to logit inflation, confirming that calibration scaling is required to restore true posterior probability estimates.
+
+### 13.3 Applied Code Fixes & Solution Roadmap
+
+To resolve the double-balancing interaction, the following code fix has been applied directly to [`src/training/train_knowledge_infused.py`](file:///d:/projects/CTG-Fetal-Distress-Prediction/src/training/train_knowledge_infused.py#L723-L731):
+
+```python
+# Dynamic positive class weight handling
+sampling_method = sampling_cfg.get("method", "default")
+if sampling_method == "balanced":
+    # Batch sampler already balances positive/negative 50/50.
+    # Setting pos_weight=1.0 prevents double-counting pos_weight in BCEWithLogitsLoss.
+    pos_weight = torch.tensor([1.0])
+else:
+    n_pos = float(y_all[train_idx].sum().item())
+    n_neg = float(len(train_idx)) - n_pos
+    pos_weight = torch.tensor([n_neg / max(n_pos, 1.0)])
+```
+
+#### Key Improvements Confirmed Across Ablation Runs:
+1. **Uncertainty Weighting (`--loss_weighting uncertainty`) + Augmentation**:
+   - Reached the **highest overall F1 Score (0.4713 ± 0.0255)** across all experiments (+7.1% over Phase 4 baseline 0.4030).
+   - Reached top AUROC (**0.7767 ± 0.0283**), outperforming fixed weighting (0.7725).
+   - Recovered **Recall to 64.44% ± 7.93%** (up from 57.17%) while maintaining **Specificity at 78.66% ± 7.22%**.
+2. **Knowledge Infusion Lift Validated**:
+   - `distress_only`: AUROC `0.7161 ± 0.0686`
+   - `plus_figo`: AUROC `0.7274 ± 0.0486`
+   - `full` (Model 8): AUROC **`0.7767 ± 0.0283`** (**+0.0606 AUROC lift over baseline**)
+
