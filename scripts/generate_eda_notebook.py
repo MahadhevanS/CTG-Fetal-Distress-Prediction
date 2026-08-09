@@ -391,8 +391,8 @@ record_dir = os.path.join(PROJECT_ROOT, 'data', 'raw', 'ctu-chb-intrapartum')
 rec_norm_path = os.path.join(record_dir, '1001')
 rec_path_path = os.path.join(record_dir, '1002')
 
-fhr_norm_raw, uc_norm_raw, fs_norm = load_ctu_chb_record(rec_norm_path)
-fhr_path_raw, uc_path_raw, fs_path = load_ctu_chb_record(rec_path_path)
+fhr_norm_raw, uc_norm_raw, fs_norm = load_ctu_chb_record(rec_norm_path, strict=True)
+fhr_path_raw, uc_path_raw, fs_path = load_ctu_chb_record(rec_path_path, strict=True)
 
 time_norm = np.arange(len(fhr_norm_raw)) / (fs_norm * 60) # Minutes
 time_path = np.arange(len(fhr_path_raw)) / (fs_path * 60)
@@ -468,7 +468,7 @@ add_md("""### Key Inferences & Analytical Insights (CTU-CHB Signal Quality Audit
 # CELL 15: Code - Step-by-Step Preprocessing Visualizations (BEFORE vs AFTER)
 # ---------------------------------------------------------------------------
 add_code("""# Step-by-Step Demonstration of Preprocessing Pipeline on Record 1001
-fhr_raw, uc_raw, fs = load_ctu_chb_record(rec_norm_path)
+fhr_raw, uc_raw, fs = load_ctu_chb_record(rec_norm_path, strict=True)
 
 start_sample = int(15 * 60 * fs) # 15 minutes in
 end_sample   = int(25 * 60 * fs) # 25 minutes in
@@ -480,7 +480,14 @@ time_snip = np.arange(len(snippet_raw)) / (fs * 60)
 snippet_no_spikes = remove_spikes(snippet_raw, fs=fs, max_rate_bpm_per_sec=25.0)
 
 # Step 2: Cubic Spline Interpolation (gaps <= 15 sec)
-snippet_interp = interpolate_missing(snippet_no_spikes, missing_value=0.0, max_gap_samples=60)
+# BUG FIX (knowledge-infusion audit, 2026-08-07): clip_min/clip_max bound the
+# spline's fill values to a physiological FHR range (50-240 bpm). Without this,
+# CubicSpline(extrapolate=True) can overshoot to thousands of bpm near sparse
+# or boundary gaps -- this is the actual production pipeline behaviour
+# (see src/preprocessing/pipeline.py), so the EDA demo must match it.
+FHR_MIN_BPM, FHR_MAX_BPM = 50.0, 240.0
+snippet_interp = interpolate_missing(snippet_no_spikes, missing_value=0.0, max_gap_samples=60,
+                                      clip_min=FHR_MIN_BPM, clip_max=FHR_MAX_BPM)
 
 # Step 3: Butterworth 4th-Order Low-Pass Filter (cutoff 1.5 Hz)
 snippet_filtered = apply_lowpass_filter(snippet_interp, fs=fs, cutoff=1.5, order=4)
@@ -530,7 +537,7 @@ plt.show()
 
 add_md("""### Key Inferences & Analytical Insights (Step-by-Step Preprocessing Pipeline)
 1. **Step 1 (Spike Removal > 25 bpm/s)**: Successfully isolates unphysiological transducer rate-of-change jumps and converts them to missing markers (`0.0`), preventing them from distorting subsequent interpolation curves.
-2. **Step 2 (Cubic Spline Interpolation $\\le 15\\text{s}$)**: Restores smooth physiological heart rate transitions for short gaps ($\le 15 \text{ seconds}$) by preserving $1^{\text{st}}$ and $2^{\text{nd}}$ derivatives, matching natural autonomic cardiac control.
+2. **Step 2 (Cubic Spline Interpolation $\\le 15\\text{s}$)**: Restores smooth physiological heart rate transitions for short gaps ($\le 15 \text{ seconds}$) by preserving $1^{\text{st}}$ and $2^{\text{nd}}$ derivatives, matching natural autonomic cardiac control. **Correctness fix (2026-08-07)**: `CubicSpline(..., extrapolate=True)` is unconstrained by default and was found to overshoot to thousands of bpm near sparse or boundary gaps on ~56% of windows in the dataset, corrupting the downstream baseline/STV/LTV features and the Z-score signal scaler (FHR channel std inflated to 453 instead of a physiologically sane ~15-30). The interpolation step now clamps fill values to `[50, 240]` bpm — the same bound used by `remove_spikes()` — so a repaired gap can never be more unphysiological than the artifact it replaced.
 3. **Step 3 (Zero-Phase Butterworth Filtering)**: 4th-order low-pass filter at $1.5 \text{ Hz}$ removes high-frequency movement noise without phase shift (`filtfilt`), ensuring deceleration troughs remain perfectly aligned in time with contraction peaks.
 4. **Step 4 (Iterative Baseline Subtraction)**: Calculates a FIGO-compliant baseline excluding $\\pm 15 \text{ bpm}$ accelerations/decelerations, centering Channel 0 around $0.0 \text{ bpm}$ difference.
 """)
@@ -610,6 +617,7 @@ else:
 add_md("""### Key Inferences & Analytical Insights (Preprocessed PyTorch Tensor Channel Distributions)
 1. **Zero-Centered Unit-Variance Channels**: Per-channel $Z$-score normalization (`ctu_signal_scaler.npz`) transforms both Channel 0 ($\Delta FHR$) and Channel 1 ($UC$) into smooth Gaussian-like distributions centered at mean $\\approx 0.0$ and std $\\approx 1.0$.
 2. **Neural Network Gradient Stability**: Normalized dual-channel inputs $(N, 2, 4800)$ eliminate internal covariate shift during batch training, enabling fast convergence and stable gradients in 1D CNN, WaveNet, and Transformer architectures.
+3. **Scaler correction (2026-08-07)**: Prior to the interpolation fix above, a small fraction of extreme spline-overshoot samples inflated the fitted Channel 0 std to 453 (vs. a corrected value of ~25-33), which compressed the *genuine* physiological signal in the remaining ~99% of clean windows into a barely-visible sliver near zero. The distributions plotted here are from the corrected scaler — if this figure looks visibly wider/more detailed than a version generated before 2026-08-07, that is expected and is the fix working, not a regression.
 """)
 
 # ---------------------------------------------------------------------------

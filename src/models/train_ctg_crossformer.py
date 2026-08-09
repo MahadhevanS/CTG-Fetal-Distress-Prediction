@@ -243,9 +243,15 @@ def main():
         ).to(device)
 
         # Focal Loss (gamma=2.0) with pos_weight
-        n_pos = float(y[train_idx].sum())
-        n_neg = float(len(train_idx) - n_pos)
-        pos_weight = torch.tensor([n_neg / max(n_pos, 1.0)]).to(device)
+        # BUG FIX (2026-08-09): the WeightedRandomSampler above already rebalances
+        # each batch via sqrt-inverse-frequency oversampling of the positive class.
+        # Also applying the full n_neg/n_pos pos_weight on top double-counts the
+        # class imbalance correction, pushing the model toward extreme positive
+        # confidence during training that doesn't match the true class balance at
+        # inference time (same failure mode diagnosed and fixed for Model 8's
+        # BalancedBatchSampler in train_knowledge_infused.py). Since the sampler
+        # already handles rebalancing here, pos_weight is fixed at 1.0.
+        pos_weight = torch.tensor([1.0]).to(device)
         criterion = FocalLoss(gamma=t_cfg.get("focal_loss_gamma", 2.0), pos_weight=pos_weight)
 
         optimizer = torch.optim.AdamW(

@@ -47,3 +47,16 @@ ema:
   enabled: true
   decay: 0.9995
   use_for_validation: true
+
+# -------------------------------------------------------------------
+# Paths -- kept distinct from configs/model8_config.yaml (PatchTST backbone)
+# so a CrossFormer-backed run does not overwrite the PatchTST-backed Model 8
+# checkpoints/results (filenames only encode the ablation variant, not the
+# backbone, so a shared checkpoint_dir would silently collide).
+# -------------------------------------------------------------------
+paths:
+  data_dir: data/processed/
+  feature_scaler_path: data/processed/feature_scaler.npz
+  checkpoint_dir: checkpoints/model8_crossformer/
+  results_dir: checkpoints/model8_crossformer/results/
+  horizon_analysis_dir: checkpoints/model8_crossformer/results/horizon_analysis/

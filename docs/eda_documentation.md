@@ -1,5 +1,9 @@
 # Cardiotocography (CTG) Exploratory Data Analysis & Preprocessing Evaluation Report
 
+> **Update (2026-08-08)**: A knowledge-infusion audit found that `interpolate_missing()` in `src/preprocessing/filtering.py` filled short signal gaps with an unconstrained cubic spline that could overshoot to thousands of bpm on ~56% of windows, corrupting the FHR channel's Z-score scaler (std inflated to 453 instead of a physiologically sane ~15–33) and the derived clinical feature targets. This was fixed with a physiological clamp (`[50, 240]` bpm) at the source; see §2.3 Step 2 below. The CTU-CHB dataset has since been regenerated from raw data with the fix applied.
+>
+> **Refresh status of the figures in this document**: `ctu_chb_tensor_distributions.png` (§2.5) has been regenerated locally against the corrected `train_dataset.pt` and is current. All other CTU-CHB figures in §2.2–§2.4 still reflect the **pre-fix** pipeline — refreshing them requires the raw CTU-CHB `.dat` files, which aren't available in this local checkout (only on the team's Colab/Drive environment). See the note at the end of §2.3 for the regeneration command. The UCI SisPorto section (§1) is unaffected by this bug — it uses a separate pipeline (`uci_pipeline.py`) with no dependency on `interpolate_missing()`.
+
 ## Executive Summary
 
 This document presents a comprehensive analysis of the Exploratory Data Analysis (EDA) and signal preprocessing evaluation conducted on both primary datasets in the CTG Fetal Distress Prediction framework:
@@ -132,6 +136,13 @@ To convert raw noisy signals into high-fidelity neural network inputs, a 4-step 
 #### Step 2: Cubic Spline Interpolation ($\le 15\text{s} / 60 \text{ samples}$)
 - **Clinical Justification**: FHR is regulated by autonomic nervous system tone, which changes smoothly. Cubic spline interpolation preserves $1^{\text{st}}$ and $2^{\text{nd}}$ derivatives, mimicking natural heart rate transitions.
 - **Constraint**: Only gaps $\le 15 \text{ seconds}$ (60 samples at 4 Hz) are interpolated. Gaps $> 15 \text{ seconds}$ are preserved as zero to prevent fabricating non-existent accelerations or decelerations.
+- **Correctness fix (2026-08-07)**: `scipy.interpolate.CubicSpline` is fit with `extrapolate=True` so gaps touching a signal boundary can still be filled. Left unconstrained, this can overshoot far beyond the physiological FHR range near sparse or boundary knots — observed in production data reaching fitted values in the thousands of bpm on ~56% of windows, which then propagated into the baseline/STV/LTV feature extraction and the Z-score signal scaler (Channel 0 std inflated to 453 instead of ~15–33). `interpolate_missing()` now accepts `clip_min`/`clip_max` bounds (`[50, 240]` bpm for FHR, matching `remove_spikes()`'s own physiological assumption) applied only to the interpolated fill values — real, already-valid samples are never touched, so a repaired gap can never be more unphysiological than the artifact it replaced.
+
+**To regenerate the CTU-CHB figures in this document (§2.2–§2.4) against the corrected pipeline**, run on an environment with the raw CTU-CHB data present (e.g. Colab with Drive mounted):
+```bash
+python scripts/generate_eda_notebook.py   # rebuilds notebooks/01_exploratory_data_analysis.ipynb
+python scripts/execute_eda_notebook.py    # executes it, writing refreshed images to docs/images/
+```
 
 #### Step 3: Low-Pass Butterworth Filtering (4th-Order, 1.5 Hz Cutoff)
 - **Clinical Justification**: High-frequency fluctuations ($> 1.5 \text{ Hz}$) stem from fetal limb movements and sensor noise. Zero-phase forward-backward filtering (`filtfilt`) eliminates phase distortion.
@@ -165,6 +176,8 @@ The continuous 4 Hz signals are segmented into **20-minute sliding windows** ($2
 - **Tensor Dimensions**: $(N_{\text{windows}}, 2, 4800)$
 
 ![CTU-CHB Preprocessed PyTorch Tensor Channel Distributions](images/ctu_chb_tensor_distributions.png)
+
+> **This figure is current** (regenerated 2026-08-08 against the corrected `train_dataset.pt`). Prior to the interpolation fix above, a small fraction of spline-overshoot samples inflated the fitted Channel 0 (FHR) std to 453, which compressed genuine physiological variation in the ~99% of clean windows into a barely-visible sliver near zero. The corrected scaler (std ≈ 25–33 depending on which raw-data snapshot the pipeline was run against — see §0 caveat in `docs/models_1_to_7_inferences_log.md`) restores real signal detail, visible here as the wider, more structured peak in Channel 0.
 
 #### Per-Channel Z-Score Normalization:
 To avoid data leakage, per-channel scalers ($\mu_c, \sigma_c$) are computed **on the training split ONLY** and saved to `data/processed/ctu_signal_scaler.npz`:
