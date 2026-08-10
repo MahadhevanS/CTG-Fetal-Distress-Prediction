@@ -1,79 +1,50 @@
-# Re-tuned Hyperparameter Configurations (Post Signal-Corruption Repair)
-# Generated via src/training/tune_hyperparameters.py --model all --n-trials 5 --epochs 15 --k-folds 5
-# on the corrected CTU-CHB dataset (interpolate_missing() physiological clamp fix, 2026-08-07).
-#
-# Transcribed from Colab run output (2026-08-09). This is a snapshot for the record --
-# the authoritative artifact is whatever configs/tuned_hyperparameters_v2.yaml actually
-# contains on the machine that ran the sweep; re-sync if they diverge.
-#
-# Superseded configs/tuned_hyperparameters.yaml (pre-repair). NOT yet merged into it or
-# into configs/model8_config.yaml's backbone section -- see the PatchTST note below before
-# doing so.
-
-cnn1d:
+bilstm:
+  batch_size: 16
+  dropout: 0.3
+  hidden_size: 128
   lr: 0.0003
-  weight_decay: 0.0001
+  num_layers: 2
+  weight_decay: 0.001
+cnn1d:
   batch_size: 64
   latent_dim: 128
-  # Best Score: 0.6876 | Val AUROC: 0.8161 +/- 0.0430 | Sens@90%Spec: 49.48%
-
-bilstm:
   lr: 0.001
-  weight_decay: 0.001
-  batch_size: 16
-  hidden_size: 64
-  num_layers: 2
-  dropout: 0.1
-  # Best Score: 0.6048 | Val AUROC: 0.7468 +/- 0.0227 | Sens@90%Spec: 39.19%
-
+  weight_decay: 0.0001
 gru:
-  lr: 0.001
-  weight_decay: 0.0001
-  batch_size: 64
-  gru_hidden: 32
-  num_layers: 1
-  dropout: 0.3
-  # Best Score: 0.6614 | Val AUROC: 0.7946 +/- 0.0473 | Sens@90%Spec: 46.17%
-
-tcn:
-  lr: 0.0003
-  weight_decay: 0.0001
   batch_size: 16
-  kernel_size: 7
-  dropout: 0.1
-  # Best Score: 0.6462 | Val AUROC: 0.8055 +/- 0.0516 | Sens@90%Spec: 40.72%
-
-multiscale_lstm:
-  lr: 0.0005
-  weight_decay: 0.001
-  batch_size: 64
-  hidden_size: 128
-  num_layers: 1
-  dropout: 0.3
-  # Best Score: 0.6863 | Val AUROC: 0.8195 +/- 0.0374 | Sens@90%Spec: 48.66%
-
-patchctg:
-  lr: 0.0003
-  weight_decay: 0.0001
-  batch_size: 32
-  patch_len: 8
-  stride: 8
-  n_heads: 4
-  n_layers: 4
   dropout: 0.2
-  # Best Score: 0.6464 | Val AUROC: 0.7874 +/- 0.0581 | Sens@90%Spec: 43.48%
-
-patchtst:
-  # IMPORTANT: this differs substantially from the pre-repair winner (tuned_hyperparameters.yaml:
-  # patch_len=16, stride=16, n_heads=4, n_layers=4, batch_size=64) which is also what
-  # configs/model8_config.yaml's `backbone:` section currently hardcodes as the Model 8 encoder.
-  # That backbone config has NOT been updated to match this new winner yet -- see chat note.
-  lr: 0.0001
+  gru_hidden: 64
+  lr: 0.0005
+  num_layers: 2
   weight_decay: 1.0e-05
-  batch_size: 16
-  patch_len: 8
-  stride: 16
+multiscale_lstm:
+  batch_size: 64
+  dropout: 0.1
+  hidden_size: 128
+  lr: 0.0005
+  num_layers: 2
+  weight_decay: 0.0001
+patchctg:
+  batch_size: 32
+  dropout: 0.2
+  lr: 0.0005
   n_heads: 8
   n_layers: 4
+  patch_len: 32
+  stride: 8
+  weight_decay: 1.0e-05
+patchtst:
+  batch_size: 16
+  dropout: 0.1
+  lr: 0.0003
+  n_heads: 8
+  n_layers: 2
+  patch_len: 32
+  stride: 16
+  weight_decay: 1.0e-05
+tcn:
+  batch_size: 16
   dropout: 0.2
-  # Best Score: 0.6626 | Val AUROC: 0.7947 +/- 0.0356 | Sens@90%Spec: 46.45%
+  kernel_size: 7
+  lr: 0.0003
+  weight_decay: 0.0001
