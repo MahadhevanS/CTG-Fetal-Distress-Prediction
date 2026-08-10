@@ -1,0 +1,602 @@
+[
+  {
+    "case_id": "C01",
+    "record_id": "1370",
+    "window_start": 840,
+    "window_end": 5640,
+    "figo_class": 0,
+    "figo_name": "Normal",
+    "y_primary": 0,
+    "features": {
+      "Baseline (bpm)": 145.0,
+      "STV (bpm)": 0.39965304732322693,
+      "LTV (bpm)": 17.383193969726562,
+      "Accel Count": 3.0,
+      "Early Decels": 0.0,
+      "Late Decels": 0.0,
+      "Variable Decels": 0.0,
+      "Prolonged Decels": 0.0
+    },
+    "image": "case_images\\case_C01.png"
+  },
+  {
+    "case_id": "C02",
+    "record_id": "2011",
+    "window_start": 8760,
+    "window_end": 13560,
+    "figo_class": 2,
+    "figo_name": "Pathological",
+    "y_primary": 1,
+    "features": {
+      "Baseline (bpm)": 150.0,
+      "STV (bpm)": 0.8707392811775208,
+      "LTV (bpm)": 46.47916793823242,
+      "Accel Count": 2.0,
+      "Early Decels": 0.0,
+      "Late Decels": 0.0,
+      "Variable Decels": 4.0,
+      "Prolonged Decels": 2.0
+    },
+    "image": "case_images\\case_C02.png"
+  },
+  {
+    "case_id": "C03",
+    "record_id": "1303",
+    "window_start": 1800,
+    "window_end": 6600,
+    "figo_class": 0,
+    "figo_name": "Normal",
+    "y_primary": 0,
+    "features": {
+      "Baseline (bpm)": 150.0,
+      "STV (bpm)": 0.5510964393615723,
+      "LTV (bpm)": 22.28177261352539,
+      "Accel Count": 1.0,
+      "Early Decels": 0.0,
+      "Late Decels": 0.0,
+      "Variable Decels": 0.0,
+      "Prolonged Decels": 0.0
+    },
+    "image": "case_images\\case_C03.png"
+  },
+  {
+    "case_id": "C04",
+    "record_id": "1042",
+    "window_start": 960,
+    "window_end": 5760,
+    "figo_class": 1,
+    "figo_name": "Suspicious",
+    "y_primary": 0,
+    "features": {
+      "Baseline (bpm)": 160.0,
+      "STV (bpm)": 0.7819296717643738,
+      "LTV (bpm)": 25.270122528076172,
+      "Accel Count": 0.0,
+      "Early Decels": 0.0,
+      "Late Decels": 0.0,
+      "Variable Decels": 2.0,
+      "Prolonged Decels": 0.0
+    },
+    "image": "case_images\\case_C04.png"
+  },
+  {
+    "case_id": "C05",
+    "record_id": "1115",
+    "window_start": 7320,
+    "window_end": 12120,
+    "figo_class": 1,
+    "figo_name": "Suspicious",
+    "y_primary": 1,
+    "features": {
+      "Baseline (bpm)": 160.0,
+      "STV (bpm)": 1.5778846740722656,
+      "LTV (bpm)": 66.87068939208984,
+      "Accel Count": 2.0,
+      "Early Decels": 0.0,
+      "Late Decels": 0.0,
+      "Variable Decels": 8.0,
+      "Prolonged Decels": 0.0
+    },
+    "image": "case_images\\case_C05.png"
+  },
+  {
+    "case_id": "C06",
+    "record_id": "1286",
+    "window_start": 1440,
+    "window_end": 6240,
+    "figo_class": 2,
+    "figo_name": "Pathological",
+    "y_primary": 0,
+    "features": {
+      "Baseline (bpm)": 150.0,
+      "STV (bpm)": 0.8038345575332642,
+      "LTV (bpm)": 53.778221130371094,
+      "Accel Count": 3.0,
+      "Early Decels": 1.0,
+      "Late Decels": 0.0,
+      "Variable Decels": 5.0,
+      "Prolonged Decels": 1.0
+    },
+    "image": "case_images\\case_C06.png"
+  },
+  {
+    "case_id": "C07",
+    "record_id": "1418",
+    "window_start": 9360,
+    "window_end": 14160,
+    "figo_class": 1,
+    "figo_name": "Suspicious",
+    "y_primary": 1,
+    "features": {
+      "Baseline (bpm)": 140.0,
+      "STV (bpm)": 1.5494892597198486,
+      "LTV (bpm)": 74.37682342529297,
+      "Accel Count": 3.0,
+      "Early Decels": 1.0,
+      "Late Decels": 0.0,
+      "Variable Decels": 5.0,
+      "Prolonged Decels": 0.0
+    },
+    "image": "case_images\\case_C07.png"
+  },
+  {
+    "case_id": "C08",
+    "record_id": "1506",
+    "window_start": 960,
+    "window_end": 5760,
+    "figo_class": 1,
+    "figo_name": "Suspicious",
+    "y_primary": 0,
+    "features": {
+      "Baseline (bpm)": 140.0,
+      "STV (bpm)": 0.48430103063583374,
+      "LTV (bpm)": 27.770549774169922,
+      "Accel Count": 0.0,
+      "Early Decels": 0.0,
+      "Late Decels": 0.0,
+      "Variable Decels": 0.0,
+      "Prolonged Decels": 0.0
+    },
+    "image": "case_images\\case_C08.png"
+  },
+  {
+    "case_id": "C09",
+    "record_id": "1447",
+    "window_start": 2160,
+    "window_end": 6960,
+    "figo_class": 1,
+    "figo_name": "Suspicious",
+    "y_primary": 0,
+    "features": {
+      "Baseline (bpm)": 155.0,
+      "STV (bpm)": 0.7145442962646484,
+      "LTV (bpm)": 16.505271911621094,
+      "Accel Count": 0.0,
+      "Early Decels": 0.0,
+      "Late Decels": 0.0,
+      "Variable Decels": 3.0,
+      "Prolonged Decels": 0.0
+    },
+    "image": "case_images\\case_C09.png"
+  },
+  {
+    "case_id": "C10",
+    "record_id": "1211",
+    "window_start": 960,
+    "window_end": 5760,
+    "figo_class": 2,
+    "figo_name": "Pathological",
+    "y_primary": 0,
+    "features": {
+      "Baseline (bpm)": 130.0,
+      "STV (bpm)": 1.022254228591919,
+      "LTV (bpm)": 49.843021392822266,
+      "Accel Count": 0.0,
+      "Early Decels": 0.0,
+      "Late Decels": 1.0,
+      "Variable Decels": 5.0,
+      "Prolonged Decels": 1.0
+    },
+    "image": "case_images\\case_C10.png"
+  },
+  {
+    "case_id": "C11",
+    "record_id": "1438",
+    "window_start": 2760,
+    "window_end": 7560,
+    "figo_class": 2,
+    "figo_name": "Pathological",
+    "y_primary": 0,
+    "features": {
+      "Baseline (bpm)": 120.0,
+      "STV (bpm)": 0.9459934830665588,
+      "LTV (bpm)": 53.28380584716797,
+      "Accel Count": 6.0,
+      "Early Decels": 1.0,
+      "Late Decels": 0.0,
+      "Variable Decels": 7.0,
+      "Prolonged Decels": 1.0
+    },
+    "image": "case_images\\case_C11.png"
+  },
+  {
+    "case_id": "C12",
+    "record_id": "2043",
+    "window_start": 6480,
+    "window_end": 11280,
+    "figo_class": 2,
+    "figo_name": "Pathological",
+    "y_primary": 0,
+    "features": {
+      "Baseline (bpm)": 100.0,
+      "STV (bpm)": 1.375030279159546,
+      "LTV (bpm)": 79.10494995117188,
+      "Accel Count": 8.0,
+      "Early Decels": 0.0,
+      "Late Decels": 0.0,
+      "Variable Decels": 2.0,
+      "Prolonged Decels": 1.0
+    },
+    "image": "case_images\\case_C12.png"
+  },
+  {
+    "case_id": "C13",
+    "record_id": "1426",
+    "window_start": 5280,
+    "window_end": 10080,
+    "figo_class": 0,
+    "figo_name": "Normal",
+    "y_primary": 0,
+    "features": {
+      "Baseline (bpm)": 145.0,
+      "STV (bpm)": 0.4865894615650177,
+      "LTV (bpm)": 20.321443557739258,
+      "Accel Count": 0.0,
+      "Early Decels": 0.0,
+      "Late Decels": 0.0,
+      "Variable Decels": 0.0,
+      "Prolonged Decels": 0.0
+    },
+    "image": "case_images\\case_C13.png"
+  },
+  {
+    "case_id": "C14",
+    "record_id": "1019",
+    "window_start": 7680,
+    "window_end": 12480,
+    "figo_class": 1,
+    "figo_name": "Suspicious",
+    "y_primary": 1,
+    "features": {
+      "Baseline (bpm)": 130.0,
+      "STV (bpm)": 1.4569135904312134,
+      "LTV (bpm)": 63.27912521362305,
+      "Accel Count": 0.0,
+      "Early Decels": 1.0,
+      "Late Decels": 3.0,
+      "Variable Decels": 5.0,
+      "Prolonged Decels": 0.0
+    },
+    "image": "case_images\\case_C14.png"
+  },
+  {
+    "case_id": "C15",
+    "record_id": "1245",
+    "window_start": 4440,
+    "window_end": 9240,
+    "figo_class": 0,
+    "figo_name": "Normal",
+    "y_primary": 0,
+    "features": {
+      "Baseline (bpm)": 135.0,
+      "STV (bpm)": 0.3749505877494812,
+      "LTV (bpm)": 14.484914779663086,
+      "Accel Count": 0.0,
+      "Early Decels": 0.0,
+      "Late Decels": 0.0,
+      "Variable Decels": 0.0,
+      "Prolonged Decels": 0.0
+    },
+    "image": "case_images\\case_C15.png"
+  },
+  {
+    "case_id": "C16",
+    "record_id": "1348",
+    "window_start": 3480,
+    "window_end": 8280,
+    "figo_class": 1,
+    "figo_name": "Suspicious",
+    "y_primary": 0,
+    "features": {
+      "Baseline (bpm)": 145.0,
+      "STV (bpm)": 0.6455410122871399,
+      "LTV (bpm)": 18.650402069091797,
+      "Accel Count": 0.0,
+      "Early Decels": 1.0,
+      "Late Decels": 0.0,
+      "Variable Decels": 2.0,
+      "Prolonged Decels": 0.0
+    },
+    "image": "case_images\\case_C16.png"
+  },
+  {
+    "case_id": "C17",
+    "record_id": "1352",
+    "window_start": 7200,
+    "window_end": 12000,
+    "figo_class": 2,
+    "figo_name": "Pathological",
+    "y_primary": 0,
+    "features": {
+      "Baseline (bpm)": 145.0,
+      "STV (bpm)": 0.7173418402671814,
+      "LTV (bpm)": 39.800621032714844,
+      "Accel Count": 1.0,
+      "Early Decels": 1.0,
+      "Late Decels": 0.0,
+      "Variable Decels": 2.0,
+      "Prolonged Decels": 1.0
+    },
+    "image": "case_images\\case_C17.png"
+  },
+  {
+    "case_id": "C18",
+    "record_id": "1182",
+    "window_start": 7200,
+    "window_end": 12000,
+    "figo_class": 1,
+    "figo_name": "Suspicious",
+    "y_primary": 0,
+    "features": {
+      "Baseline (bpm)": 160.0,
+      "STV (bpm)": 0.5818236470222473,
+      "LTV (bpm)": 25.250118255615234,
+      "Accel Count": 0.0,
+      "Early Decels": 0.0,
+      "Late Decels": 0.0,
+      "Variable Decels": 2.0,
+      "Prolonged Decels": 0.0
+    },
+    "image": "case_images\\case_C18.png"
+  },
+  {
+    "case_id": "C19",
+    "record_id": "1161",
+    "window_start": 600,
+    "window_end": 5400,
+    "figo_class": 0,
+    "figo_name": "Normal",
+    "y_primary": 0,
+    "features": {
+      "Baseline (bpm)": 150.0,
+      "STV (bpm)": 0.40699470043182373,
+      "LTV (bpm)": 17.751262664794922,
+      "Accel Count": 0.0,
+      "Early Decels": 0.0,
+      "Late Decels": 0.0,
+      "Variable Decels": 0.0,
+      "Prolonged Decels": 0.0
+    },
+    "image": "case_images\\case_C19.png"
+  },
+  {
+    "case_id": "C20",
+    "record_id": "1328",
+    "window_start": 9000,
+    "window_end": 13800,
+    "figo_class": 1,
+    "figo_name": "Suspicious",
+    "y_primary": 1,
+    "features": {
+      "Baseline (bpm)": 105.0,
+      "STV (bpm)": 1.018150806427002,
+      "LTV (bpm)": 60.54188919067383,
+      "Accel Count": 6.0,
+      "Early Decels": 0.0,
+      "Late Decels": 0.0,
+      "Variable Decels": 4.0,
+      "Prolonged Decels": 0.0
+    },
+    "image": "case_images\\case_C20.png"
+  },
+  {
+    "case_id": "C21",
+    "record_id": "1400",
+    "window_start": 9000,
+    "window_end": 13800,
+    "figo_class": 2,
+    "figo_name": "Pathological",
+    "y_primary": 1,
+    "features": {
+      "Baseline (bpm)": 130.0,
+      "STV (bpm)": 0.8529618978500366,
+      "LTV (bpm)": 36.232398986816406,
+      "Accel Count": 0.0,
+      "Early Decels": 1.0,
+      "Late Decels": 1.0,
+      "Variable Decels": 1.0,
+      "Prolonged Decels": 1.0
+    },
+    "image": "case_images\\case_C21.png"
+  },
+  {
+    "case_id": "C22",
+    "record_id": "1229",
+    "window_start": 4560,
+    "window_end": 9360,
+    "figo_class": 0,
+    "figo_name": "Normal",
+    "y_primary": 0,
+    "features": {
+      "Baseline (bpm)": 135.0,
+      "STV (bpm)": 0.4309525191783905,
+      "LTV (bpm)": 11.530596733093262,
+      "Accel Count": 0.0,
+      "Early Decels": 0.0,
+      "Late Decels": 0.0,
+      "Variable Decels": 0.0,
+      "Prolonged Decels": 0.0
+    },
+    "image": "case_images\\case_C22.png"
+  },
+  {
+    "case_id": "C23",
+    "record_id": "1249",
+    "window_start": 6960,
+    "window_end": 11760,
+    "figo_class": 1,
+    "figo_name": "Suspicious",
+    "y_primary": 0,
+    "features": {
+      "Baseline (bpm)": 130.0,
+      "STV (bpm)": 1.377868413925171,
+      "LTV (bpm)": 70.92371368408203,
+      "Accel Count": 4.0,
+      "Early Decels": 1.0,
+      "Late Decels": 0.0,
+      "Variable Decels": 8.0,
+      "Prolonged Decels": 0.0
+    },
+    "image": "case_images\\case_C23.png"
+  },
+  {
+    "case_id": "C24",
+    "record_id": "1170",
+    "window_start": 9600,
+    "window_end": 14400,
+    "figo_class": 1,
+    "figo_name": "Suspicious",
+    "y_primary": 0,
+    "features": {
+      "Baseline (bpm)": 110.0,
+      "STV (bpm)": 1.0519746541976929,
+      "LTV (bpm)": 42.39262771606445,
+      "Accel Count": 2.0,
+      "Early Decels": 0.0,
+      "Late Decels": 0.0,
+      "Variable Decels": 3.0,
+      "Prolonged Decels": 0.0
+    },
+    "image": "case_images\\case_C24.png"
+  },
+  {
+    "case_id": "C25",
+    "record_id": "1151",
+    "window_start": 2400,
+    "window_end": 7200,
+    "figo_class": 0,
+    "figo_name": "Normal",
+    "y_primary": 0,
+    "features": {
+      "Baseline (bpm)": 125.0,
+      "STV (bpm)": 0.46960753202438354,
+      "LTV (bpm)": 16.713380813598633,
+      "Accel Count": 1.0,
+      "Early Decels": 0.0,
+      "Late Decels": 0.0,
+      "Variable Decels": 0.0,
+      "Prolonged Decels": 0.0
+    },
+    "image": "case_images\\case_C25.png"
+  },
+  {
+    "case_id": "C26",
+    "record_id": "1406",
+    "window_start": 4200,
+    "window_end": 9000,
+    "figo_class": 0,
+    "figo_name": "Normal",
+    "y_primary": 0,
+    "features": {
+      "Baseline (bpm)": 130.0,
+      "STV (bpm)": 0.4643789827823639,
+      "LTV (bpm)": 19.565168380737305,
+      "Accel Count": 1.0,
+      "Early Decels": 0.0,
+      "Late Decels": 0.0,
+      "Variable Decels": 0.0,
+      "Prolonged Decels": 0.0
+    },
+    "image": "case_images\\case_C26.png"
+  },
+  {
+    "case_id": "C27",
+    "record_id": "1450",
+    "window_start": 9600,
+    "window_end": 14400,
+    "figo_class": 1,
+    "figo_name": "Suspicious",
+    "y_primary": 0,
+    "features": {
+      "Baseline (bpm)": 160.0,
+      "STV (bpm)": 1.1158547401428223,
+      "LTV (bpm)": 77.13561248779297,
+      "Accel Count": 2.0,
+      "Early Decels": 0.0,
+      "Late Decels": 0.0,
+      "Variable Decels": 8.0,
+      "Prolonged Decels": 0.0
+    },
+    "image": "case_images\\case_C27.png"
+  },
+  {
+    "case_id": "C28",
+    "record_id": "1185",
+    "window_start": 5280,
+    "window_end": 10080,
+    "figo_class": 1,
+    "figo_name": "Suspicious",
+    "y_primary": 0,
+    "features": {
+      "Baseline (bpm)": 145.0,
+      "STV (bpm)": 0.9307931065559387,
+      "LTV (bpm)": 40.93260192871094,
+      "Accel Count": 0.0,
+      "Early Decels": 0.0,
+      "Late Decels": 0.0,
+      "Variable Decels": 7.0,
+      "Prolonged Decels": 0.0
+    },
+    "image": "case_images\\case_C28.png"
+  },
+  {
+    "case_id": "C29",
+    "record_id": "1495",
+    "window_start": 3840,
+    "window_end": 8640,
+    "figo_class": 1,
+    "figo_name": "Suspicious",
+    "y_primary": 0,
+    "features": {
+      "Baseline (bpm)": 160.0,
+      "STV (bpm)": 0.6587347388267517,
+      "LTV (bpm)": 23.859134674072266,
+      "Accel Count": 6.0,
+      "Early Decels": 0.0,
+      "Late Decels": 0.0,
+      "Variable Decels": 1.0,
+      "Prolonged Decels": 0.0
+    },
+    "image": "case_images\\case_C29.png"
+  },
+  {
+    "case_id": "C30",
+    "record_id": "1124",
+    "window_start": 7200,
+    "window_end": 12000,
+    "figo_class": 2,
+    "figo_name": "Pathological",
+    "y_primary": 0,
+    "features": {
+      "Baseline (bpm)": 145.0,
+      "STV (bpm)": 0.8597766160964966,
+      "LTV (bpm)": 59.02839279174805,
+      "Accel Count": 1.0,
+      "Early Decels": 0.0,
+      "Late Decels": 0.0,
+      "Variable Decels": 5.0,
+      "Prolonged Decels": 1.0
+    },
+    "image": "case_images\\case_C30.png"
+  }
+]

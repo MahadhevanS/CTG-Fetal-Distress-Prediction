@@ -84,8 +84,24 @@ def load_all():
 
 def reprocess_window(fhr_win: np.ndarray, uc_win: np.ndarray):
     """Re-derives baseline/features/FIGO for one window from a clamped fhr_win,
-    using the exact same functions the original pipeline calls."""
-    fhr_clamped = np.clip(fhr_win, FHR_MIN_BPM, FHR_MAX_BPM)
+    using the exact same functions the original pipeline calls.
+
+    BUG FIX (2026-08-10): genuine long (>15s) missing-data gaps are preserved
+    as literal 0.0 by the production pipeline's interpolate_missing() --
+    deliberately, to avoid fabricating accelerations/decelerations that never
+    occurred. The original version of this clamp applied np.clip() to the
+    whole array, which pulled those legitimate 0.0 missing-markers up to the
+    50 bpm floor -- fabricating a flat "signal" exactly where the production
+    pipeline intends there to be none. Clamping now skips samples that are
+    exactly 0.0 (the codebase's missing-value convention throughout, e.g.
+    filtering.py's missing_value=0.0), matching what interpolate_missing()
+    actually does in production: it only clips *interpolated fill* values,
+    never touches an unfilled long gap.
+    """
+    missing_mask = (fhr_win == 0.0)
+    fhr_clamped = np.where(
+        missing_mask, fhr_win, np.clip(fhr_win, FHR_MIN_BPM, FHR_MAX_BPM)
+    )
 
     baseline = calculate_iterative_baseline(fhr_clamped)
     fhr_norm = fhr_clamped - baseline
