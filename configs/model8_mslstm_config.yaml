@@ -1,0 +1,64 @@
+# Model 8 Configuration: Knowledge-Infused Multi-Task Framework
+# Backbone: Multi-Scale LSTM
+# =============================================================
+# Replacing PatchTST with MultiScaleLSTMEncoder as the temporal backbone.
+# Added 2026-08-10: MS-LSTM was the top standalone-baseline performer on the
+# corrected dataset (AUROC 0.8126 at 100 epochs w/ default hyperparameters,
+# 0.8195 in the tuned search), ahead of PatchTST (0.7939) -- worth trying as
+# Model 8's backbone rather than assuming PatchTST (chosen under the
+# pre-repair, corrupted-scaler benchmark) is still the right choice.
+# Universal latent representation z in R^128 remains unchanged.
+
+backbone:
+  model: multiscale_lstm
+  in_channels: 2
+  seq_len: 4800
+  hidden_size: 128    # tuned-search winner (Sweep A); default is 64
+  num_layers: 1        # tuned-search winner; default is 2
+  dropout: 0.3          # tuned-search winner; default is 0.2
+  latent_dim: 128
+
+heads:
+  hidden_dim: 64    # shared MLP hidden dim for all 3 multi-task heads
+  dropout: 0.2
+
+training:
+  epochs: 50
+  batch_size: 64      # tuned-search winner
+  lr: 0.0005          # tuned-search winner
+  weight_decay: 0.001  # tuned-search winner
+  k_folds: 5
+  gradient_clip: 1.0
+  optimizer: adamw
+
+scheduler:
+  type: warmup_cosine
+  warmup_epochs: 5
+  eta_min: 1.0e-6
+
+loss:
+  lambda_figo: 0.3
+  lambda_features: 0.2
+  lambda_knowledge: 0.1
+  lambda_consistency: 0.5
+
+loss_weighting:
+  method: fixed
+
+ema:
+  enabled: true
+  decay: 0.9995
+  use_for_validation: true
+
+# -------------------------------------------------------------------
+# Paths -- kept distinct from configs/model8_config.yaml (PatchTST) and
+# configs/model8_crossformer_config.yaml so an MS-LSTM-backed run does not
+# collide with either (filenames only encode the ablation variant, not the
+# backbone).
+# -------------------------------------------------------------------
+paths:
+  data_dir: data/processed/
+  feature_scaler_path: data/processed/feature_scaler.npz
+  checkpoint_dir: checkpoints/model8_mslstm/
+  results_dir: checkpoints/model8_mslstm/results/
+  horizon_analysis_dir: checkpoints/model8_mslstm/results/horizon_analysis/
