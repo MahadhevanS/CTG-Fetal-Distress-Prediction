@@ -1,0 +1,61 @@
+# Model 8 Configuration: Knowledge-Infused Multi-Task Framework
+# Backbone: 1D CNN (Residual)
+# =============================================================
+# Replacing PatchTST with CNN1DEncoder as the temporal backbone.
+# Added 2026-08-11: CNN1D was the 2nd-place standalone-baseline performer on
+# the corrected dataset (AUROC 0.8100 at 100 epochs), close behind MS-LSTM
+# (0.8126) and now well behind the fixed CrossFormer (0.8565) -- included as
+# the third backbone candidate for a complete comparison across the top
+# three standalone performers.
+# Universal latent representation z in R^128 remains unchanged.
+
+backbone:
+  model: cnn1d
+  in_channels: 2
+  seq_len: 4800
+  latent_dim: 128
+
+heads:
+  hidden_dim: 64    # shared MLP hidden dim for all 3 multi-task heads
+  dropout: 0.2
+
+training:
+  epochs: 50
+  batch_size: 64
+  lr: 0.0003
+  weight_decay: 0.0001
+  k_folds: 5
+  gradient_clip: 1.0
+  optimizer: adamw
+
+scheduler:
+  type: warmup_cosine
+  warmup_epochs: 5
+  eta_min: 1.0e-6
+
+loss:
+  lambda_figo: 0.3
+  lambda_features: 0.2
+  lambda_knowledge: 0.1
+  lambda_consistency: 0.5
+
+loss_weighting:
+  method: fixed
+
+ema:
+  enabled: true
+  decay: 0.9995
+  use_for_validation: true
+
+# -------------------------------------------------------------------
+# Paths -- kept distinct from the other model8_*_config.yaml files so a
+# CNN1D-backed run does not collide with PatchTST/CrossFormer/MS-LSTM
+# checkpoints or results (filenames only encode the ablation variant, not
+# the backbone).
+# -------------------------------------------------------------------
+paths:
+  data_dir: data/processed/
+  feature_scaler_path: data/processed/feature_scaler.npz
+  checkpoint_dir: checkpoints/model8_cnn1d/
+  results_dir: checkpoints/model8_cnn1d/results/
+  horizon_analysis_dir: checkpoints/model8_cnn1d/results/horizon_analysis/

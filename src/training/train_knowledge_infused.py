@@ -63,6 +63,8 @@ if BASE_DIR not in sys.path:
 
 from src.models.patchtst import PatchTSTEncoder
 from src.models.ctg_crossformer import CTGCrossformerEncoder
+from src.models.multiscale_lstm import MultiScaleLSTMEncoder
+from src.models.cnn1d_encoder import CNN1DEncoder
 from src.models.knowledge_infused_framework import KnowledgeInfusedFramework
 from src.knowledge.figo import figo_rule_loss_normalized
 from src.training.multi_task_dataset import (
@@ -649,6 +651,21 @@ def build_encoder(backbone_cfg: Optional[Dict] = None) -> nn.Module:
             n_tf_layers=backbone_cfg.get("n_tf_layers", 4),
             d_ff=backbone_cfg.get("d_ff", 512),
             dropout=backbone_cfg.get("dropout", 0.1),
+            latent_dim=backbone_cfg.get("latent_dim", 128),
+        )
+    elif model_name == "multiscale_lstm":
+        return MultiScaleLSTMEncoder(
+            in_channels=backbone_cfg.get("in_channels", 2),
+            seq_len=backbone_cfg.get("seq_len", 4800),
+            hidden_size=backbone_cfg.get("hidden_size", 64),
+            num_layers=backbone_cfg.get("num_layers", 2),
+            dropout=backbone_cfg.get("dropout", 0.2),
+            latent_dim=backbone_cfg.get("latent_dim", 128),
+        )
+    elif model_name == "cnn1d":
+        return CNN1DEncoder(
+            in_channels=backbone_cfg.get("in_channels", 2),
+            seq_len=backbone_cfg.get("seq_len", 4800),
             latent_dim=backbone_cfg.get("latent_dim", 128),
         )
     else:
