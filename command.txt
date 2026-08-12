@@ -1,0 +1,48 @@
+python src/training/tune_hyperparameters.py \
+  --model bilstm \
+  --n-trials 5 \
+  --epochs 15 \
+  --k-folds 5 \
+  --data-dir data/processed/ \
+  --output-config configs/tuned_hyperparameters_v2.yaml
+  
+python src/training/tune_hyperparameters.py \
+  --model gru \
+  --n-trials 5 \
+  --epochs 15 \
+  --k-folds 5 \
+  --data-dir data/processed/ \
+  --output-config configs/tuned_hyperparameters_v2.yaml
+
+  python src/training/tune_hyperparameters.py \
+  --model tcn \
+  --n-trials 5 \
+  --epochs 15 \
+  --k-folds 5 \
+  --data-dir data/processed/ \
+  --output-config configs/tuned_hyperparameters_v2.yaml
+
+  python src/training/tune_hyperparameters.py \
+  --model patchctg \
+  --n-trials 5 \
+  --epochs 15 \
+  --k-folds 5 \
+  --data-dir data/processed/ \
+  --output-config configs/tuned_hyperparameters_v2.yaml
+
+  python src/training/tune_hyperparameters.py \
+  --model patchtst \
+  --n-trials 5 \
+  --epochs 15 \
+  --k-folds 5 \
+  --data-dir data/processed/ \
+  --output-config configs/tuned_hyperparameters_v2.yaml
+
+  python src/training/tune_hyperparameters.py \
+  --model multiscale_lstm \
+  --n-trials 5 \
+  --epochs 15 \
+  --k-folds 5 \
+  --data-dir data/processed/ \
+  --output-config configs/tuned_hyperparameters_v2.yaml
+
