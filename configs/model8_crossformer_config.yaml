@@ -43,6 +43,31 @@ loss:
 loss_weighting:
   method: fixed
 
+# -------------------------------------------------------------------
+# Sampling (added 2026-08-12): without this, distress_only scored 0.7810
+# AUROC here vs. 0.8565 for the validated standalone CrossFormer benchmark
+# (train_ctg_crossformer.py) -- a ~0.075 gap between two setups that share
+# the same encoder and primary loss. Root cause: the standalone script uses
+# a sqrt-inverse-frequency WeightedRandomSampler (oversampling the minority
+# class) with pos_weight fixed at 1.0, while this config was defaulting to
+# plain shuffling with a full dynamic pos_weight = n_neg/n_pos -- i.e. no
+# oversampling at all to compensate for the imbalance the standalone script
+# does correct for. `method: balanced` here isn't a bit-for-bit match (it's
+# BalancedBatchSampler's hard 50/50 per-batch composition, not sqrt-inverse-
+# frequency weighting), but it's the same codebase's already-tested
+# mechanism for the same problem, and pos_weight is correctly forced to 1.0
+# by the training loop whenever this method is active (avoids the double-
+# counting bug already fixed for Model 8's original PatchTST config).
+#
+# NOTE: this fix is CrossFormer-specific. train.py (used for the MS-LSTM and
+# CNN1D standalone benchmarks) also defaults to plain shuffling + dynamic
+# pos_weight with no oversampling -- so configs/model8_mslstm_config.yaml
+# and configs/model8_cnn1d_config.yaml already match their own standalone
+# baselines correctly and do NOT need this same change.
+# -------------------------------------------------------------------
+sampling:
+  method: balanced
+
 ema:
   enabled: true
   decay: 0.9995

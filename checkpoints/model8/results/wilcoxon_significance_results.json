@@ -1,0 +1,282 @@
+{
+  "test_name": "Paired Wilcoxon Signed-Rank (One-sided, alternative=greater)",
+  "n_folds": 5,
+  "n_ceiling_note": "p=0.03125 is the minimum achievable exact p-value at n=5. Interpret as directional consistency, not parametric certainty.",
+  "alpha": 0.05,
+  "fold_level_data": {
+    "phase4_distress_only": {
+      "auroc": [
+        0.7541,
+        0.7699,
+        0.7102,
+        0.8089,
+        0.6877
+      ],
+      "sens_at_90spec": [
+        0.3678,
+        0.2247,
+        0.3865,
+        0.3871,
+        0.2311
+      ]
+    },
+    "phase4_full": {
+      "auroc": [
+        0.7637,
+        0.8135,
+        0.7482,
+        0.8141,
+        0.7474
+      ],
+      "sens_at_90spec": [
+        0.3595,
+        0.4361,
+        0.4233,
+        0.379,
+        0.4202
+      ]
+    },
+    "phase4plus_fixed": {
+      "auroc": [
+        0.7812,
+        0.8012,
+        0.7441,
+        0.7765,
+        0.7594
+      ],
+      "sens_at_90spec": [
+        0.3965,
+        0.4488,
+        0.3267,
+        0.4012,
+        0.3332
+      ]
+    },
+    "phase4plus_uncertainty": {
+      "auroc": [
+        0.7831,
+        0.8154,
+        0.7614,
+        0.7487,
+        0.7748
+      ],
+      "sens_at_90spec": [
+        0.4285,
+        0.4877,
+        0.3019,
+        0.4156,
+        0.3393
+      ]
+    }
+  },
+  "wilcoxon_results": [
+    {
+      "comparison": "Phase4 FULL vs Phase4 distress_only",
+      "metric": "AUROC",
+      "n_folds": 5,
+      "W_statistic": 15.0,
+      "p_value": 0.03125,
+      "significant": true,
+      "mean_delta": 0.031220000000000005,
+      "fold_deltas": [
+        0.0096,
+        0.0436,
+        0.038,
+        0.0052,
+        0.0597
+      ],
+      "fold_direction": [
+        "UP",
+        "UP",
+        "UP",
+        "UP",
+        "UP"
+      ],
+      "n_positive": 5,
+      "n_negative": 0,
+      "consistency": "5/5 folds in favour of Phase4 FULL"
+    },
+    {
+      "comparison": "Phase4 FULL vs Phase4 distress_only",
+      "metric": "Sens@90%Spec",
+      "n_folds": 5,
+      "W_statistic": 12.0,
+      "p_value": 0.15625,
+      "significant": false,
+      "mean_delta": 0.08417999999999999,
+      "fold_deltas": [
+        -0.0083,
+        0.2114,
+        0.0368,
+        -0.0081,
+        0.1891
+      ],
+      "fold_direction": [
+        "DOWN",
+        "UP",
+        "UP",
+        "DOWN",
+        "UP"
+      ],
+      "n_positive": 3,
+      "n_negative": 2,
+      "consistency": "3/5 folds in favour of Phase4 FULL"
+    },
+    {
+      "comparison": "Phase4+ Fixed vs Phase4 distress_only",
+      "metric": "AUROC",
+      "n_folds": 5,
+      "W_statistic": 12.0,
+      "p_value": 0.15625,
+      "significant": false,
+      "mean_delta": 0.02631999999999999,
+      "fold_deltas": [
+        0.0271,
+        0.0313,
+        0.0339,
+        -0.0324,
+        0.0717
+      ],
+      "fold_direction": [
+        "UP",
+        "UP",
+        "UP",
+        "DOWN",
+        "UP"
+      ],
+      "n_positive": 4,
+      "n_negative": 1,
+      "consistency": "4/5 folds in favour of Phase4+ Fixed"
+    },
+    {
+      "comparison": "Phase4+ Fixed vs Phase4 distress_only",
+      "metric": "Sens@90%Spec",
+      "n_folds": 5,
+      "W_statistic": 12.0,
+      "p_value": 0.15625,
+      "significant": false,
+      "mean_delta": 0.061839999999999985,
+      "fold_deltas": [
+        0.0287,
+        0.2241,
+        -0.0598,
+        0.0141,
+        0.1021
+      ],
+      "fold_direction": [
+        "UP",
+        "UP",
+        "DOWN",
+        "UP",
+        "UP"
+      ],
+      "n_positive": 4,
+      "n_negative": 1,
+      "consistency": "4/5 folds in favour of Phase4+ Fixed"
+    },
+    {
+      "comparison": "Phase4+ Uncertainty vs Phase4 distress_only",
+      "metric": "AUROC",
+      "n_folds": 5,
+      "W_statistic": 11.0,
+      "p_value": 0.21875,
+      "significant": false,
+      "mean_delta": 0.030520000000000012,
+      "fold_deltas": [
+        0.029,
+        0.0455,
+        0.0512,
+        -0.0602,
+        0.0871
+      ],
+      "fold_direction": [
+        "UP",
+        "UP",
+        "UP",
+        "DOWN",
+        "UP"
+      ],
+      "n_positive": 4,
+      "n_negative": 1,
+      "consistency": "4/5 folds in favour of Phase4+ Uncertainty"
+    },
+    {
+      "comparison": "Phase4+ Uncertainty vs Phase4 distress_only",
+      "metric": "Sens@90%Spec",
+      "n_folds": 5,
+      "W_statistic": 12.0,
+      "p_value": 0.15625,
+      "significant": false,
+      "mean_delta": 0.07516,
+      "fold_deltas": [
+        0.0607,
+        0.263,
+        -0.0846,
+        0.0285,
+        0.1082
+      ],
+      "fold_direction": [
+        "UP",
+        "UP",
+        "DOWN",
+        "UP",
+        "UP"
+      ],
+      "n_positive": 4,
+      "n_negative": 1,
+      "consistency": "4/5 folds in favour of Phase4+ Uncertainty"
+    },
+    {
+      "comparison": "Phase4+ Uncertainty vs Phase4 FULL",
+      "metric": "AUROC",
+      "n_folds": 5,
+      "W_statistic": 10.0,
+      "p_value": 0.3125,
+      "significant": false,
+      "mean_delta": -0.0006999999999999895,
+      "fold_deltas": [
+        0.0194,
+        0.0019,
+        0.0132,
+        -0.0654,
+        0.0274
+      ],
+      "fold_direction": [
+        "UP",
+        "UP",
+        "UP",
+        "DOWN",
+        "UP"
+      ],
+      "n_positive": 4,
+      "n_negative": 1,
+      "consistency": "4/5 folds in favour of Phase4+ Uncertainty"
+    },
+    {
+      "comparison": "Phase4+ Uncertainty vs Phase4 FULL",
+      "metric": "Sens@90%Spec",
+      "n_folds": 5,
+      "W_statistic": 6.0,
+      "p_value": 0.6875,
+      "significant": false,
+      "mean_delta": -0.009019999999999995,
+      "fold_deltas": [
+        0.069,
+        0.0516,
+        -0.1214,
+        0.0366,
+        -0.0809
+      ],
+      "fold_direction": [
+        "UP",
+        "UP",
+        "DOWN",
+        "UP",
+        "DOWN"
+      ],
+      "n_positive": 3,
+      "n_negative": 2,
+      "consistency": "3/5 folds in favour of Phase4+ Uncertainty"
+    }
+  ]
+}

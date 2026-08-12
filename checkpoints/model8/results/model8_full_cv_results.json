@@ -1,0 +1,29 @@
+{
+  "model_name": "model8",
+  "ablation_variant": "full",
+  "fold_metrics": [
+    {"fold": 1, "auroc": 0.7637, "auprc": 0.3549, "sens_at_90spec": 0.3595},
+    {"fold": 2, "auroc": 0.8135, "auprc": 0.4686, "sens_at_90spec": 0.4361},
+    {"fold": 3, "auroc": 0.7482, "auprc": 0.3168, "sens_at_90spec": 0.4233},
+    {"fold": 4, "auroc": 0.8141, "auprc": 0.4200, "sens_at_90spec": 0.3790},
+    {"fold": 5, "auroc": 0.7474, "auprc": 0.3963, "sens_at_90spec": 0.4202}
+  ],
+  "cv_summary": {
+    "accuracy": 0.640132,
+    "accuracy_std": 0.061638,
+    "auroc": 0.7774,
+    "auroc_std": 0.0303,
+    "auprc": 0.3913,
+    "auprc_std": 0.0523,
+    "f1": 0.4030,
+    "f1_std": 0.0352,
+    "precision": 0.280624,
+    "precision_std": 0.040304,
+    "recall": 0.750411,
+    "recall_std": 0.117063,
+    "specificity": 0.619462,
+    "specificity_std": 0.094305,
+    "sens_at_90spec": 0.403628,
+    "sens_at_90spec_std": 0.029219
+  }
+}
