@@ -47,6 +47,7 @@ Usage:
 import argparse
 import json
 import os
+import random
 import sys
 from typing import Dict, List, Optional, Tuple
 
@@ -945,7 +946,18 @@ def main():
     parser.add_argument("--no_ema", action="store_true", help="Disable EMA")
     parser.add_argument("--no_swa", action="store_true", help="Disable SWA")
     parser.add_argument("--dry_run", action="store_true")
+    parser.add_argument("--seed", type=int, default=42,
+                        help="Random seed (reproducibility fix, 2026-08-13: this script previously had "
+                             "no seeding anywhere -- weight init, data shuffling, dropout, augmentation "
+                             "draws were all fully random every run, making cross-run ablation comparisons "
+                             "unreliable. Same run twice with --seed set should now land much closer together.")
     args = parser.parse_args()
+
+    random.seed(args.seed)
+    np.random.seed(args.seed)
+    torch.manual_seed(args.seed)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed_all(args.seed)
 
     # Load config
     cfg = {}
