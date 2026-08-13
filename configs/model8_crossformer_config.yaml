@@ -16,9 +16,38 @@ backbone:
   dropout: 0.1
   latent_dim: 128
 
+# -------------------------------------------------------------------
+# Head capacity (revised 2026-08-13, framework architecture review):
+# CTGCrossformerForClassification (the standalone benchmark) does NOT
+# classify from the encoder's 128-dim universal latent z -- it re-runs the
+# encoder's internal stages and classifies directly from the richer,
+# pre-adapter 256-dim pooled representation, via its own dedicated
+# Linear(256->128)->ReLU->Dropout(0.3)->Linear(128->1) head (see
+# CTGCrossformerForClassification in src/models/ctg_crossformer.py). Model
+# 8's DistressHead only ever sees z AFTER it has already been compressed by
+# latent_adapter (Linear(256->128), shared across all 3 task heads) -- an
+# extra lossy bottleneck the standalone classifier bypasses entirely, on
+# top of receiving a representation the shared adapter was never trained to
+# specialize for distress alone. Confirmed this bypass is CrossFormer-
+# specific: PatchTSTForClassification and MultiScaleLSTMForClassification
+# both classify directly from encoder.latent_dim (the real z), matching
+# what Model 8 receives, with the same hidden_dim=64/dropout=0.2 already
+# used as this framework's default -- so this change is scoped to
+# CrossFormer only, not applied to the other backbone configs.
+#
+# The shared 128-dim latent bottleneck itself is NOT being widened here --
+# it's an explicit design invariant tied to patent non-infringement framing
+# (see knowledge_infused_framework.py's docstring) and touching it would
+# affect every backbone, not just this one. What's fixed below is giving
+# CrossFormer's heads the same capacity its own paper-recommended
+# classifier uses, within that constraint -- this narrows the gap but will
+# NOT fully close it; some residual gap against the 0.8565 standalone
+# number is an expected, honest consequence of hard parameter sharing
+# across 3 tasks at a compressed bottleneck, not a remaining bug.
+# -------------------------------------------------------------------
 heads:
-  hidden_dim: 64    # shared MLP hidden dim for all 3 multi-task heads
-  dropout: 0.2
+  hidden_dim: 128   # was 64 -- now matches CTGCrossformerForClassification's own hidden_dim
+  dropout: 0.3       # was 0.2 -- now matches CTGCrossformerForClassification's own dropout
 
 training:
   epochs: 50

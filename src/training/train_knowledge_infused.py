@@ -705,6 +705,7 @@ def train_and_evaluate_model8(
     dry_run: bool,
     # Phase 4+ config dicts
     backbone_cfg: Optional[Dict] = None,
+    heads_cfg: Optional[Dict] = None,
     loss_weighting_cfg: Optional[Dict] = None,
     scheduler_cfg: Optional[Dict] = None,
     ema_cfg: Optional[Dict] = None,
@@ -717,6 +718,15 @@ def train_and_evaluate_model8(
 ) -> Dict[str, Tuple[float, float]]:
     """Runs full 5-fold patient-level CV for a given ablation variant."""
     backbone_cfg = backbone_cfg or {}
+    # BUG FIX (2026-08-13, framework architecture review): the `heads:` section
+    # of every model8_*.yaml config was parsed but never threaded through to
+    # KnowledgeInfusedFramework's construction below -- every run, including
+    # the original PatchTST config, silently used the class defaults
+    # (hidden_dim=64, dropout=0.2) regardless of what the YAML specified.
+    # Harmless for configs that happened to already want 64/0.2, but silently
+    # made the CrossFormer config's widened heads (128/0.3, added to close
+    # part of the gap to its standalone benchmark) a no-op until this fix.
+    heads_cfg = heads_cfg or {}
     loss_weighting_cfg = loss_weighting_cfg or {}
     scheduler_cfg = scheduler_cfg or {}
     ema_cfg = ema_cfg or {}
@@ -831,7 +841,11 @@ def train_and_evaluate_model8(
 
         # --- Build fresh model for each fold ---
         encoder = build_encoder(backbone_cfg)
-        model = KnowledgeInfusedFramework(encoder=encoder).to(device)
+        model = KnowledgeInfusedFramework(
+            encoder=encoder,
+            head_hidden_dim=heads_cfg.get("hidden_dim", 64),
+            head_dropout=heads_cfg.get("dropout", 0.2),
+        ).to(device)
         fold_save = os.path.join(save_dir, f"model8_{ablation}_fold{fold_idx}_best.pth")
 
         metrics = train_single_fold_multitask(
@@ -940,6 +954,7 @@ def main():
             cfg = yaml.safe_load(f) or {}
 
     backbone_cfg = cfg.get("backbone", {})
+    heads_cfg = cfg.get("heads", {})
     train_cfg = cfg.get("training", {})
     loss_cfg = cfg.get("loss", {})
     path_cfg = cfg.get("paths", {})
@@ -1011,6 +1026,7 @@ def main():
             lambda_consistency=lambda_consistency,
             dry_run=args.dry_run,
             backbone_cfg=backbone_cfg,
+            heads_cfg=heads_cfg,
             loss_weighting_cfg=loss_weighting_cfg,
             scheduler_cfg=scheduler_cfg,
             ema_cfg=ema_cfg,
