@@ -67,7 +67,11 @@ from src.models.ctg_crossformer import CTGCrossformerEncoder
 from src.models.multiscale_lstm import MultiScaleLSTMEncoder
 from src.models.cnn1d_encoder import CNN1DEncoder
 from src.models.knowledge_infused_framework import KnowledgeInfusedFramework
-from src.knowledge.figo import figo_rule_loss_normalized
+from src.knowledge.figo import (
+    figo_rule_loss_normalized,
+    derive_figo_criteria_flags_torch,
+    FIGO_CRITERIA_NAMES,
+)
 from src.training.multi_task_dataset import (
     MultiTaskCTGDataset,
     load_all_multitask_splits,
@@ -84,7 +88,8 @@ from src.training.augmentation import PhysiologicalAugmentor
 from src.training.calibration import ThresholdOptimizer, TemperatureScaler
 from src.training.error_analysis import ErrorAnalyzer
 
-# Valid ablation variant names (extended from 4 to 6)
+# Valid ablation variant names (extended from 4 to 6, then to 8 with the
+# FIGOCriteriaHead prototype, 2026-08-15)
 ABLATION_VARIANTS = [
     "distress_only",
     "plus_figo",
@@ -92,6 +97,15 @@ ABLATION_VARIANTS = [
     "plus_features",
     "distress_figo_only",
     "full",
+    # FIGOCriteriaHead variants: decompose the collapsed 3-class FIGO label into
+    # 8 intermediate binary clinical judgments (see FIGOCriteriaHead's own
+    # docstring for the full rationale). plus_figo/distress_figo_only/full have
+    # never won a single ablation comparison across 4 runs and 2 backbones --
+    # these test whether the decomposed version fares better, using the exact
+    # same comparison structure already trusted for the old FIGO head.
+    "plus_criteria",        # distress + criteria           (mirrors plus_figo)
+    "features_criteria",    # distress + features + criteria (proven + new candidate,
+                             #   deliberately drops the old figo_head/knowledge-loss path)
 ]
 
 
@@ -163,6 +177,8 @@ def compute_multitask_loss(
     aux_warmup_factor: float = 1.0,
     figo_class_weights: Optional[torch.Tensor] = None,
     knowledge_warmup_factor: Optional[float] = None,
+    criteria_logits: Optional[torch.Tensor] = None,
+    criteria_pos_weights: Optional[torch.Tensor] = None,
 ) -> Tuple[Dict[str, torch.Tensor], Dict[str, float]]:
     """
     Computes individual loss components for the selected ablation variant.
@@ -224,8 +240,25 @@ def compute_multitask_loss(
         component_floats["l_figo"] = l_figo.item()
 
     # Auxiliary Task 2: Physiological Feature Regression (with curriculum warmup)
-    if ablation in ("distress_features_only", "plus_features", "full"):
-        l_features = nn.functional.mse_loss(feature_preds_norm, y_features) * aux_warmup_factor
+    # BUG FIX (2026-08-15): y_features arrives in RAW clinical units (baseline
+    # ~110-160 bpm, LTV ~5-100+ bpm, etc. -- confirmed by direct inspection of
+    # *_dataset.pt, which stores pipeline.py's un-normalized features_target
+    # directly). feature_preds_norm is a small-scale (~O(1)) linear head output,
+    # named/intended as Z-normalized per figo_rule_loss_normalized()'s own
+    # un-normalization step further down. Comparing them directly via MSE
+    # without normalizing y_features first produces a massively mis-scaled loss
+    # (verified against real data: MSE ~2719 vs ~1.3 on synthetic N(0,1) targets,
+    # i.e. what every dry-run smoke test used, which is why this went unnoticed).
+    # At lambda_features=0.2 that dominates l_distress/l_figo by ~2 orders of
+    # magnitude, AND drives the feature head to output raw-scale values that then
+    # get double-transformed by figo_rule_loss_normalized's own un-normalization
+    # step below (pred*std+mean applied to an already-raw-scale prediction),
+    # producing physiologically nonsensical values fed into the FIGO threshold
+    # checks. Normalizing y_features here fixes both problems at once.
+    if ablation in ("distress_features_only", "plus_features", "full", "features_criteria"):
+        safe_stds_feat = feature_stds.to(device).clamp(min=1e-6)
+        y_features_norm = (y_features - feature_means.to(device)) / safe_stds_feat
+        l_features = nn.functional.mse_loss(feature_preds_norm, y_features_norm) * aux_warmup_factor
         component_tensors["features"] = l_features
         component_floats["l_features"] = l_features.item()
 
@@ -242,6 +275,19 @@ def compute_multitask_loss(
         component_tensors["knowledge"] = l_knowledge
         component_floats["l_knowledge"] = l_knowledge.item()
 
+    # Auxiliary Task 4: FIGOCriteriaHead -- decomposed binary clinical judgments
+    # (prototype, 2026-08-15). y_features is raw clinical units here (see the
+    # normalization bug-fix note above) -- derive_figo_criteria_flags_torch
+    # expects exactly that, so no un-normalization needed for this target.
+    if ablation in ("plus_criteria", "features_criteria"):
+        criteria_targets = derive_figo_criteria_flags_torch(y_features)
+        l_criteria = nn.functional.binary_cross_entropy_with_logits(
+            criteria_logits, criteria_targets,
+            pos_weight=criteria_pos_weights.to(device) if criteria_pos_weights is not None else None,
+        ) * aux_warmup_factor
+        component_tensors["criteria"] = l_criteria
+        component_floats["l_criteria"] = l_criteria.item()
+
     return component_tensors, component_floats
 
 
@@ -252,6 +298,16 @@ def _get_curriculum_ablation(epoch: int, schedule: List) -> str:
         if epoch >= start_epoch:
             active = variant
     return active
+
+
+def _forward_model(model: KnowledgeInfusedFramework, x: torch.Tensor):
+    """Uniformly unpacks model(x) as a 4-tuple regardless of whether
+    include_criteria_head is active, so call sites don't need to branch on it.
+    criteria_logits is None when the head isn't present."""
+    out = model(x)
+    if len(out) == 4:
+        return out
+    return out[0], out[1], out[2], None
 
 
 # =============================================================================
@@ -292,6 +348,8 @@ def train_single_fold_multitask(
     results_dir: str = "checkpoints/model8/results/",
     figo_class_weights: Optional[torch.Tensor] = None,
     knowledge_warmup_epochs: int = 20,
+    lambda_criteria: float = 0.3,
+    criteria_pos_weights: Optional[torch.Tensor] = None,
 ) -> Dict[str, float]:
     """
     Trains Model 8 on one fold with all Phase 4+ improvements and returns best metrics.
@@ -306,6 +364,13 @@ def train_single_fold_multitask(
             Distinct from (and later than) the other auxiliary losses' 10-epoch
             warmup, since the rule loss depends on the ClinicalFeatureHead's own
             predictions, which need time to become meaningful first.
+        lambda_criteria: Weight for the FIGOCriteriaHead loss (ablation="plus_criteria"
+            or "features_criteria" only). Defaults to lambda_figo's magnitude since
+            it's replacing that head's role in those variants.
+        criteria_pos_weights: Optional (8,) per-flag pos_weight tensor for the
+            criteria head's BCE loss, correcting for per-flag imbalance (e.g.
+            variability_increased is ~82% prevalent, has_late_decel ~15% --
+            same lesson as figo_class_weights, applied per-flag here).
     """
     scheduler_cfg = scheduler_cfg or {}
     ema_cfg = ema_cfg or {}
@@ -440,7 +505,7 @@ def train_single_fold_multitask(
             optimizer.zero_grad()
 
             with torch.amp.autocast("cuda", enabled=use_amp):
-                distress_logit, figo_logits, feature_preds = model(X_batch)
+                distress_logit, figo_logits, feature_preds, criteria_logits = _forward_model(model, X_batch)
                 component_tensors, component_floats = compute_multitask_loss(
                     distress_logit=distress_logit,
                     figo_logits=figo_logits,
@@ -461,6 +526,8 @@ def train_single_fold_multitask(
                     aux_warmup_factor=aux_warmup_factor,
                     figo_class_weights=figo_class_weights,
                     knowledge_warmup_factor=knowledge_warmup_factor,
+                    criteria_logits=criteria_logits,
+                    criteria_pos_weights=criteria_pos_weights,
                 )
 
             # Apply loss weighting
@@ -475,6 +542,8 @@ def train_single_fold_multitask(
                     total_loss = total_loss + lambda_features * component_tensors["features"]
                 if "knowledge" in component_tensors:
                     total_loss = total_loss + lambda_knowledge * component_tensors["knowledge"]
+                if "criteria" in component_tensors:
+                    total_loss = total_loss + lambda_criteria * component_tensors["criteria"]
 
             scaler_amp.scale(total_loss).backward()
             scaler_amp.unscale_(optimizer)
@@ -527,7 +596,7 @@ def train_single_fold_multitask(
                 for X_batch, yp_batch, yf_batch, yfeat_batch in val_loader:
                     X_batch = X_batch.to(device)
                     with torch.amp.autocast("cuda", enabled=use_amp):
-                        distress_logit, figo_logits, feature_preds = model(X_batch)
+                        distress_logit, figo_logits, feature_preds, _ = _forward_model(model, X_batch)
                         probs = torch.sigmoid(distress_logit.squeeze(-1))
                     val_targets_list.extend(yp_batch.cpu().numpy())
                     val_probs_list.extend(probs.cpu().numpy())
@@ -563,7 +632,7 @@ def train_single_fold_multitask(
                 for X_batch, yp_batch, _, _ in val_loader:
                     X_batch = X_batch.to(device)
                     with torch.amp.autocast("cuda", enabled=use_amp):
-                        distress_logit, _, _ = model(X_batch)
+                        distress_logit, _, _, _ = _forward_model(model, X_batch)
                         probs = torch.sigmoid(distress_logit.squeeze(-1))
                     swa_targets.extend(yp_batch.cpu().numpy())
                     swa_probs.extend(probs.cpu().numpy())
@@ -752,6 +821,7 @@ def train_and_evaluate_model8(
     lambda_knowledge: float,
     lambda_consistency: float,
     dry_run: bool,
+    lambda_criteria: float = 0.3,
     # Phase 4+ config dicts
     backbone_cfg: Optional[Dict] = None,
     heads_cfg: Optional[Dict] = None,
@@ -876,6 +946,19 @@ def train_and_evaluate_model8(
         print(f" figo_class_weights: {[round(w, 2) for w in figo_class_weights.tolist()]} "
               f"(counts={figo_counts.tolist()})")
 
+        # --- FIGOCriteriaHead per-flag pos_weights (prototype, 2026-08-15) ---
+        # Same imbalance lesson as figo_class_weights, applied per-flag: e.g.
+        # variability_increased is ~82% prevalent, has_late_decel ~15% -- an
+        # unweighted BCE would let the head coast on the majority answer per flag.
+        criteria_pos_weights = None
+        if ablation in ("plus_criteria", "features_criteria"):
+            criteria_targets_train = derive_figo_criteria_flags_torch(dataset.y_features[train_idx])
+            crit_n_pos = criteria_targets_train.sum(dim=0)
+            crit_n_neg = len(train_idx) - crit_n_pos
+            criteria_pos_weights = crit_n_neg / crit_n_pos.clamp(min=1.0)
+            print(f" criteria_pos_weights: "
+                  f"{dict(zip(FIGO_CRITERIA_NAMES, [round(w, 2) for w in criteria_pos_weights.tolist()]))}")
+
         train_sub = Subset(dataset, train_idx)
         val_sub = Subset(dataset, val_idx)
 
@@ -908,6 +991,7 @@ def train_and_evaluate_model8(
             encoder=encoder,
             head_hidden_dim=heads_cfg.get("hidden_dim", 64),
             head_dropout=heads_cfg.get("dropout", 0.2),
+            include_criteria_head=ablation in ("plus_criteria", "features_criteria"),
         ).to(device)
         fold_save = os.path.join(save_dir, f"model8_{ablation}_fold{fold_idx}_best.pth")
 
@@ -943,6 +1027,8 @@ def train_and_evaluate_model8(
             fold_idx=fold_idx,
             results_dir=results_dir,
             figo_class_weights=figo_class_weights,
+            lambda_criteria=lambda_criteria,
+            criteria_pos_weights=criteria_pos_weights,
         )
 
         for m_key in fold_results:
@@ -1055,6 +1141,7 @@ def main():
     lambda_features = args.lambda_features or loss_cfg.get("lambda_features", 0.2)
     lambda_knowledge = args.lambda_knowledge or loss_cfg.get("lambda_knowledge", 0.1)
     lambda_consistency = loss_cfg.get("lambda_consistency", 0.5)
+    lambda_criteria = loss_cfg.get("lambda_criteria", 0.3)
     scaler_path = path_cfg.get("feature_scaler_path", "data/processed/feature_scaler.npz")
     save_dir = path_cfg.get("checkpoint_dir", "checkpoints/model8/")
     results_dir = path_cfg.get("results_dir", "checkpoints/model8/results/")
@@ -1100,6 +1187,7 @@ def main():
             lambda_knowledge=lambda_knowledge,
             lambda_consistency=lambda_consistency,
             dry_run=args.dry_run,
+            lambda_criteria=lambda_criteria,
             backbone_cfg=backbone_cfg,
             heads_cfg=heads_cfg,
             loss_weighting_cfg=loss_weighting_cfg,

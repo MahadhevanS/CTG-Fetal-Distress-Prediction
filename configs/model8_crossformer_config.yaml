@@ -58,16 +58,30 @@ training:
   gradient_clip: 1.0
   optimizer: adamw
 
+# -------------------------------------------------------------------
+# Scheduler (revised 2026-08-15, Option-A diagnostic): a 5-config, single-fold,
+# 20-epoch triage isolating scheduler/EMA/augmentation found scheduler to be
+# the clearest, unconfounded driver of the distress_only-vs-standalone gap --
+# switching only the scheduler (holding EMA/augmentation constant) took AUROC
+# 0.7919->0.8041 AND resolved a severe F1 collapse (0.0000->0.3657). Matches
+# the standalone script's exact OneCycleLR shape (train_ctg_crossformer.py:
+# max_lr=lr, pct_start=0.1 -- NOT the 10x-lr default this codebase's OneCycleLR
+# branch otherwise uses).
+# -------------------------------------------------------------------
 scheduler:
-  type: warmup_cosine
-  warmup_epochs: 5
-  eta_min: 1.0e-6
+  type: onecycle
+  onecycle_max_lr: 0.0003
+  onecycle_pct_start: 0.1
 
 loss:
   lambda_figo: 0.3
   lambda_features: 0.2
   lambda_knowledge: 0.1
   lambda_consistency: 0.5
+  # FIGOCriteriaHead loss weight (prototype, 2026-08-15) -- only active for the
+  # plus_criteria / features_criteria ablation variants; magnitude matches
+  # lambda_figo since it's replacing that head's role in those variants.
+  lambda_criteria: 0.3
 
 loss_weighting:
   method: fixed
@@ -97,8 +111,18 @@ loss_weighting:
 sampling:
   method: balanced
 
+# -------------------------------------------------------------------
+# EMA (revised 2026-08-15, Option-A diagnostic): disabling EMA alone (holding
+# scheduler=warmup_cosine, augmentation=on) took AUROC 0.7919->0.8082 and also
+# resolved the F1 collapse. CAVEAT: EMA (decay=0.9995) has a ~10-epoch half-life
+# at this fold's batch count, so a 20-epoch diagnostic only gives it ~2
+# half-lives to converge -- this result may partly reflect EMA not having
+# converged yet rather than being harmful over the full 50-epoch run here.
+# Disabled based on the balance of evidence; revisit if results look EMA-
+# sensitive once real 50-epoch numbers are in.
+# -------------------------------------------------------------------
 ema:
-  enabled: true
+  enabled: false
   decay: 0.9995
   use_for_validation: true
 

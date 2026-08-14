@@ -11,6 +11,7 @@ from .figo import (
     figo_rule_loss,
     figo_rule_loss_normalized,
     derive_figo_criteria_flags,
+    derive_figo_criteria_flags_torch,
     FIGO_CRITERIA_NAMES,
 )
 
@@ -20,6 +21,7 @@ __all__ = [
     "figo_rule_loss",
     "figo_rule_loss_normalized",
     "derive_figo_criteria_flags",
+    "derive_figo_criteria_flags_torch",
     "FIGO_CRITERIA_NAMES",
 ]
 

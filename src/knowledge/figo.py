@@ -174,6 +174,43 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 
+def derive_figo_criteria_flags_torch(y_features: torch.Tensor) -> torch.Tensor:
+    """
+    Torch-native equivalent of derive_figo_criteria_flags(), for computing
+    FIGOCriteriaHead's targets live inside the training loop from a batch
+    tensor (avoids a GPU->CPU->numpy->GPU round trip every batch). Same column
+    order (FIGO_CRITERIA_NAMES), same thresholds, same exclusion of
+    variability_reduced -- see derive_figo_criteria_flags()'s docstring for the
+    full rationale, including the LTV-calibration caveat.
+
+    Args:
+        y_features: (B, 8) tensor in RAW clinical units (NOT Z-normalized) --
+                    i.e. the same convention as the y_features loaded directly
+                    from *_dataset.pt (see the y_features-normalization bug fix
+                    note in compute_multitask_loss for why this distinction
+                    matters).
+
+    Returns:
+        torch.Tensor of shape (B, 8), dtype matches input, values in {0.0, 1.0}.
+    """
+    baseline = y_features[:, 0]
+    ltv = y_features[:, 2]
+    late = y_features[:, 5]
+    variable = y_features[:, 6]
+    prolonged = y_features[:, 7]
+
+    return torch.stack([
+        (baseline < 100).float(),
+        ((baseline >= 110) & (baseline <= 160)).float(),
+        (baseline > 160).float(),
+        ((ltv >= 5) & (ltv <= 25)).float(),
+        (ltv > 25).float(),
+        (late > 0).float(),
+        (variable > 0).float(),
+        (prolonged > 0).float(),
+    ], dim=1)
+
+
 def figo_rule_loss(
     pred_features: torch.Tensor,
     pred_figo_logits: torch.Tensor,
