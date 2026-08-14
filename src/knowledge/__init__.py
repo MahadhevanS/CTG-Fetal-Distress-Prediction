@@ -10,6 +10,8 @@ from .figo import (
     vectorized_classify_figo,
     figo_rule_loss,
     figo_rule_loss_normalized,
+    derive_figo_criteria_flags,
+    FIGO_CRITERIA_NAMES,
 )
 
 __all__ = [
@@ -17,6 +19,8 @@ __all__ = [
     "vectorized_classify_figo",
     "figo_rule_loss",
     "figo_rule_loss_normalized",
+    "derive_figo_criteria_flags",
+    "FIGO_CRITERIA_NAMES",
 ]
 
 

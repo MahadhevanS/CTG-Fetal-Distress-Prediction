@@ -98,6 +98,77 @@ def vectorized_classify_figo(
     return labels
 
 
+# Ordered names for derive_figo_criteria_flags()'s 8 output columns. Kept as a
+# module-level constant so callers (dataset prep, FIGOCriteriaHead consumers,
+# error analysis) can label columns without hardcoding the order twice.
+FIGO_CRITERIA_NAMES = [
+    "baseline_low",          # baseline < 100 bpm
+    "baseline_normal",       # 110 <= baseline <= 160 bpm
+    "baseline_high",         # baseline > 160 bpm
+    "variability_normal",    # 5 <= LTV <= 25 bpm
+    "variability_increased", # LTV > 25 bpm
+    "has_late_decel",
+    "has_variable_decel",
+    "has_prolonged_decel",
+]
+
+
+def derive_figo_criteria_flags(y_features: np.ndarray) -> np.ndarray:
+    """
+    Derives the 8 intermediate binary clinical judgments that classify_figo()
+    computes internally on the way to its single collapsed 3-class label --
+    e.g. "is baseline in the normal band", "are late decelerations present" --
+    exposing them as separate targets instead of only the final aggregate class.
+
+    Purely a re-derivation from the existing 8-feature vector already computed
+    by the preprocessing pipeline (baseline, STV, LTV, accel/decel counts) --
+    requires no raw-signal access, so it can be computed directly from an
+    existing y_features tensor/array (e.g. from a *_dataset.pt file) without
+    rerunning preprocessing.
+
+    NOTE -- variability_reduced (LTV < 5 bpm) is deliberately NOT included as a
+    9th flag. Verified against the corrected CTU-CHB training split (2026-08-14):
+    0 of 6266 windows have LTV < 5, vs. 81.7% with LTV > 25. That is not a
+    small-sample coincidence -- it indicates the LTV computation in
+    src/preprocessing/features.py (raw peak-to-peak range per 1-minute
+    sub-window, averaged) is likely producing systematically larger values than
+    whatever clinical LTV computation FIGO's 5-25 bpm "normal" band was
+    calibrated against. A flag with zero positive examples cannot be learned or
+    evaluated, so it's excluded here rather than silently included as dead
+    weight. This calibration question is worth its own investigation before
+    trusting any LTV-threshold-based judgment (this function's variability
+    flags included, the rule loss, and the FIGO pseudo-labels) at face value.
+
+    Args:
+        y_features: (N, 8) array in the fixed column order [Baseline, STV, LTV,
+                    Accels, Early, Late, Variable, Prolonged] -- raw clinical
+                    units, NOT Z-normalized (i.e. the same convention as the
+                    y_features stored in *_dataset.pt, or a model's predicted
+                    features after un-normalizing with feature_means/feature_stds).
+
+    Returns:
+        np.ndarray of shape (N, 8), dtype float32, values in {0.0, 1.0}.
+        Column order matches FIGO_CRITERIA_NAMES.
+    """
+    baseline = y_features[:, 0]
+    ltv = y_features[:, 2]
+    late = y_features[:, 5]
+    variable = y_features[:, 6]
+    prolonged = y_features[:, 7]
+
+    flags = np.stack([
+        baseline < 100,
+        (baseline >= 110) & (baseline <= 160),
+        baseline > 160,
+        (ltv >= 5) & (ltv <= 25),
+        ltv > 25,
+        late > 0,
+        variable > 0,
+        prolonged > 0,
+    ], axis=1)
+    return flags.astype(np.float32)
+
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F

@@ -145,6 +145,68 @@ class ClinicalFeatureHead(nn.Module):
         return torch.cat([continuous, counts], dim=1)            # (Batch, 8)
 
 
+class FIGOCriteriaHead(nn.Module):
+    """
+    Prototype auxiliary head (2026-08-14): predicts the INTERMEDIATE binary clinical
+    judgments that classify_figo() computes internally on the way to its single
+    collapsed 3-class FIGO label -- e.g. "is baseline in the normal band?", "is
+    variability increased?", "are late decelerations present?" -- rather than only
+    the final aggregate class. Motivation: plus_figo/distress_figo_only have been
+    the weakest-performing auxiliary variants across every Model 8 run so far
+    (PatchTST and CrossFormer alike); a single 3-way softmax dominated ~75% by one
+    class is a blunt training signal, and decomposing it into its constituent rule
+    criteria gives the network more to actually learn from, using information the
+    pipeline already computes (see src.knowledge.figo.derive_figo_criteria_flags)
+    -- no new raw-signal work required.
+
+    NOT wired into KnowledgeInfusedFramework's loss computation or any ablation
+    variant yet -- this is the head only, opt-in via include_criteria_head=False
+    by default, so existing configs and the currently-running experiment are
+    completely unaffected. Wiring it into compute_multitask_loss() with its own
+    lambda weight and per-flag pos_weight is a deliberate follow-up step.
+
+    Target ordering (8 binary flags, (N, 8), see derive_figo_criteria_flags()):
+        [0] baseline_low       (<100 bpm)
+        [1] baseline_normal    (110-160 bpm)
+        [2] baseline_high      (>160 bpm)
+        [3] variability_normal (LTV 5-25 bpm)
+        [4] variability_increased (LTV >25 bpm)
+        [5] has_late_decel
+        [6] has_variable_decel
+        [7] has_prolonged_decel
+
+    variability_reduced (LTV<5) is deliberately excluded: on the corrected
+    training data it has 0% prevalence (0 positive examples out of 6266 windows)
+    -- see the LTV-calibration note in derive_figo_criteria_flags(). Including a
+    target with no positive examples wastes head capacity on something that
+    cannot be learned and cannot be evaluated.
+
+    Architecture: Linear(128→64) → LayerNorm → GELU → Dropout → Linear(64→8)
+                  (raw logits out -- apply BCEWithLogitsLoss per-flag, not softmax)
+    """
+
+    N_CRITERIA = 8
+
+    def __init__(self, latent_dim: int = 128, hidden_dim: int = 64, dropout: float = 0.2):
+        super().__init__()
+        self.head = nn.Sequential(
+            nn.Linear(latent_dim, hidden_dim),
+            nn.LayerNorm(hidden_dim),
+            nn.GELU(),
+            nn.Dropout(dropout),
+            nn.Linear(hidden_dim, self.N_CRITERIA),
+        )
+
+    def forward(self, z: torch.Tensor) -> torch.Tensor:
+        """
+        Args:
+            z: Latent representation (Batch, 128)
+        Returns:
+            logits: Tensor of shape (Batch, 8) — raw per-flag logits (unnormalized).
+        """
+        return self.head(z)
+
+
 class KnowledgeInfusedFramework(nn.Module):
     """
     Knowledge-Infused Multi-Task Framework (Model 8) for CTG Fetal Distress Prediction.
@@ -164,6 +226,12 @@ class KnowledgeInfusedFramework(nn.Module):
         latent_dim (int):    Encoder output dimension. Must be 128.
         head_hidden_dim (int): Hidden units in each task head (default 64).
         head_dropout (float):  Dropout rate in each task head (default 0.2).
+        include_criteria_head (bool): Prototype opt-in (2026-08-14, default False).
+            Adds FIGOCriteriaHead and makes forward() return a 4-tuple instead of
+            the usual 3-tuple. Defaults to False so every existing config and
+            training script -- and anything already running -- is completely
+            unaffected; this is not wired into the loss computation yet, it only
+            adds the head so it can be inspected/prototyped in isolation.
     """
 
     def __init__(
@@ -172,9 +240,11 @@ class KnowledgeInfusedFramework(nn.Module):
         latent_dim: int = 128,
         head_hidden_dim: int = 64,
         head_dropout: float = 0.2,
+        include_criteria_head: bool = False,
     ):
         super().__init__()
         self.encoder = encoder
+        self.include_criteria_head = include_criteria_head
         self.distress_head = DistressHead(
             latent_dim=latent_dim, hidden_dim=head_hidden_dim, dropout=head_dropout
         )
@@ -184,10 +254,12 @@ class KnowledgeInfusedFramework(nn.Module):
         self.feature_head = ClinicalFeatureHead(
             latent_dim=latent_dim, hidden_dim=head_hidden_dim, dropout=head_dropout
         )
+        if include_criteria_head:
+            self.criteria_head = FIGOCriteriaHead(
+                latent_dim=latent_dim, hidden_dim=head_hidden_dim, dropout=head_dropout
+            )
 
-    def forward(
-        self, x: torch.Tensor
-    ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+    def forward(self, x: torch.Tensor):
         """
         Args:
             x: Input CTG signal of shape (Batch, 2, 4800).
@@ -197,11 +269,18 @@ class KnowledgeInfusedFramework(nn.Module):
               - distress_logit:  (Batch, 1)  — binary distress logit
               - figo_logits:     (Batch, 3)  — FIGO 3-class logits
               - feature_preds:   (Batch, 8)  — physiological feature predictions (Z-normalized space)
+              - criteria_logits: (Batch, 8)  — ONLY present if include_criteria_head=True
+                                  (prototype FIGOCriteriaHead output; omitted entirely,
+                                  not None, when the flag is off, so the return arity
+                                  matches every pre-existing call site exactly).
         """
         z = self.encoder(x)                         # (Batch, 128)
         distress_logit = self.distress_head(z)       # (Batch, 1)
         figo_logits = self.figo_head(z)              # (Batch, 3)
         feature_preds = self.feature_head(z)         # (Batch, 8)
+        if self.include_criteria_head:
+            criteria_logits = self.criteria_head(z)  # (Batch, 8)
+            return distress_logit, figo_logits, feature_preds, criteria_logits
         return distress_logit, figo_logits, feature_preds
 
     @property
