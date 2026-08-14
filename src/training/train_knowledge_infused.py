@@ -161,16 +161,38 @@ def compute_multitask_loss(
     use_focal_loss: bool = False,
     focal_gamma: float = 2.0,
     aux_warmup_factor: float = 1.0,
+    figo_class_weights: Optional[torch.Tensor] = None,
+    knowledge_warmup_factor: Optional[float] = None,
 ) -> Tuple[Dict[str, torch.Tensor], Dict[str, float]]:
     """
     Computes individual loss components for the selected ablation variant.
     Returns raw component tensors (before weighting) for dynamic loss weighters.
+
+    Args (head-optimization fixes, 2026-08-14):
+        figo_class_weights: Optional (3,) tensor of per-class weights for the FIGO
+            cross-entropy loss. y_figo is heavily imbalanced on this dataset
+            (~10% Normal / ~75% Suspicious / ~15% Pathological on the corrected
+            train split) -- unweighted CE lets the FIGO head get most of its loss
+            down just by leaning toward predicting the majority class, which
+            provides little useful gradient signal to the shared encoder. Pass
+            inverse-frequency weights (computed per-fold from the training split)
+            to correct for this, the same way pos_weight already corrects for the
+            primary task's imbalance.
+        knowledge_warmup_factor: If given, used instead of aux_warmup_factor for
+            the knowledge-consistency loss specifically. The rule loss penalizes
+            based on the ClinicalFeatureHead's own predicted baseline/STV/LTV/decel
+            counts -- early in training those predictions are close to random, so
+            applying the same fast 10-epoch warmup as the other auxiliary losses
+            means the rule loss spends its early ramp-in penalizing noise rather
+            than anything meaningful. Falls back to aux_warmup_factor if not given.
 
     Returns:
         Tuple of:
           - component_tensors: Dict[str, Tensor] — unweighted scalar loss tensors
           - component_floats:  Dict[str, float]  — detached float values for logging
     """
+    if knowledge_warmup_factor is None:
+        knowledge_warmup_factor = aux_warmup_factor
     device = distress_logit.device
 
     # Primary Task: Binary Distress (Focal Loss or BCEWithLogits)
@@ -194,7 +216,10 @@ def compute_multitask_loss(
 
     # Auxiliary Task 1: FIGO 3-class Classification (with curriculum warmup)
     if ablation in ("plus_figo", "plus_features", "distress_figo_only", "full"):
-        l_figo = nn.functional.cross_entropy(figo_logits, y_figo) * aux_warmup_factor
+        l_figo = nn.functional.cross_entropy(
+            figo_logits, y_figo,
+            weight=figo_class_weights.to(device) if figo_class_weights is not None else None,
+        ) * aux_warmup_factor
         component_tensors["figo"] = l_figo
         component_floats["l_figo"] = l_figo.item()
 
@@ -213,7 +238,7 @@ def compute_multitask_loss(
             feature_stds=feature_stds.to(device),
             target_figo=None,
             lambda_consistency=lambda_consistency,
-        ) * aux_warmup_factor
+        ) * knowledge_warmup_factor
         component_tensors["knowledge"] = l_knowledge
         component_floats["l_knowledge"] = l_knowledge.item()
 
@@ -265,9 +290,22 @@ def train_single_fold_multitask(
     error_analysis_cfg: Optional[Dict] = None,
     fold_idx: int = 1,
     results_dir: str = "checkpoints/model8/results/",
+    figo_class_weights: Optional[torch.Tensor] = None,
+    knowledge_warmup_epochs: int = 20,
 ) -> Dict[str, float]:
     """
     Trains Model 8 on one fold with all Phase 4+ improvements and returns best metrics.
+
+    Args (head-optimization fixes, 2026-08-14):
+        figo_class_weights: Optional (3,) per-class weight tensor for the FIGO
+            cross-entropy loss, correcting for y_figo's class imbalance. See
+            compute_multitask_loss() for the full rationale.
+        knowledge_warmup_epochs: The knowledge-consistency loss stays at weight 0
+            until this epoch, then ramps up over the following aux_warmup_epochs
+            (10) epochs, reaching full weight by knowledge_warmup_epochs + 10.
+            Distinct from (and later than) the other auxiliary losses' 10-epoch
+            warmup, since the rule loss depends on the ClinicalFeatureHead's own
+            predictions, which need time to become meaningful first.
     """
     scheduler_cfg = scheduler_cfg or {}
     ema_cfg = ema_cfg or {}
@@ -380,6 +418,14 @@ def train_single_fold_multitask(
         aux_warmup_epochs = 10
         aux_warmup_factor = min(1.0, epoch / float(aux_warmup_epochs)) if epoch <= aux_warmup_epochs else 1.0
 
+        # --- Knowledge-loss warmup: starts later (knowledge_warmup_epochs), ramps
+        # over the following aux_warmup_epochs, since it depends on the feature
+        # head's predictions already being somewhat accurate ---
+        if epoch <= knowledge_warmup_epochs:
+            knowledge_warmup_factor = 0.0
+        else:
+            knowledge_warmup_factor = min(1.0, (epoch - knowledge_warmup_epochs) / float(aux_warmup_epochs))
+
         for batch in train_loader:
             X_batch, yp_batch, yf_batch, yfeat_batch = batch
             X_batch = X_batch.to(device)
@@ -413,6 +459,8 @@ def train_single_fold_multitask(
                     use_focal_loss=True,
                     focal_gamma=2.0,
                     aux_warmup_factor=aux_warmup_factor,
+                    figo_class_weights=figo_class_weights,
+                    knowledge_warmup_factor=knowledge_warmup_factor,
                 )
 
             # Apply loss weighting
@@ -814,6 +862,20 @@ def train_and_evaluate_model8(
             pos_weight = torch.tensor([n_neg / max(n_pos, 1.0)])
             print(f" pos_weight: {pos_weight.item():.2f} (n_pos={int(n_pos)}, n_neg={int(n_neg)})")
 
+        # --- FIGO class weights (head-optimization fix, 2026-08-14) ---
+        # y_figo is heavily imbalanced (~10% Normal / ~75% Suspicious / ~15%
+        # Pathological on the corrected data) -- inverse-frequency weights stop
+        # the FIGO head from getting away with a near-majority-class predictor.
+        figo_train = dataset.y_figo[train_idx]
+        figo_counts = torch.bincount(figo_train, minlength=3).float()
+        figo_class_weights = torch.where(
+            figo_counts > 0,
+            len(figo_train) / (3.0 * figo_counts.clamp(min=1.0)),
+            torch.zeros_like(figo_counts),
+        )
+        print(f" figo_class_weights: {[round(w, 2) for w in figo_class_weights.tolist()]} "
+              f"(counts={figo_counts.tolist()})")
+
         train_sub = Subset(dataset, train_idx)
         val_sub = Subset(dataset, val_idx)
 
@@ -880,6 +942,7 @@ def train_and_evaluate_model8(
             error_analysis_cfg=error_analysis_cfg,
             fold_idx=fold_idx,
             results_dir=results_dir,
+            figo_class_weights=figo_class_weights,
         )
 
         for m_key in fold_results:
