@@ -200,7 +200,7 @@ def process_pipeline(raw_data_dir: str, metadata_path: str, output_dir: str) -> 
                 # -----------------------------------------------------------
                 # Clinical Feature Extraction
                 # -----------------------------------------------------------
-                stv, ltv = calculate_variability(fhr_win, fs=fs)
+                stv, ltv = calculate_variability(fhr_win, fs=fs, baseline=baseline)
                 accels   = detect_accelerations(fhr_win, baseline, fs=fs)
                 decels   = detect_decelerations(fhr_win, baseline, uc_win, fs=fs)
 

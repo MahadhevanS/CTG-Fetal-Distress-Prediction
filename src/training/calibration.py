@@ -251,18 +251,39 @@ class TemperatureScaler:
 
             logits_t = torch.tensor(logits, dtype=torch.float32)
             y_t = torch.tensor(y_true, dtype=torch.float32)
-            T = torch.nn.Parameter(torch.ones(1))
-            optimizer = optim.LBFGS([T], lr=lr, max_iter=max_iter)
+
+            # BUG FIX (2026-08-15): T was previously an unconstrained parameter,
+            # clamped to >=1e-3 only inside the loss computation. LBFGS could
+            # still push the raw parameter negative -- the clamp's gradient is
+            # zero outside its range, so nothing pulled it back once that
+            # happened, and `.item()` stored the raw (possibly negative) value.
+            # Downstream, calibrate()'s max(temperature, 1e-3) rescue then
+            # divided logits by an almost-zero number, overflowing exp() --
+            # confirmed against real training output: negative T values
+            # (-1.02, -1.23, -4.07, -2.47) co-occurred exactly with "overflow
+            # encountered in exp" warnings in the same folds.
+            #
+            # Fix: optimize log(T) instead of T directly. T = exp(log_T) is
+            # strictly positive for ANY finite log_T, so a non-positive
+            # temperature is now structurally impossible, not just discouraged.
+            log_T = torch.nn.Parameter(torch.zeros(1))  # T starts at exp(0) = 1.0
+            optimizer = optim.LBFGS([log_T], lr=lr, max_iter=max_iter)
 
             def _nll():
                 optimizer.zero_grad()
-                cal_logits = logits_t / T.clamp(min=1e-3)
+                T = torch.exp(log_T)
+                cal_logits = logits_t / T
                 loss = torch.nn.functional.binary_cross_entropy_with_logits(cal_logits, y_t)
                 loss.backward()
                 return loss
 
             optimizer.step(_nll)
-            self.temperature = float(T.item())
+            # Defense-in-depth: clamp the final result to a sane clinical range
+            # in case LBFGS drove log_T to an extreme (e.g. numerically-degenerate
+            # validation data). Doesn't change normal-case behavior -- T=1
+            # (no calibration change) sits comfortably inside [0.01, 100].
+            fitted_T = float(torch.exp(log_T).item())
+            self.temperature = float(np.clip(fitted_T, 0.01, 100.0))
 
         except ImportError:
             # Fallback: grid search temperature
