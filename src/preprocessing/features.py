@@ -106,30 +106,39 @@ def calculate_variability(fhr: np.ndarray, fs: float = 4.0,
     # to check prior art rather than keep guessing) surfaced that baseline
     # variability is clinically read EXCLUDING accelerations/decelerations, not
     # over the raw signal -- see _event_exclusion_mask()'s docstring for the
-    # citations and full reasoning. Verified on the reconstructed local training
-    # split (n=800 windows, baseline approximated as each window's stored mean
-    # baseline feature rather than the true per-sample iterative array, since
-    # local reconstruction only has the scalar summary -- see the accompanying
-    # verification script's caveat below): mean LTV 30.4 -> 25.7 bpm, >25bpm
-    # prevalence 57.6% -> 49.1% with exclusion added on top of the percentile+
-    # detrend fix. A real improvement, but still not full resolution; likely
-    # remaining causes: (a) the constant-baseline approximation used in this
-    # local reconstruction test itself inflates the "background" range versus
-    # the pipeline's true iterative baseline, so the actual improvement on a
-    # freshly regenerated dataset may be larger than measured here; (b) this
-    # split's stride-based oversampling of distress patients skews toward
-    # genuinely more erratic intrapartum traces than a general population
-    # sample; and/or (c) FIGO's 5-25 bpm band may be implicitly calibrated
-    # against a different underlying measurement convention (e.g. a coarser
-    # sampling/smoothing convention on older clinical monitors) than this
-    # pipeline's raw 4 Hz signal reproduces. <5bpm ("reduced") prevalence is
-    # still ~0% in this local test -- plausibly an artifact of the same
-    # constant-baseline approximation rather than a real pipeline issue; needs
-    # re-checking once the dataset is regenerated end-to-end with the true
-    # iterative baseline feeding this function directly (as pipeline.py now
-    # does). Treat variability-threshold-based judgments (classify_figo, the
-    # rule loss, FIGOCriteriaHead's variability flags) as meaningfully
-    # improved but still not fully clinically validated until that re-run.
+    # citations and full reasoning.
+    #
+    # VERIFIED END-TO-END on a real Colab pipeline regeneration (all 3 fixes
+    # combined, true per-sample iterative baseline feeding this function
+    # directly, n=6177 windows): mean LTV 46.26 -> 28.00 bpm, >25bpm prevalence
+    # 81.7% -> 53.4%, 5-25bpm ("normal") coverage 18.3% -> 46.5%. A local
+    # reconstruction test (constant-baseline approximation, run before this
+    # real regeneration) had predicted the real fix would land a bit lower
+    # (mean ~26.0, >25bpm ~48.9%) than it actually did (28.0 / 53.4%) --
+    # i.e. the constant-baseline approximation UNDER-stated the true LTV,
+    # the opposite of what was originally guessed; noted here so that
+    # reconstruction-based estimates are trusted less in future work on this
+    # function.
+    #
+    # HONEST CAVEAT: still not full resolution. >25bpm prevalence, while
+    # roughly halved from the original bug, remains a majority of windows --
+    # plausible remaining causes: (a) this split's stride-based oversampling
+    # of distress patients skews toward genuinely more erratic intrapartum
+    # traces than a general population sample; and/or (b) FIGO's 5-25 bpm
+    # band may be implicitly calibrated against a different underlying
+    # measurement convention (e.g. a coarser sampling/smoothing convention on
+    # older clinical monitors) than this pipeline's raw 4 Hz signal
+    # reproduces. <5bpm ("reduced") prevalence is genuinely ~0.1% even with
+    # the true iterative baseline -- CONFIRMED not a reconstruction artifact
+    # (it was ~0% in the local approximation too). This matches
+    # derive_figo_criteria_flags()'s independent finding of 0% prevalence for
+    # `variability_reduced`, which is why that flag is excluded from
+    # FIGOCriteriaHead -- this is now cross-verified as a real property of
+    # this dataset/pipeline rather than a bug. Treat variability-threshold-
+    # based judgments (classify_figo, the rule loss, FIGOCriteriaHead's
+    # remaining variability flags) as meaningfully improved and now verified
+    # against a real end-to-end pipeline run, but the >25bpm elevation is a
+    # known, documented residual gap rather than a solved problem.
     window_samples = int(60 * fs)
 
     # Event exclusion (2026-08-15): when a baseline is supplied, drop samples inside

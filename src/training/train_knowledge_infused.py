@@ -367,7 +367,7 @@ def train_single_fold_multitask(
         lambda_criteria: Weight for the FIGOCriteriaHead loss (ablation="plus_criteria"
             or "features_criteria" only). Defaults to lambda_figo's magnitude since
             it's replacing that head's role in those variants.
-        criteria_pos_weights: Optional (8,) per-flag pos_weight tensor for the
+        criteria_pos_weights: Optional (7,) per-flag pos_weight tensor for the
             criteria head's BCE loss, correcting for per-flag imbalance (e.g.
             variability_increased is ~82% prevalent, has_late_decel ~15% --
             same lesson as figo_class_weights, applied per-flag here).
@@ -719,7 +719,8 @@ def run_dry_run(device: torch.device, ablation: str = "full") -> None:
         in_channels=2, seq_len=4800, patch_len=16, stride=16,
         d_model=128, n_heads=4, n_layers=4, dropout=0.2, latent_dim=128,
     )
-    model = KnowledgeInfusedFramework(encoder=encoder).to(device)
+    include_criteria_head = ablation in ("plus_criteria", "features_criteria")
+    model = KnowledgeInfusedFramework(encoder=encoder, include_criteria_head=include_criteria_head).to(device)
     print(f"Total trainable parameters: {model.param_count:,}")
 
     B = 8
@@ -730,16 +731,21 @@ def run_dry_run(device: torch.device, ablation: str = "full") -> None:
     pos_weight = torch.tensor([5.0]).to(device)
     feat_means = torch.zeros(8).to(device)
     feat_stds = torch.ones(8).to(device)
+    criteria_pos_weights = torch.ones(len(FIGO_CRITERIA_NAMES)).to(device) if include_criteria_head else None
 
-    distress_logit, figo_logits, feature_preds = model(X)
+    distress_logit, figo_logits, feature_preds, criteria_logits = _forward_model(model, X)
     print(f"distress_logit shape: {tuple(distress_logit.shape)}")
     print(f"figo_logits shape:    {tuple(figo_logits.shape)}")
     print(f"feature_preds shape:  {tuple(feature_preds.shape)}")
+    if criteria_logits is not None:
+        print(f"criteria_logits shape: {tuple(criteria_logits.shape)}")
 
     component_tensors, component_floats = compute_multitask_loss(
         distress_logit, figo_logits, feature_preds,
         yp, yf, yfeat, pos_weight, feat_means, feat_stds,
         ablation=ablation,
+        criteria_logits=criteria_logits,
+        criteria_pos_weights=criteria_pos_weights,
     )
     total_loss = sum(component_tensors.values())
     total_loss.backward()

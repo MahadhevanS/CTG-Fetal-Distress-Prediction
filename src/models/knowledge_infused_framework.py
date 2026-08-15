@@ -159,33 +159,36 @@ class FIGOCriteriaHead(nn.Module):
     pipeline already computes (see src.knowledge.figo.derive_figo_criteria_flags)
     -- no new raw-signal work required.
 
-    NOT wired into KnowledgeInfusedFramework's loss computation or any ablation
-    variant yet -- this is the head only, opt-in via include_criteria_head=False
-    by default, so existing configs and the currently-running experiment are
-    completely unaffected. Wiring it into compute_multitask_loss() with its own
-    lambda weight and per-flag pos_weight is a deliberate follow-up step.
+    Wired into KnowledgeInfusedFramework's loss computation for the
+    plus_criteria / features_criteria ablation variants (see Auxiliary Task 4
+    in train_knowledge_infused.py's compute_multitask_loss()), each opt-in via
+    include_criteria_head, so all other ablation variants and configs remain
+    unaffected.
 
-    Target ordering (8 binary flags, (N, 8), see derive_figo_criteria_flags()):
+    Target ordering (7 binary flags, (N, 7), see derive_figo_criteria_flags()):
         [0] baseline_low       (<100 bpm)
         [1] baseline_normal    (110-160 bpm)
         [2] baseline_high      (>160 bpm)
         [3] variability_normal (LTV 5-25 bpm)
-        [4] variability_increased (LTV >25 bpm)
-        [5] has_late_decel
-        [6] has_variable_decel
-        [7] has_prolonged_decel
+        [4] has_late_decel
+        [5] has_variable_decel
+        [6] has_prolonged_decel
 
-    variability_reduced (LTV<5) is deliberately excluded: on the corrected
-    training data it has 0% prevalence (0 positive examples out of 6266 windows)
-    -- see the LTV-calibration note in derive_figo_criteria_flags(). Including a
-    target with no positive examples wastes head capacity on something that
-    cannot be learned and cannot be evaluated.
+    Two variability flags are deliberately excluded (see derive_figo_criteria_flags()
+    for full rationale):
+      - variability_reduced (LTV<5): 0% prevalence on the corrected training data
+        (0 positive examples out of 6266 windows) -- unlearnable/unevaluable.
+      - variability_increased (LTV>25): dropped 2026-08-15 after a literature check
+        found FIGO 2015 defines "saltatory" as >25bpm sustained for >30 minutes --
+        longer than this pipeline's entire 20-minute assessment window can ever
+        show, regardless of how accurately LTV itself is computed. A structural
+        window-length mismatch, not a fixable calibration bug.
 
-    Architecture: Linear(128→64) → LayerNorm → GELU → Dropout → Linear(64→8)
+    Architecture: Linear(128→64) → LayerNorm → GELU → Dropout → Linear(64→7)
                   (raw logits out -- apply BCEWithLogitsLoss per-flag, not softmax)
     """
 
-    N_CRITERIA = 8
+    N_CRITERIA = 7
 
     def __init__(self, latent_dim: int = 128, hidden_dim: int = 64, dropout: float = 0.2):
         super().__init__()
@@ -202,7 +205,7 @@ class FIGOCriteriaHead(nn.Module):
         Args:
             z: Latent representation (Batch, 128)
         Returns:
-            logits: Tensor of shape (Batch, 8) — raw per-flag logits (unnormalized).
+            logits: Tensor of shape (Batch, 7) — raw per-flag logits (unnormalized).
         """
         return self.head(z)
 
@@ -269,7 +272,7 @@ class KnowledgeInfusedFramework(nn.Module):
               - distress_logit:  (Batch, 1)  — binary distress logit
               - figo_logits:     (Batch, 3)  — FIGO 3-class logits
               - feature_preds:   (Batch, 8)  — physiological feature predictions (Z-normalized space)
-              - criteria_logits: (Batch, 8)  — ONLY present if include_criteria_head=True
+              - criteria_logits: (Batch, 7)  — ONLY present if include_criteria_head=True
                                   (prototype FIGOCriteriaHead output; omitted entirely,
                                   not None, when the flag is off, so the return arity
                                   matches every pre-existing call site exactly).
@@ -279,7 +282,7 @@ class KnowledgeInfusedFramework(nn.Module):
         figo_logits = self.figo_head(z)              # (Batch, 3)
         feature_preds = self.feature_head(z)         # (Batch, 8)
         if self.include_criteria_head:
-            criteria_logits = self.criteria_head(z)  # (Batch, 8)
+            criteria_logits = self.criteria_head(z)  # (Batch, 7)
             return distress_logit, figo_logits, feature_preds, criteria_logits
         return distress_logit, figo_logits, feature_preds
 
