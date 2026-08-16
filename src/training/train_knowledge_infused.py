@@ -67,6 +67,10 @@ from src.models.ctg_crossformer import CTGCrossformerEncoder
 from src.models.multiscale_lstm import MultiScaleLSTMEncoder
 from src.models.cnn1d_encoder import CNN1DEncoder
 from src.models.knowledge_infused_framework import KnowledgeInfusedFramework
+from src.models.knowledge_infused_framework_wide_distress import (
+    CTGCrossformerDualLatentEncoder,
+    KnowledgeInfusedFrameworkWideDistress,
+)
 from src.knowledge.figo import (
     figo_rule_loss_normalized,
     derive_figo_criteria_flags_torch,
@@ -992,13 +996,38 @@ def train_and_evaluate_model8(
         )
 
         # --- Build fresh model for each fold ---
-        encoder = build_encoder(backbone_cfg)
-        model = KnowledgeInfusedFramework(
-            encoder=encoder,
-            head_hidden_dim=heads_cfg.get("hidden_dim", 64),
-            head_dropout=heads_cfg.get("dropout", 0.2),
-            include_criteria_head=ablation in ("plus_criteria", "features_criteria"),
-        ).to(device)
+        # Wide-distress prototype (2026-08-16): CrossFormer-only variant giving
+        # DistressHead a private path to the 256-dim pre-adapter pooled
+        # representation instead of the shared 128-dim latent -- see
+        # src/models/knowledge_infused_framework_wide_distress.py for the full
+        # rationale. Opt-in via backbone.model: ctg_crossformer_wide_distress;
+        # every other backbone value is completely unaffected by this branch.
+        if backbone_cfg.get("model") == "ctg_crossformer_wide_distress":
+            encoder = CTGCrossformerDualLatentEncoder(
+                in_channels=backbone_cfg.get("in_channels", 2),
+                seq_len=backbone_cfg.get("seq_len", 4800),
+                cnn_channels=backbone_cfg.get("cnn_channels", 128),
+                n_heads_cross=backbone_cfg.get("n_heads_cross", 4),
+                n_heads_tf=backbone_cfg.get("n_heads_tf", 8),
+                n_tf_layers=backbone_cfg.get("n_tf_layers", 4),
+                d_ff=backbone_cfg.get("d_ff", 512),
+                dropout=backbone_cfg.get("dropout", 0.1),
+                latent_dim=backbone_cfg.get("latent_dim", 128),
+            )
+            model = KnowledgeInfusedFrameworkWideDistress(
+                encoder=encoder,
+                head_hidden_dim=heads_cfg.get("hidden_dim", 64),
+                head_dropout=heads_cfg.get("dropout", 0.2),
+                include_criteria_head=ablation in ("plus_criteria", "features_criteria"),
+            ).to(device)
+        else:
+            encoder = build_encoder(backbone_cfg)
+            model = KnowledgeInfusedFramework(
+                encoder=encoder,
+                head_hidden_dim=heads_cfg.get("hidden_dim", 64),
+                head_dropout=heads_cfg.get("dropout", 0.2),
+                include_criteria_head=ablation in ("plus_criteria", "features_criteria"),
+            ).to(device)
         fold_save = os.path.join(save_dir, f"model8_{ablation}_fold{fold_idx}_best.pth")
 
         metrics = train_single_fold_multitask(

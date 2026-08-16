@@ -1,0 +1,76 @@
+# Model 8 Configuration: Knowledge-Infused Multi-Task Framework
+# Backbone: CTG-CrossFormer -- TUNED HYPERPARAMETERS (validation config)
+# ==========================================================================
+# Applies the winning config from tune_model8_hyperparameters.py's proxy
+# search (--ablation full, 15 epochs / 3 folds per trial, 12 trials, seed 42
+# -- see configs/model8_tuned_hyperparameters.yaml for the raw result) at
+# FULL LENGTH (50 epochs / 5 folds), to check whether the proxy's 0.8044
+# AUROC read holds up or was a short-run artifact -- exactly the kind of gap
+# the EMA diagnostic already showed can happen (a 20-epoch/1-fold read that
+# looked directionally right but wasn't confirmed until the full-length
+# re-run; here the proxy is even shorter relative to the real run: 15/50
+# epochs and 3/5 folds vs. that diagnostic's 20/50 epochs and 1/5 folds).
+#
+# Do NOT treat a win here as final on its own -- compare against the
+# established model8_crossformer_config.yaml baseline (full, fixed
+# weighting, EMA off: AUROC 0.7893 +/- 0.0515) on the same ablation.
+#
+# Everything not listed under training/scheduler/loss/loss_weighting below
+# (backbone architecture, head capacity, sampling, EMA-off) is inherited
+# unchanged from model8_crossformer_config.yaml's own reasoning -- see that
+# file's comments for why each of those was chosen.
+
+backbone:
+  model: ctg_crossformer
+  in_channels: 2
+  seq_len: 4800
+  cnn_channels: 128
+  n_heads_cross: 4
+  n_heads_tf: 8
+  n_tf_layers: 4
+  d_ff: 512
+  dropout: 0.1
+  latent_dim: 128
+
+heads:
+  hidden_dim: 128
+  dropout: 0.3
+
+training:
+  epochs: 50            # full length, not the tuner's 15-epoch proxy
+  batch_size: 16         # tuner winner (was 32)
+  lr: 0.0002              # tuner winner (was 0.0003)
+  weight_decay: 0.00001  # tuner winner (unchanged from base config)
+  k_folds: 5             # full length, not the tuner's 3-fold proxy
+  gradient_clip: 1.0
+  optimizer: adamw
+
+scheduler:
+  type: onecycle
+  onecycle_max_lr: 0.0002        # tuner winner (was 0.0003)
+  onecycle_pct_start: 0.2        # tuner winner (was 0.1)
+
+loss:
+  lambda_figo: 0.2         # tuner winner (was 0.3)
+  lambda_features: 0.3     # tuner winner (was 0.2)
+  lambda_knowledge: 0.2    # tuner winner (was 0.1)
+  lambda_consistency: 0.5
+  lambda_criteria: 0.3
+
+loss_weighting:
+  method: dwa               # tuner winner (was fixed) -- untested at full scale before this run
+
+sampling:
+  method: balanced
+
+ema:
+  enabled: false   # confirmed harmful at full scale regardless of loss-weighting method -- see base config's comment
+  decay: 0.9995
+  use_for_validation: true
+
+paths:
+  data_dir: data/processed/
+  feature_scaler_path: data/processed/feature_scaler.npz
+  checkpoint_dir: checkpoints/model8_crossformer_tuned/
+  results_dir: checkpoints/model8_crossformer_tuned/results/
+  horizon_analysis_dir: checkpoints/model8_crossformer_tuned/results/horizon_analysis/

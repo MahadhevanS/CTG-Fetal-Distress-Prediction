@@ -112,14 +112,16 @@ sampling:
   method: balanced
 
 # -------------------------------------------------------------------
-# EMA (revised 2026-08-15, Option-A diagnostic): disabling EMA alone (holding
-# scheduler=warmup_cosine, augmentation=on) took AUROC 0.7919->0.8082 and also
-# resolved the F1 collapse. CAVEAT: EMA (decay=0.9995) has a ~10-epoch half-life
-# at this fold's batch count, so a 20-epoch diagnostic only gives it ~2
-# half-lives to converge -- this result may partly reflect EMA not having
-# converged yet rather than being harmful over the full 50-epoch run here.
-# Disabled based on the balance of evidence; revisit if results look EMA-
-# sensitive once real 50-epoch numbers are in.
+# EMA (revised 2026-08-15, Option-A diagnostic; CONFIRMED 2026-08-15 at full
+# scale): disabling EMA alone (holding scheduler=warmup_cosine, augmentation=on)
+# took AUROC 0.7919->0.8082 in the 20-epoch/1-fold diagnostic, with the caveat
+# that EMA's ~10-epoch half-life only got ~2 half-lives there, so it might have
+# just been non-convergence rather than genuine harm. Re-tested at real scale
+# (full ablation, 50 epochs/5 folds): EMA on = 0.7461 AUROC vs. EMA off = 0.7893
+# -- a consistent, real drop across folds (fold 2: 0.7128->0.6684, fold 5:
+# 0.7464->0.7041), not a short-run artifact. Also re-tested with uncertainty
+# loss weighting: EMA on = 0.7593 vs. EMA off = 0.7771 -- same direction. EMA
+# hurts this backbone/task regardless of loss-weighting method; keep disabled.
 # -------------------------------------------------------------------
 ema:
   enabled: false
