@@ -1,0 +1,8 @@
+python src/training/tune_model8_hyperparameters.py \
+  --config configs/model8_crossformer_config.yaml \
+  --ablation full \
+  --n-trials 12 --epochs 15 --k-folds 3 \
+  --seed 42
+  
+python src/training/train_knowledge_infused.py --config configs/model8_crossformer_config.yaml --ablation full --loss_weighting uncertainty --seed 42
+python src/training/train_knowledge_infused.py --config configs/model8_mslstm_config.yaml --ablation all --seed 42
