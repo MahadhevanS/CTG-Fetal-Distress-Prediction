@@ -46,3 +46,7 @@ python src/training/tune_hyperparameters.py \
   --data-dir data/processed/ \
   --output-config configs/tuned_hyperparameters_v2.yaml
 
+#################################################################################
+aug 16 - feature fusion methodology
+
+python src/training/train_knowledge_infused.py --config configs/model8_crossformer_featurefusion_config.yaml --ablation full --seed 42

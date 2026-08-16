@@ -71,6 +71,9 @@ from src.models.knowledge_infused_framework_wide_distress import (
     CTGCrossformerDualLatentEncoder,
     KnowledgeInfusedFrameworkWideDistress,
 )
+from src.models.knowledge_infused_framework_feature_fusion import (
+    KnowledgeInfusedFrameworkFeatureFusion,
+)
 from src.knowledge.figo import (
     figo_rule_loss_normalized,
     derive_figo_criteria_flags_torch,
@@ -304,11 +307,20 @@ def _get_curriculum_ablation(epoch: int, schedule: List) -> str:
     return active
 
 
-def _forward_model(model: KnowledgeInfusedFramework, x: torch.Tensor):
+def _forward_model(model: KnowledgeInfusedFramework, x: torch.Tensor, y_features: torch.Tensor = None):
     """Uniformly unpacks model(x) as a 4-tuple regardless of whether
     include_criteria_head is active, so call sites don't need to branch on it.
-    criteria_logits is None when the head isn't present."""
-    out = model(x)
+    criteria_logits is None when the head isn't present.
+
+    Feature-fusion variant (2026-08-16): KnowledgeInfusedFrameworkFeatureFusion
+    marks itself with requires_features_input=True and expects forward(x,
+    y_features) instead of forward(x). Checked here (not at call sites) so
+    every training/validation/SWA loop stays untouched except for threading
+    y_features through -- they already have it in scope from the DataLoader."""
+    if getattr(model, "requires_features_input", False):
+        out = model(x, y_features)
+    else:
+        out = model(x)
     if len(out) == 4:
         return out
     return out[0], out[1], out[2], None
@@ -509,7 +521,7 @@ def train_single_fold_multitask(
             optimizer.zero_grad()
 
             with torch.amp.autocast("cuda", enabled=use_amp):
-                distress_logit, figo_logits, feature_preds, criteria_logits = _forward_model(model, X_batch)
+                distress_logit, figo_logits, feature_preds, criteria_logits = _forward_model(model, X_batch, yfeat_batch)
                 component_tensors, component_floats = compute_multitask_loss(
                     distress_logit=distress_logit,
                     figo_logits=figo_logits,
@@ -599,8 +611,9 @@ def train_single_fold_multitask(
             with torch.no_grad():
                 for X_batch, yp_batch, yf_batch, yfeat_batch in val_loader:
                     X_batch = X_batch.to(device)
+                    yfeat_batch = yfeat_batch.to(device)
                     with torch.amp.autocast("cuda", enabled=use_amp):
-                        distress_logit, figo_logits, feature_preds, _ = _forward_model(model, X_batch)
+                        distress_logit, figo_logits, feature_preds, _ = _forward_model(model, X_batch, yfeat_batch)
                         probs = torch.sigmoid(distress_logit.squeeze(-1))
                     val_targets_list.extend(yp_batch.cpu().numpy())
                     val_probs_list.extend(probs.cpu().numpy())
@@ -633,10 +646,11 @@ def train_single_fold_multitask(
             model.eval()
             swa_targets, swa_probs = [], []
             with torch.no_grad():
-                for X_batch, yp_batch, _, _ in val_loader:
+                for X_batch, yp_batch, _, yfeat_batch in val_loader:
                     X_batch = X_batch.to(device)
+                    yfeat_batch = yfeat_batch.to(device)
                     with torch.amp.autocast("cuda", enabled=use_amp):
-                        distress_logit, _, _, _ = _forward_model(model, X_batch)
+                        distress_logit, _, _, _ = _forward_model(model, X_batch, yfeat_batch)
                         probs = torch.sigmoid(distress_logit.squeeze(-1))
                     swa_targets.extend(yp_batch.cpu().numpy())
                     swa_probs.extend(probs.cpu().numpy())
@@ -737,7 +751,7 @@ def run_dry_run(device: torch.device, ablation: str = "full") -> None:
     feat_stds = torch.ones(8).to(device)
     criteria_pos_weights = torch.ones(len(FIGO_CRITERIA_NAMES)).to(device) if include_criteria_head else None
 
-    distress_logit, figo_logits, feature_preds, criteria_logits = _forward_model(model, X)
+    distress_logit, figo_logits, feature_preds, criteria_logits = _forward_model(model, X, yfeat)
     print(f"distress_logit shape: {tuple(distress_logit.shape)}")
     print(f"figo_logits shape:    {tuple(figo_logits.shape)}")
     print(f"feature_preds shape:  {tuple(feature_preds.shape)}")
@@ -879,7 +893,17 @@ def train_and_evaluate_model8(
     loss_method = loss_weighting_cfg.get("method", "fixed")
     print(f" Loss Weighting: {loss_method} | Scheduler: {scheduler_cfg.get('type', 'cosine')}")
     print(f" EMA: {ema_cfg.get('enabled', False)} | SWA: {swa_cfg.get('enabled', False)}")
-    print(f" Augmentation: {augmentation_cfg.get('enabled', False)} | Sampling: {sampling_cfg.get('method', 'default')}")
+    # BUG FIX (2026-08-16): this print previously defaulted to False while the
+    # actual augmentor-building code below defaults to True (augmentation_cfg.get
+    # ("enabled", True)) -- since none of the CrossFormer configs have ever had
+    # an `augmentation:` section, every CrossFormer run this session actually
+    # had PhysiologicalAugmentor active (p=0.5, default noise/drift/scale/jitter
+    # params) despite every printed log claiming "Augmentation: False". Numbers
+    # from those runs aren't wrong, just mislabeled -- augmentation was silently
+    # on the whole time. To get a genuinely augmentation-off run going forward,
+    # either add `augmentation: {enabled: false}` to the config or pass
+    # --no_augmentation explicitly.
+    print(f" Augmentation: {augmentation_cfg.get('enabled', True)} | Sampling: {sampling_cfg.get('method', 'default')}")
     print(f"{'='*65}\n")
 
     # Load dataset
@@ -1021,6 +1045,23 @@ def train_and_evaluate_model8(
             )
             model = KnowledgeInfusedFrameworkWideDistress(
                 encoder=encoder,
+                head_hidden_dim=heads_cfg.get("hidden_dim", 64),
+                head_dropout=heads_cfg.get("dropout", 0.2),
+                include_criteria_head=ablation in ("plus_criteria", "features_criteria"),
+            ).to(device)
+        elif heads_cfg.get("feature_fusion", False):
+            # Feature-fusion prototype (2026-08-16): DistressHead gets the 8
+            # hand-crafted clinical features concatenated with z as direct
+            # input, instead of only via auxiliary loss -- see
+            # src/models/knowledge_infused_framework_feature_fusion.py for the
+            # full rationale. Backbone-agnostic (works with any encoder), so
+            # this is opt-in via heads.feature_fusion: true rather than
+            # backbone.model, unlike the wide-distress variant.
+            encoder = build_encoder(backbone_cfg)
+            model = KnowledgeInfusedFrameworkFeatureFusion(
+                encoder=encoder,
+                feature_means=feature_means,
+                feature_stds=feature_stds,
                 head_hidden_dim=heads_cfg.get("hidden_dim", 64),
                 head_dropout=heads_cfg.get("dropout", 0.2),
                 include_criteria_head=ablation in ("plus_criteria", "features_criteria"),
