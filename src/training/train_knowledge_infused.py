@@ -896,7 +896,12 @@ def train_and_evaluate_model8(
     feature_stds = torch.tensor(feat_stds_np, dtype=torch.float32)
 
     y_all = dataset.y_primary
-    folds = create_patient_level_folds(patient_ids, y_all, k_folds=k_folds)
+    # Joint (distress, FIGO class) stratification (2026-08-16) -- see
+    # create_patient_level_folds()'s docstring for why: fold 2 was
+    # consistently the weakest fold across every experiment this session
+    # regardless of what changed about the model, and turned out to have a
+    # real FIGO-class composition skew under distress-only stratification.
+    folds = create_patient_level_folds(patient_ids, y_all, k_folds=k_folds, secondary_labels=dataset.y_figo)
 
     os.makedirs(save_dir, exist_ok=True)
     os.makedirs(results_dir, exist_ok=True)

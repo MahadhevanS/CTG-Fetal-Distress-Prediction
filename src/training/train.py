@@ -8,7 +8,7 @@ PyTorch Automatic Mixed Precision (AMP), and standardized metric evaluation.
 import argparse
 import os
 import sys
-from typing import Dict, List, Tuple
+from typing import Dict, List, Optional, Tuple
 
 import numpy as np
 import torch
@@ -199,9 +199,30 @@ def load_all_dataset_splits(data_dir: str) -> Tuple[torch.Tensor, torch.Tensor, 
 
 
 def create_patient_level_folds(
-    patient_ids: List[str], y_all: torch.Tensor, k_folds: int = 5
+    patient_ids: List[str], y_all: torch.Tensor, k_folds: int = 5,
+    secondary_labels: Optional[torch.Tensor] = None,
 ) -> List[Tuple[np.ndarray, np.ndarray]]:
-    """Generates Stratified K-Fold indices based on unique patient IDs."""
+    """
+    Generates Stratified K-Fold indices based on unique patient IDs.
+
+    Args:
+        secondary_labels: Optional (N,) tensor aligned with patient_ids (e.g.
+            per-window FIGO class) for JOINT stratification alongside y_all --
+            i.e. folds balanced on (distress label x secondary label) instead
+            of distress label alone. Added 2026-08-16: diagnosed that fold 2
+            was consistently the weakest fold across every Model 8 experiment
+            this session regardless of architecture/hyperparameter/loss-
+            weighting changes, and it turned out to have a real composition
+            skew -- StratifiedKFold only stratified on the binary distress
+            label, so nothing constrained the FIGO class mix per fold, and
+            fold 2 ended up with the lowest FIGO-Normal share (5.5% vs 8-13%
+            elsewhere) and highest FIGO-Suspicious share (78.6%) of all 5
+            folds by chance (see scripts/diagnose_fold2_composition.py).
+            Defaults to None (identical behavior to before this fix) so
+            train.py's own single-task standalone call site (line ~416,
+            unchanged) is completely unaffected -- only Model 8's fold split
+            (train_knowledge_infused.py) opts into this.
+    """
     unique_patients = np.array(sorted(list(set(patient_ids))))
 
     patient_labels = []
@@ -214,12 +235,30 @@ def create_patient_level_folds(
         patient_labels.append(p_label)
     patient_labels = np.array(patient_labels)
 
+    strat_labels = patient_labels
+    if secondary_labels is not None:
+        secondary_np = secondary_labels.numpy()
+        patient_secondary = np.array([
+            int(np.max(secondary_np[patient_ids_np == pid])) for pid in unique_patients
+        ])
+        joint_labels = patient_labels * (patient_secondary.max() + 1) + patient_secondary
+        # StratifiedKFold requires every stratum to have >= k_folds members;
+        # fall back to distress-only stratification rather than crash if a
+        # rare (distress, secondary) combination is too small.
+        stratum_counts = np.bincount(joint_labels)
+        if stratum_counts[stratum_counts > 0].min() >= k_folds:
+            strat_labels = joint_labels
+        else:
+            print(f"[WARNING] create_patient_level_folds: joint stratification requested "
+                  f"but at least one (distress, secondary) stratum has fewer than "
+                  f"{k_folds} patients -- falling back to distress-only stratification.")
+
     try:
         from sklearn.model_selection import StratifiedKFold
 
         skf = StratifiedKFold(n_splits=k_folds, shuffle=True, random_state=42)
         folds = []
-        for train_p_idx, val_p_idx in skf.split(unique_patients, patient_labels):
+        for train_p_idx, val_p_idx in skf.split(unique_patients, strat_labels):
             val_patients = set(unique_patients[val_p_idx])
 
             train_indices = np.where([pid not in val_patients for pid in patient_ids])[0]
