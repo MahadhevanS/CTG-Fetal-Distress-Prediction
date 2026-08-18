@@ -1,0 +1,39 @@
+{
+  "ablation": "plain",
+  "folds": [
+    {
+      "fold": 1,
+      "patient_auroc": 0.8568443051201672,
+      "window_auroc": 0.8063973063973064,
+      "patient_auprc": 0.5074419068440073
+    },
+    {
+      "fold": 2,
+      "patient_auroc": 0.7173458725182863,
+      "window_auroc": 0.804479027895523,
+      "patient_auprc": 0.42250106562022616
+    },
+    {
+      "fold": 3,
+      "patient_auroc": 0.7915360501567398,
+      "window_auroc": 0.8326555425121583,
+      "patient_auprc": 0.5206846975758327
+    },
+    {
+      "fold": 4,
+      "patient_auroc": 0.7061688311688311,
+      "window_auroc": 0.7954261954261953,
+      "patient_auprc": 0.4199693493564769
+    },
+    {
+      "fold": 5,
+      "patient_auroc": 0.6535303776683088,
+      "window_auroc": 0.7872137972048766,
+      "patient_auprc": 0.2802772277106135
+    }
+  ],
+  "patient_auroc_mean": 0.7450850873264667,
+  "patient_auroc_std": 0.07115338165092347,
+  "seed": 42,
+  "epochs": 40
+}

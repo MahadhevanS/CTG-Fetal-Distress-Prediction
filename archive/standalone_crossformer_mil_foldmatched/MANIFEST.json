@@ -1,0 +1,116 @@
+{
+  "name": "standalone_crossformer_mil_foldmatched",
+  "archived_utc": "2026-08-18T21:27:04.294050Z",
+  "command": "python src/models/train_ctg_crossformer.py --data_dir data/processed_mil/ --checkpoint_dir checkpoints/ctg_crossformer_mil_foldmatched/ --fold_mode patient_level",
+  "config": "configs/ctg_crossformer_config.yaml",
+  "metrics": {
+    "cv_auroc_mean": 0.8243,
+    "cv_auroc_std": 0.051,
+    "cv_auprc": 0.2345,
+    "cv_recall": 0.2883,
+    "cv_specificity": 0.958,
+    "cv_f1": 0.2518,
+    "test_auroc": 0.7305,
+    "test_auprc": 0.102,
+    "test_recall": 0.0784,
+    "per_fold_auroc": [
+      0.868,
+      0.8555,
+      0.8719,
+      0.75,
+      0.7762
+    ]
+  },
+  "notes": "Standalone CTG-CrossFormer, uniform-stride MIL substrate, patient_level folds matching train_knowledge_infused.py. Best AUROC of the session BUT sensitivity only 28.8% CV / 7.8% test -- clinically inadequate at the default 0.5 threshold, no threshold optimisation in this script.",
+  "git": {
+    "commit": "3fc085277974fda20876c53066c841fd323c7bd1",
+    "branch": "crossformer_test",
+    "dirty_files": [
+      "M docs/model8_crossformer_run_history.md",
+      " M src/models/train_ctg_crossformer.py",
+      " M src/preprocessing/filtering.py",
+      " M src/preprocessing/signal_quality.py",
+      " M src/training/train_knowledge_infused.py",
+      "?? archive/",
+      "?? aug_17_commands.txt",
+      "?? checkpoints/model8_crossformer_featurefusion/",
+      "?? checkpoints/model8_crossformer_widedistress/",
+      "?? checkpoints/model8_widedistress_mil_substrate/",
+      "?? checkpoints/model9_kgmil/",
+      "?? configs/model8_crossformer_widedistress_paper_match_config.yaml",
+      "?? configs/model8_widedistress_mil_substrate_config.yaml",
+      "?? data/processed_mil/",
+      "?? data/processed_paper_match/",
+      "?? e3sconf_aiei2026_01005.pdf",
+      "?? scripts/archive_model.py",
+      "?? scripts/audit_bag_size_leak.py",
+      "?? scripts/delong_test.py",
+      "?? scripts/ensemble_oof_eval.py",
+      "?? scripts/ensemble_standalone_vs_model8.py",
+      "?? scripts/generate_pretraining_windows.py",
+      "?? scripts/pooled_oof_ctg_crossformer.py",
+      "?? scripts/pooled_oof_model8_paper_match.py",
+      "?? scripts/pretrain_ctg_crossformer_ssl.py",
+      "?? src/models/ctg_crossformer_pretraining.py",
+      "?? src/models/knowledge_guided_mil.py",
+      "?? src/preprocessing/pipeline_mil.py",
+      "?? src/preprocessing/pipeline_paper_match.py",
+      "?? src/training/mil_dataset.py",
+      "?? src/training/ssl_masking.py",
+      "?? src/training/train_mil.py"
+    ]
+  },
+  "data": {
+    "dir": "data/processed_mil/",
+    "files": {
+      "ctu_signal_scaler.npz": {
+        "sha256": "b9b0cef1eda3986455f955662c784b8f0fd57a4e71f6235da816e3c59b2ce519",
+        "bytes": 516
+      },
+      "feature_scaler.npz": {
+        "sha256": "e185d77a415b0e50ecbf3d584769296e14e6e8ae9fa65f44e0415ce20435ef9e",
+        "bytes": 600
+      },
+      "test_dataset.pt": {
+        "sha256": "dda9b796d99f1da2161bd3722bcb5d36dd6c7429192767af73bfd101a8c77043",
+        "bytes": 42447504
+      },
+      "train_dataset.pt": {
+        "sha256": "f1c140a0077903672623421f71e20ee1653670fdebec864ad0121fbdc9153230",
+        "bytes": 203417499
+      },
+      "val_dataset.pt": {
+        "sha256": "ebd6e0b395480141d1bc2b621d11c8ba5cb6ee52bfe8be4d0c33dba6fca6fb73",
+        "bytes": 44718085
+      }
+    }
+  },
+  "checkpoints": {
+    "ctg_crossformer_fold_1_best.pth": {
+      "sha256": "3035d076055d5150e0f63f010c418ed161aa21e8eb8fb35e704dd67805a87f53",
+      "bytes": 10071609
+    },
+    "ctg_crossformer_fold_2_best.pth": {
+      "sha256": "ba09cb523ee3f69887b56977658c17cf77c3f5435098a692f527ac0c46d96eb3",
+      "bytes": 10071609
+    },
+    "ctg_crossformer_fold_3_best.pth": {
+      "sha256": "5e612063f9b1e8d9b29bfa916aa32c1c5fa933822959414051884000904138bd",
+      "bytes": 10071609
+    },
+    "ctg_crossformer_fold_4_best.pth": {
+      "sha256": "b4e980afc51085bdb780d09a4bce252e36093c26be3685a06f3d33f8964fdede",
+      "bytes": 10071609
+    },
+    "ctg_crossformer_fold_5_best.pth": {
+      "sha256": "11a196ab7700a89c237ac5d08a31277c57b356a6afa06ddae83442f7d9a0b808",
+      "bytes": 10071609
+    }
+  },
+  "env": {
+    "python": "3.10.11",
+    "torch": "2.11.0+cu128",
+    "cuda": "12.8",
+    "platform": "Windows-10-10.0.26200-SP0"
+  }
+}

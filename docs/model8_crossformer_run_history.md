@@ -575,7 +575,7 @@ system would compute them at inference time.
 
 ---
 
-## RUN 11 — Feature-fusion CrossFormer, `full` only, default hyperparameters (QUEUED, NOT YET RUN)
+## RUN 11 — Feature-fusion CrossFormer, `full` only, default hyperparameters
 
 ### Run configs
 - **New architecture built**: `src/models/knowledge_infused_framework_feature_fusion.py`
@@ -599,49 +599,504 @@ system would compute them at inference time.
   isolating the fusion mechanism alone, not combined with wide-distress or
   tuned hyperparameters (deliberate — avoid repeating the earlier
   uncertainty+EMA confound mistake).
-- Command (to run): `python src/training/train_knowledge_infused.py --config configs/model8_crossformer_featurefusion_config.yaml --ablation full --seed 42`
-- **Status: a local CPU smoke test (1 epoch, `distress_only`, this sandbox
-  only) was started to sanity-check the wiring, showed no crash through
-  fold-1 setup, then was killed at the user's request** — the user will run
-  the real thing directly on the GPU laptop instead. **No real results yet.**
+- Command: `python src/training/train_knowledge_infused.py --config configs/model8_crossformer_featurefusion_config.yaml --ablation full --seed 42`
+- Run directly on the GPU laptop (real run, not the earlier killed CPU smoke
+  test). Fold split: joint-stratified (post fold-2-fix), same as Runs 9/10.
 
 ### Run metrics
-*(pending — not yet run)*
+`full`: **AUROC 0.7954 ± 0.0504**
+(accuracy 78.2640%±4.4135%, auprc 0.3666±0.1171, f1 0.4672±0.0803, precision
+37.2454%±8.6452%, recall 64.1518%±5.3497%, specificity 80.7373%±4.7017%,
+sens@90spec 40.2305%±12.4674%, optimal_threshold 0.5300±0.0551,
+ece 0.2025±0.0657, brier 0.1606±0.0266)
+
+Per-fold: Fold1=0.8117, Fold2=0.8055, Fold3=0.8736, Fold4=0.7622, Fold5=0.7239
 
 ### Run inferences
-*(pending)*
+- **Lands squarely between the other two architectures on the same fold
+  split, and beats neither cleanly.** vs. Run 9 standard (0.7908±0.0312):
+  +0.0046, wins fold 1/2/3, loses fold 4/5 (3/5). vs. Run 10 wide-distress
+  (0.7995±0.0498): −0.0041, wins fold 2/4, loses fold 1/3/5 (2/5). Directly
+  contradicts the "fundamentally stronger, untried mechanism" framing that
+  motivated building this — in practice, feature fusion is a wash, not a win.
+- **Worst calibration of all three architectures**: ECE 0.2025, vs. standard's
+  0.1482 and wide-distress's 0.1819. Sens@90%Spec (40.23%) also sits between
+  the other two rather than leading. No metric on this run is architecture-best.
+- Fold pattern echoes Run 10 (fold 3 spikes to 0.87, fold 5 sinks to 0.72) more
+  than Run 9's tighter spread — suggests the instability wide-distress
+  reintroduced isn't unique to widening the latent; concatenating raw
+  features in also loosens fold-to-fold consistency vs. the plain standard
+  architecture.
+- Only `full` was tested (no `distress_only` counterpart run for this
+  architecture) — so unlike the other two architectures, there's no
+  same-architecture 5-fold significance baseline to compare against here,
+  only cross-architecture comparisons on the same split.
 
 ### Updations for next run
-- Compare against Run 9's **0.7908 ± 0.0312** (standard architecture,
-  current best validated baseline).
-- If promising: consider combining with wide-distress (fuse features into
-  the 256-dim path too — not built yet) and/or with tuned hyperparameters
-  (the two deprioritized-but-ready configs from Runs 5/8) — one variable at
-  a time, as established practice this whole document.
-- Also still fully open/pending: MS-LSTM EMA-off re-run, MS-LSTM
-  hyperparameter tuning (never done, parked after Run 6), turning on
-  `error_analysis: {enabled: true}` on a future run to get concrete
-  where-does-it-fail evidence (never done, cheap, one config line).
+- **Feature fusion alone does not beat wide-distress and is not worth pursuing
+  in isolation.** Don't run the full 8-variant ablation sweep for this
+  architecture — the `full`-vs-`full` comparison already shows it's not
+  competitive with the current best.
+- The one combination not yet tried: fusing features into the *wide-distress*
+  256-dim path (not built) — the two architecture changes individually gave
+  small, different-direction edges (wide-distress +0.0087, feature-fusion
+  +0.0046 vs. standard), so an additive combination is a legitimate next
+  experiment, but given how close all three now are (0.7908–0.7995, spanning
+  under 0.01), it's not obviously going to close a ~0.06 gap either — treat as
+  low-confidence, not the next presumed win.
+- Three architecture variants have now been tried and all cluster tightly
+  (0.79–0.80) — this is starting to look like a ceiling for architecture-only
+  tweaks on this encoder/data. The larger untried levers remain: MS-LSTM
+  EMA-off re-run (never done since Run 6), MS-LSTM hyperparameter tuning
+  (never done), CNN1D backbone (never run at all with this session's fixes),
+  and turning on `error_analysis: {enabled: true}` for concrete
+  where-does-it-fail evidence (never done, one config line) — the last one
+  is cheap and could reveal *why* all three architectures plateau in the same
+  place, which no amount of further architecture tweaking has explained.
+
+---
+
+## [Investigation, not a Model 8 training run] — Ensembling toward a 90%+ AUROC target
+
+**New goal from the user (2026-08-17), superseding the ~0.84 target above**:
+90%+ AUROC via knowledge infusion/feature fusion, to demonstrate Model 8 beats
+the standalone CrossFormer's own 0.8565 CV / 0.8653 test SOTA benchmark — not
+just close the gap to it. Flagged to the user as a large jump (+0.04–0.14
+beyond even the plain classifier's own ceiling, larger than any single lever
+in this whole document moved AUROC) and above what's typically reported in
+CTU-CHB / pH-based fetal-distress literature (~0.75–0.85). User chose
+**ensembling** as the first, cheapest thing to try, over pretraining/deeper
+fusion/a literature reality-check.
+
+### Sub-step A — OOF ensemble sanity check, two already-trained Model 8 variants
+
+Before ensembling against the actual standalone benchmark, found a data-
+currency problem: `checkpoints/ctg_crossformer/` (the standalone benchmark
+achieving 0.8565/0.8653) was trained **2026-08-10**, but `data/processed/`
+was regenerated **2026-08-15** (LTV preprocessing fix, `b7fbe48`/`0de6edd`).
+Window/patient composition can drift run-to-run (documented earlier in this
+doc), so reusing those checkpoints' fold assignments against current data
+risks silently invalid held-out splits. Deferred fixing that (→ Sub-step B)
+and instead built `scripts/ensemble_oof_eval.py` to sanity-check the
+ensembling *methodology* first, using two checkpoint sets both confirmed
+trained on the current (post-2026-08-15) data: `model8_crossformer/
+distress_only` (standard architecture, old distress-only-stratified folds,
+trained 2026-08-15) and `model8_crossformer_widedistress/full` (new joint-
+stratified folds, trained 2026-08-16).
+
+**Method**: the two checkpoint sets use *different* fold-split algorithms, so
+fold `i` doesn't mean the same patients in both. Rather than assume alignment,
+the script reconstructs each model's own fold split independently
+(deterministic given fixed data + seed=42) and computes true out-of-fold
+predictions per window from only that window's own held-out fold — leak-free
+regardless of how the two splits relate. Pooled AUROC computed once across
+all 6,826 windows (not averaged per-fold, since fold membership differs).
+
+**Finding #1 (methodological)**: pooling raw `sigmoid(logit)` OOF scores
+directly gave pooled AUROC **0.03–0.05 lower** than each checkpoint's own
+previously-reported mean-of-fold AUROC (e.g. wide-distress full: 0.7742
+pooled vs. 0.7995 reported) — each fold's model lands at its own local logit
+scale/offset with no cross-fold calibration enforced during training, so
+naive pooling corrupts the *across*-fold ranking even though each fold's own
+internal ranking is fine. **Fixed** by fitting a per-fold Platt scaling
+(1-D logistic regression on that fold's own held-out logits/labels — a
+monotonic transform *within* the fold, so it cannot change that fold's own
+AUROC, only puts folds on a comparable probability scale before pooling).
+After the fix, pooled numbers reconcile closely with reported means
+(distress_only: 0.7776 pooled vs. 0.7743 reported; wide-distress full: 0.7976
+pooled vs. 0.7995 reported) — confirms the pooling methodology is now sound.
+**Any future pooled/ensemble OOF evaluation in this project should reuse this
+per-fold-Platt-scaling step — raw-probability pooling across independently-
+trained fold checkpoints is not reliable.**
+
+**Finding #2 (result)**: 50/50-average ensemble of these two Model 8 variants
+— **AUROC 0.8045**, a genuine **+0.0070** lift over the better single model
+(wide-distress full, 0.7976). A blind (non-label-fit) weight sweep is
+included in the script's output as a diagnostic only (best alpha=0.4 →
+0.8056) — that number is optimistic/non-blind (the mixing weight was chosen
+using the labels), reported for reference, not as a claimed result.
+
+**Inference**: ensembling shows a real, modest, positive signal in the ~1%
+AUROC range — consistent with typical expectations for averaging two
+correlated models, not a breakthrough on its own. The two models ensembled
+here (0.7776, 0.7976) are both far below the real prize target (the 0.8565
+standalone benchmark) — ensembling two mediocre models can only ever produce
+a modestly-less-mediocre result. The methodologically interesting result is
+elsewhere: this validates the OOF-ensembling pipeline works and is worth
+running against the actual strong model next.
+
+### Sub-step B — Retraining the standalone benchmark on current data (IN PROGRESS)
+
+To get a valid apples-to-apples ensemble against the real 0.8565/0.8653 SOTA
+benchmark, retraining `train_ctg_crossformer.py`'s standalone 5-fold CV fresh
+against the current `data/processed/` files (unchanged since 2026-08-15
+12:38, verified via file mtimes — no further regeneration since). **Written
+to a new checkpoint directory (`checkpoints/ctg_crossformer_current/`),
+deliberately NOT overwriting `checkpoints/ctg_crossformer/`** — the original
+Aug-10 checkpoints and their 0.8565/0.8653 numbers stay reproducible/intact
+as the documented benchmark; this is a data-currency-matched sibling for
+ensembling purposes only.
+
+- Command: `python src/models/train_ctg_crossformer.py --config configs/ctg_crossformer_config.yaml --data_dir data/processed/ --checkpoint_dir checkpoints/ctg_crossformer_current/`
+- Launched in background 2026-08-17; ~1.5–2h expected (5 folds × 50 epochs,
+  based on the original Aug-10 run's checkpoint-save timestamps spanning
+  ~1h42m end to end).
+
+### Sub-step B result — MAJOR FINDING: the 0.8565/0.8653 ceiling does not reproduce on current data
+
+Retraining finished (2026-08-17, ~52 min, much faster than the ~1.5–2h
+estimate — ~12–15s/epoch). Same script, same config, same code, **only the
+underlying `data/processed/` files differ** (current, post-LTV-fix, vs. the
+2026-08-10 checkpoints' stale pre-fix data):
+
+| | CV AUROC (mean±std, 5-fold) | Test AUROC (held-out 82 patients) |
+|---|---|---|
+| Original (2026-08-10, stale data) | **0.8565** | **0.8653** |
+| Retrained (2026-08-17, current data) | **0.7834 ± 0.0551** | **0.7685** |
+
+Per-fold: Fold1=0.7791, Fold2=0.8505, Fold3=0.8284, Fold4=0.6919, Fold5=0.7671.
+Test set at default threshold 0.5: accuracy 92.3%, precision 27.3%, recall
+15.8%, F1 0.20 — the test AUROC (0.7685) is respectable but the model is
+badly under-triggering the positive class at that threshold (no threshold
+tuning in this script, unlike Model 8's pipeline).
+
+**Initially attributed to the LTV preprocessing fix (2026-08-15) — CORRECTED
+after direct code inspection, prompted by the user asking whether the old
+data could be recovered.** Traced the standalone classifier's actual inputs
+through `src/preprocessing/pipeline.py`: `calculate_variability()`'s
+STV/LTV output only feeds `y_features` and the FIGO pseudo-label
+(`classify_figo()`) — **neither of which `train_ctg_crossformer.py` ever
+sees**. Its only inputs are `X` (built from `fhr_norm`/`uc_win`, computed
+*before* the variability step) and `y_primary` (pure pH-threshold + horizon
+logic, unrelated to variability). The patient train/val/test split
+(`train_test_split(..., random_state=42)`) is also independent of it. Checked
+the full repo-wide commit history for 2026-08-08–17 (not just
+`src/preprocessing/`) — no other commit in that window touches windowing,
+filtering, `signal_quality.py`, `baseline.py`, or `ingestion.py`. `data/raw/`
+itself (CTU-CHB `.dat` files + `clinical_metadata.csv`) is untouched since
+2026-08-09, predating both the Aug-10 standalone run and the Aug-15 regen.
+**Conclusion: the LTV fix cannot be the cause — the data the standalone
+model actually trains on should be bit-identical whether the fix is applied
+or not.**
+
+**Real suspect: GPU training non-determinism.** `train_ctg_crossformer.py`
+calls `set_seed(42)` (random/numpy/torch/cuda manual_seed) but never sets
+`torch.backends.cudnn.deterministic=True` / `benchmark=False` — so training
+is not actually bit-reproducible run-to-run on GPU. For a 546-patient,
+14.7%-prevalence dataset, ordinary cudnn/kernel-selection nondeterminism can
+plausibly swing 5-fold AUROC by several points on its own (this run's fold 4
+cratered to 0.6919, consistent with one unlucky fold rather than a systematic
+data problem). **RESOLVED (second run completed 2026-08-17)**: ran the standalone benchmark
+a second time on identical current data (`checkpoints/ctg_crossformer_current_run2/`).
+Result: **CV AUROC 0.7887 ± 0.0631, Test AUROC 0.7237** — within 0.0053 CV of
+the first retrain (0.7834), with the same fold pattern both times (fold 4
+weak both runs: 0.6919 then 0.6798; folds 2–3 strong both runs: 0.85+).
+Per-fold: Fold1=0.7798, Fold2=0.8520, Fold3=0.8513, Fold4=0.6798, Fold5=0.7804.
+
+**Conclusion: 0.8565/0.8653 does not reproduce and is not ordinary
+run-to-run variance — two independent runs converge tightly on ~0.79 CV.
+The honest, current, reproducible standalone CrossFormer ceiling is ~0.79 CV
+/ ~0.72–0.77 test, not 0.8565/0.8653.** Why the original Aug-10 run scored
+~0.07 higher remains unexplained (data and code are provably equivalent per
+the analysis above) — most likely that specific run was itself the outlier,
+possibly from an unusually favorable weight initialization given no cudnn
+determinism is enforced. Not pursued further — the practical, decision-
+relevant conclusion is settled: **use ~0.79 CV as the standalone reference
+for all future comparisons, not 0.8565.** This substantially closes (in fact
+reverses) the gap this document was built around: Model 8 wide-distress
+`full` (0.7976 pooled OOF) already sits at or slightly above the honest
+standalone reference.
+
+### Sub-step C — the real ensemble: standalone (current-data retrain) x Model 8 wide-distress full
+
+`scripts/ensemble_standalone_vs_model8.py` — same per-fold-Platt-scaling
+pooled-OOF methodology as Sub-step A, extended to handle an asymmetry: the
+standalone benchmark only ever trains/CVs over `train_dataset.pt`'s 381
+patients (6,177 of 6,826 windows); the other 649 windows (165 patients from
+`val_dataset.pt`/`test_dataset.pt`) were never held out by any of its 5
+folds, so those get the average of all 5 fold checkpoints' predictions
+(still leak-free — none of the 5 folds ever trained on them — just not a
+single-fold OOF in the strict sense). Verified index alignment between the
+381-patient pool and Model 8's 546-patient pool via a direct tensor-equality
+assertion (both derive from the same files via sequential, unshuffled
+`torch.load` concatenation).
+
+**Results** (all pooled OOF AUROC, current data, both models):
+
+| | AUROC |
+|---|---|
+| Standalone (current-data retrain) | 0.7888 |
+| Model 8 wide-distress `full` | 0.7976 |
+| **50/50 ensemble** | **0.8100** |
+| Best-alpha ensemble (alpha=0.4 toward standalone, optimistic/non-blind) | 0.8103 |
+
+**50/50 ensemble lift over the better single model: +0.0125.** Combined with
+Sub-step A's +0.0070 (a weaker pairing), this confirms ensembling gives a
+real, consistent, but modest lift (~1–1.5 points) — not remotely enough on
+its own to reach 90%, and the freshly-measured current-data reality is that
+**Model 8 wide-distress `full` (0.7976) already slightly *beats* the fairly-
+retrained standalone benchmark (0.7888)** on the same data — a reversal of
+the entire narrative this document was built around, which was chasing a gap
+against stale-data numbers.
+
+### Updations for next run
+
+- **Report this finding to the user before doing anything else** — it
+  reframes the goal. Two open questions only the user can settle: (1) is
+  0.8565/0.8653 still the intended target (paper-replication number) even
+  though it doesn't reproduce on current data, or should
+  `checkpoints/ctg_crossformer_current/`'s 0.7834/0.7685 be the new reference
+  ceiling? (2) given ensembling only adds ~1–1.5 points and the current-data
+  ceiling across all tested models/ensembles tops out at 0.8100, is 90% still
+  the target, or should it be revisited?
+- If current-data numbers are accepted as the new reference: Model 8 (wide-
+  distress `full`) already matches/beats the standalone benchmark on
+  apples-to-apples current data — arguably the original "beat the SOTA"
+  framing is already satisfied, just not by the originally-cited margin.
+- Bigger ensembles (3+ models: standalone + wide-distress + feature-fusion +
+  distress_only, stacked with a proper meta-learner instead of grid-searched
+  alpha) could add another fraction of a point but are very unlikely to
+  reach 90% — the other candidate levers (self-supervised pretraining, deeper
+  multi-layer feature fusion, literature reality-check) remain the more
+  credible paths if 90% stays the goal.
+- Worth a dedicated side investigation: what did the LTV fix actually change
+  about the label-signal relationship that cost ~0.07–0.10 AUROC uniformly
+  across a completely unrelated model/training script? Not yet investigated
+  — this affects every number in this document post-dating the fix, not just
+  the standalone benchmark.
+
+---
+
+## [Investigation] — Self-supervised pretraining, tried and found NOT to help (2026-08-17)
+
+Following the ensembling/data-currency investigation above, user chose to pursue self-supervised
+pretraining of `CTGCrossformerEncoder` as the next lever (over reconsidering the pH-threshold
+label framing). Full design planned and implemented:
+
+- `src/training/ssl_masking.py::mask_ctg_signal()` — blockwise raw-signal masking (~50% ratio,
+  4–40s blocks, channel-independent, mask_value=0.0), returns `(X_masked, mask)`.
+- `src/models/ctg_crossformer_pretraining.py` — `CTGCrossformerSSLEncoder` (subclasses
+  `CTGCrossformerEncoder`, exposes `tf_out` alongside `z`, zero new params so `state_dict()`
+  stays loadable into the base encoder class), `CTGReconstructionDecoder` (ConvTranspose1d stack,
+  `tf_out (B,150,256) -> (B,2,4800)` raw-signal reconstruction), `CTGCrossformerSSLPretrainer`.
+- `scripts/generate_pretraining_windows.py` — dense unlabeled windows via `get_valid_windows()`
+  directly (30s stride, bypassing the supervised pipeline's label-conditional stride), same
+  signal-processing chain and the already-fit `ctu_signal_scaler.npz` (not refit). Produced
+  **30,985 windows from 468 patients** (test-set's 82 patients excluded from the pretraining
+  corpus; single shared corpus across all folds — the cheaper of the two data-scope options,
+  chosen deliberately over 5x-cost per-fold pretraining).
+- `scripts/pretrain_ctg_crossformer_ssl.py` — masked-reconstruction loss (MSE on masked positions
+  only), AdamW, `WarmupCosineScheduler` (reused from `train_knowledge_infused.py`), 150 epochs.
+- Both `train_ctg_crossformer.py` and `train_knowledge_infused.py` given a `--pretrained_encoder`
+  flag to load the saved encoder state_dict before each fold's fine-tuning.
+
+### Pretraining run result
+150 epochs, ~4.6h (slower than the ~2.3–3.1h estimate — likely the masking function's per-sample
+Python-loop CPU cost). **Overfit past epoch 40**: train loss fell monotonically (0.370→0.156) but
+holdout reconstruction loss bottomed at **epoch 40 (0.26915)** then steadily worsened to ~0.30 by
+epoch 150. Checkpointing-on-best-holdout-loss worked as designed — the saved
+`checkpoints/ctg_crossformer_ssl/encoder_pretrained.pth` is the epoch-40 weights, not the
+overfit epoch-150 ones.
+
+### Fine-tuning evaluation — NEGATIVE RESULT
+
+| | AUROC | vs. random-init |
+|---|---|---|
+| Standalone, random-init (2 runs) | 0.7834, 0.7887 | — |
+| **Standalone, pretrained-init** | **0.7945 ± 0.0443** | +0.006 to +0.011 (within the ~0.005–0.007 noise band already established between the two random-init runs — inconclusive) |
+| Model 8 wide-distress `full`, random-init (Run 10) | 0.7995 ± 0.0498 | — |
+| **Model 8 wide-distress `full`, pretrained-init** | **0.7733 ± 0.0377** | **−0.0262 — a real regression, well outside the noise band** |
+
+Standalone's operating-point metrics also got worse under pretrained-init despite flat/slightly-better
+AUROC: mean F1 dropped to 0.295 (vs. ~0.40 random-init), with some folds (fold 1) collapsing to
+2.6% sensitivity at the default 0.5 threshold — pretraining shifted the logit distribution in a
+way that leaves the default threshold poorly calibrated, a real practical cost AUROC doesn't
+capture. Wide-distress's calibration also got worse (ECE 0.196 vs. 0.182 random-init).
+
+**Verdict: this pretraining approach did not help, and regressed the architecture that actually
+matters (Model 8 wide-distress).** Best current explanation, not fully confirmed:
+1. **Task mismatch** — denoising/reconstruction optimizes the encoder to preserve all signal
+   detail (including clinically-irrelevant noise), not necessarily what's useful for distress
+   discrimination.
+2. **Low effective data diversity** — 30,985 windows came from only 468 patients at a 30s stride
+   against a 20-minute window (~97.5% overlap between adjacent windows); window *count* is large
+   but actual information content is far less than that number suggests, likely not meaningfully
+   more diverse than the labeled 6,826-window supervised set already provides.
+3. **SSL task didn't fully converge** — holdout reconstruction loss maxed out its improvement by
+   epoch 40; full unfrozen 50-epoch fine-tuning may simply overwrite whatever the pretrained
+   initialization contributed.
+
+**Note**: this run was executed via `train_knowledge_infused.py ... --pretrained_encoder ...`
+WITHOUT a `--checkpoint_dir` override, so it **overwrote**
+`checkpoints/model8_crossformer_widedistress/`'s fold checkpoints and
+`results/model8_full_cv_results.json` — the original random-init 0.7995-AUROC model weights are
+gone (the number itself remains recorded here and is not in doubt, just the weights are).
+
+### Updations for next run
+- **Do not iterate further on this specific pretraining recipe** (different mask ratios etc.)
+  without a specific reason to expect a different outcome — each iteration costs ~5–6 GPU-hours
+  for an approach that has now failed twice (marginal-at-best on one architecture, clearly
+  negative on the other).
+- The cheaper, previously-deprioritized lever — reconsidering the pH≤7.15 hard-threshold label
+  framing (ordinal/regression reframing, or excluding a gray-zone band around the threshold) —
+  is now the more promising untried option if the user wants to keep pushing past the current
+  ceiling.
+- **Practical standing best result remains**: Model 8 wide-distress `full` random-init (0.7995,
+  though its checkpoint weights are now gone — architecture/config still reproducible) plus the
+  standalone+Model8 ensemble at 0.8100 pooled OOF (Sub-step C, still valid/unaffected by this
+  investigation since it used the pre-overwrite wide-distress checkpoints at the time it ran).
+
+---
+
+## [Major investigation, 2026-08-17/18] — 0.8565 closed, the paper found, and a data leak discovered
+
+### Part A — The 0.8565 target is closed (8-seed sweep)
+
+User asked whether the standalone CrossFormer's 0.8565 could be recovered by finding the
+right seed. Added a `--seed` flag (the script hardcoded `set_seed(42)`) and swept 8 seeds
+on `data/processed/`:
+
+| Seed | 1 | 7 | 13 | 21 | 100 | 123 | **777** | 2026 |
+|---|---|---|---|---|---|---|---|---|
+| CV AUROC | 0.7830 | 0.7808 | 0.7878 | 0.7668 | 0.7702 | 0.7731 | **0.7987** | 0.7705 |
+
+With the two earlier seed-42 runs (0.7834, 0.7887) that is **10 independent runs spanning
+0.7668–0.7987, mean ≈0.780**. None came within 0.058 of 0.8565. **Conclusion: 0.8565 is
+outside the distribution this setup produces — not a reachable seed.** Chasing it is closed.
+User accepted **0.7987 (seed 777)** as the working baseline.
+
+### Part B — The actual paper, obtained
+
+Dang, Nguyen, Ho, *"A Hybrid CNN-Transformer with Cross-Attention for Automated Fetal
+Distress Detection from Cardiotocography,"* E3S Web of Conferences 723, 01005 (2026),
+AIEI 2026. PDF at repo root. **Its reported figure is AUC-ROC 0.822** (pooled across
+5-fold CV; their Table 2 gives mean-of-fold 0.825) — never 0.8565, which was always our
+own run's number.
+
+Architecture matches `ctg_crossformer.py` closely. Protocol differs in 8 identified ways
+(patient-level >50%-missing exclusion → 404 patients; uniform 5-min stride, no last-hour
+truncation → 1,753 windows; no horizon relabeling; per-recording z-score; linear not
+cubic interpolation; no spike/lowpass/baseline steps mentioned; no held-out test set;
+pooled not mean-of-fold metric). Built `src/preprocessing/pipeline_paper_match.py` +
+`scripts/pooled_oof_ctg_crossformer.py` to reproduce it literally.
+
+**Reproduction outcome: did not match.** Our patient-level exclusion removed only 5/552
+patients (0.9%) vs the paper's 148/552 (26.8%) at the same >50% threshold — verified by
+computing the raw missing-ratio distribution directly (max 53.5%, mean 18.8%), so the
+calculation is correct; the paper does not specify how it measured "missing". Standalone
+training on that substrate gave folds 0.6193 / 0.7039 — well below both 0.822 and our own
+0.79. **Run stopped early at user request; paper reproduction abandoned.**
+
+### Part C — CRITICAL: bag-size leak in `data/processed/`
+
+Investigating patient-level modelling (the label, pH ≤ 7.15, is a *patient* outcome, but
+Models 1–8 all train/score per *window*), an initial measurement on seed-777 checkpoints
+appeared to show a large gain (top-3 pooling 0.9186 vs window-level 0.8030).
+
+**That was an artifact and was retracted.** `pipeline.py` selects its stride from the
+label — `DISTRESS_STRIDE_MINUTES=0.5` vs `NORMAL_STRIDE_MINUTES=10` — so distress patients
+get ~80 windows and normal patients ~5. Measured directly:
+
+> **AUROC using window count alone as the predictor: 0.9947** on `data/processed/` train.
+> (distress median 80 windows, range 23–81; normal median 5, range 1–60; *zero* distress
+> patients have <20 windows.)
+
+Max/top-k pooling over 80 draws vs 5 draws is inflated by pure order statistics. Any
+patient-level aggregation on this data measures bag size, not fetal distress.
+
+**Window-level results are UNAFFECTED** — a window is scored on its own signal with no
+knowledge of its sibling count. Every window-level number in this document stands.
+
+New standing guard: `scripts/audit_bag_size_leak.py` (fails at AUROC ≥ 0.60), plus a
+runtime assertion inside `train_mil.py`.
+
+### Part D — New substrate: `data/processed_mil/` (uniform stride)
+
+`src/preprocessing/pipeline_mil.py` — keeps `pipeline.py`'s full signal chain (spike
+removal → cubic interpolation → lowpass → iterative baseline → baseline-corrected
+channel 0 → global train-fit z-score) and changes only windowing/labelling: **uniform
+2.5-min stride for every patient**, plus a new `y_patient` key (pH outcome) and the
+patient-level quality gate. `pipeline.py` and `data/processed/` untouched.
+
+Output: 7,551 windows / 544 patients (5,286 train / 1,162 val / 1,103 test).
+**Leak audit: 0.4415 / 0.5294 / 0.4394 — PASS** (vs 0.9947 on the old data).
+
+**Window-level standalone CrossFormer on this substrate: CV AUROC 0.8200 ± 0.0752,
+pooled OOF 0.8309** (per-fold 0.8003, 0.7659, 0.7204, 0.9087, 0.9048; test 0.7009).
+That is **above the 0.7987 old-data baseline**, and arguably more trustworthy: under the
+old label-conditional stride, window-level AUROC was dominated by a few distress patients
+contributing ~80 near-duplicate windows each. **Caveat: CV 0.8200 vs test 0.7009 is a
+wide gap — the CV figure may be optimistic and should be verified, not assumed.**
+
+### Part E — Model 9 (KG-MIL) built, and its go/no-go FAILED
+
+Built the full patient-level stack: `src/training/mil_dataset.py` (masked variable-length
+bag collation), `src/models/knowledge_guided_mil.py` (gated ABMIL attention + learnable-λ
+clinical risk prior biasing attention + 12 trajectory features, all ablation-gated),
+`src/training/train_mil.py`. Smoke-verified: padded slots get exactly zero attention,
+rows sum to 1, gradient reaches all 99 encoder params, λ receives gradient.
+Deliberately did **not** warm-start from the window-level checkpoints — the two scripts
+use different fold algorithms, so a fold-k baseline checkpoint would have trained on
+patients in KG-MIL's fold-k validation set (a real leak).
+
+**`plain` ablation (the Stage-1 gate, threshold ~0.82):**
+per-fold 0.8568, 0.7173, 0.7915, 0.7062, 0.6535 → **0.7451 ± 0.0712**, **pooled OOF 0.7104**.
+
+Independent cross-check — aggregating the *window* baseline's OOF scores per patient on
+the same clean substrate: mean 0.7580, max 0.7435, top-3 0.7479, last-3 0.7453, versus
+**window-level pooled OOF 0.8309**.
+
+**Two independent routes to patient-level both land 0.71–0.76, clearly below window-level
+0.83. The patient-level reframing does not help on leak-free data — it hurts.** The
+earlier apparent +0.06 was entirely the bag-size artifact. Ablation ladder stopped after
+`plain` rather than burning ~8 GPU-hours on a disproven premise.
+
+Diagnosed cause: patient-level training has ~435 bags / ~86 positives to fit a 2.5M-param
+model, versus 5,286 window labels — supervision collapses by an order of magnitude.
+
+Also corrected: an interim note that KG-MIL's auxiliary window head beat the window
+baseline was based on 3 folds; over all 5 it is 0.8032 vs 0.8200. Multi-task
+patient+window training did **not** help the window task.
+
+### Part F — Current direction (user-set target 0.85–0.87)
+
+Decision: **compare at window level** — CTG-CrossFormer is natively a window classifier,
+so this is the like-for-like comparison, and patient-level degrades both models.
+
+Gap is now **+0.02–0.05**, not +0.06–0.07, because the substrate change banked ~+0.03.
+Path using only levers with measured value in this project:
+
+| Lever | Measured | Running total |
+|---|---|---|
+| Window-level, `data/processed_mil/` | 0.8309 pooled | 0.8309 |
+| + Model 8 knowledge infusion | ~+0.01 | ~0.841 |
+| + ensembling (standalone × Model 8) | +0.0125 | ~0.853 |
+
+Realistic landing **0.84–0.86**; 0.87 is a stretch and is not being promised.
+**In progress**: Model 8 wide-distress `full` on `data/processed_mil/` via
+`configs/model8_widedistress_mil_substrate_config.yaml`.
 
 ---
 
 ## Current state summary (as of this document)
 
-**Best validated result**: Wide-distress CrossFormer, `full`, fold-2-fixed split — **AUROC 0.7995 ± 0.0498** (Run 10). Real edge over standard architecture but with a stability/Sens@90Spec tradeoff.
+**Best validated result**: Wide-distress CrossFormer, `full`, fold-2-fixed split — **AUROC 0.7995 ± 0.0498** (Run 10). Real edge over standard architecture but with a stability/Sens@90Spec tradeoff. Feature-fusion (Run 11, 0.7954±0.0504) came in between standard and wide-distress and did **not** unseat this.
 
 **Best unvalidated (proxy) result**: Standard CrossFormer + tuned hyperparameters — **AUROC 0.8044** (Run 5, 15ep/3fold proxy, deprioritized for full validation).
 
-**Target**: ~0.84 (5% above the ~0.79 starting point) or ideally closing toward the 0.8565 standalone ceiling. **Not yet reached by any tested combination.**
+**Target (superseded 2026-08-17)**: originally ~0.84 (5% above the ~0.79 starting point). User has since raised this to **90%+ AUROC**, specifically to demonstrate Model 8 beats the standalone CrossFormer's own 0.8565 CV / 0.8653 test ceiling, not just close the gap to it. **Not yet reached by any tested combination** — flagged to the user as a large jump, above typical CTU-CHB literature results.
 
-**Immediately next**: Run 11 (feature-fusion) — user is about to run this directly on the GPU laptop.
+**Immediately next**: all ensembling sub-steps plus the follow-up variance check are done (see "Ensembling toward a 90%+ AUROC target" below) — **major, now-confirmed finding: the 0.8565/0.8653 standalone ceiling does not reproduce on current data and is NOT explained by ordinary training variance either** (two independent reruns both converge to ~0.79 CV, tight agreement). Root cause of why the original Aug-10 run scored higher remains unexplained but is very likely that specific run being an outlier, not a systematic data/code difference (verified the LTV fix's code path cannot even reach the standalone model's inputs). **`~0.79 CV / ~0.72–0.77 test` is now the standing reference for the standalone CrossFormer classifier — 0.8565/0.8653 should no longer be cited as the target.** On apples-to-apples current data: standalone ~0.79, Model 8 wide-distress `full` 0.7976 (already at/above standalone), 50/50 ensemble 0.8100 (+0.0125 over best single model). Awaiting user direction on how to proceed given this reframing — see the two open questions at the end of that section.
+
+Below this line is the **pre-2026-08-17 state** (architecture-tweak track, ~0.84 target) — still accurate for that track, kept for continuity: three architecture variants (standard 0.7908, wide-distress 0.7995, feature-fusion 0.7954) cluster within 0.01 AUROC of each other, so pure architecture tweaks on the DistressHead/latent appear to be topping out. Candidates if this track is revisited: (a) fuse features into the wide-distress 256-dim path (untried combination of the two partial wins), (b) enable `error_analysis` to get diagnostic evidence for *why* the plateau exists, (c) revisit MS-LSTM/CNN1D backbones which haven't shared any of this document's fixes.
 
 **Fully parked/pending, in rough priority order**:
-1. Feature-fusion full run (Run 11) — imminent.
-2. MS-LSTM EMA-off re-run — never done since Run 6.
-3. MS-LSTM hyperparameter tuning — never done.
-4. Tuned-hyperparameter full-scale validation for both standard (`configs/model8_crossformer_tuned_config.yaml`) and wide-distress (`configs/model8_crossformer_widedistress_tuned_config.yaml`) architectures — deprioritized, ready whenever revisited.
-5. Enabling `error_analysis` on some future run for concrete failure-mode evidence — never done, trivial to turn on.
-6. CNN1D backbone — configs exist (`configs/model8_cnn1d_config.yaml`) but has never been run with any of this session's fixes at all.
+1. MS-LSTM EMA-off re-run — never done since Run 6.
+2. MS-LSTM hyperparameter tuning — never done.
+3. Tuned-hyperparameter full-scale validation for both standard (`configs/model8_crossformer_tuned_config.yaml`) and wide-distress (`configs/model8_crossformer_widedistress_tuned_config.yaml`) architectures — deprioritized, ready whenever revisited.
+4. Enabling `error_analysis` on some future run for concrete failure-mode evidence — never done, trivial to turn on.
+5. CNN1D backbone — configs exist (`configs/model8_cnn1d_config.yaml`) but has never been run with any of this session's fixes at all.
+6. Wide-distress + feature-fusion combined (fuse features into the 256-dim path) — not built, lowest-confidence of the pending items given how tightly the three individual architectures already cluster.
 
 **Files that matter for continuity**:
 - `src/models/knowledge_infused_framework.py` — original framework (DistressHead/FIGOHead/ClinicalFeatureHead/FIGOCriteriaHead).

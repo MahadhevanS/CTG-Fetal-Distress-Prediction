@@ -156,6 +156,72 @@ def interpolate_missing(signal: np.ndarray, missing_value: float = 0.0,
     return np.nan_to_num(processed_signal, nan=0.0)
 
 
+def interpolate_missing_linear(signal: np.ndarray, missing_value: float = 0.0,
+                                max_gap_samples: int = 60,
+                                clip_min: Optional[float] = None,
+                                clip_max: Optional[float] = None) -> np.ndarray:
+    """
+    Interpolates short gaps in the signal using straight-line linear
+    interpolation between the two valid samples bounding each gap.
+
+    Same gap-detection/threshold logic as interpolate_missing() (cubic spline
+    variant): gaps <= max_gap_samples are filled, longer gaps are left as
+    missing_value. Used for paper-faithful reproduction pipelines that
+    specify "linear interpolation" rather than this codebase's default cubic
+    spline. A gap touching either signal boundary has no valid sample on one
+    side to draw a line to/from, so it is left unfilled at missing_value --
+    a direct reading of "linear interpolation between two points," not an
+    approximation.
+
+    Args:
+        signal (np.ndarray): The 1D signal array (e.g., FHR).
+        missing_value (float): Value representing missing data (usually 0.0).
+        max_gap_samples (int): Maximum continuous missing samples to interpolate.
+        clip_min (float, optional): Lower physiological bound to clamp interpolated
+                                    fill values to. None disables lower clamping.
+        clip_max (float, optional): Upper physiological bound to clamp interpolated
+                                    fill values to. None disables upper clamping.
+
+    Returns:
+        np.ndarray: The interpolated signal.
+    """
+    processed_signal = signal.copy()
+
+    valid_mask = processed_signal != missing_value
+    missing_mask = ~valid_mask
+
+    if not np.any(missing_mask) or not np.any(valid_mask):
+        return processed_signal
+
+    changes = np.diff(missing_mask.astype(int))
+    starts = np.where(changes == 1)[0] + 1
+    ends = np.where(changes == -1)[0] + 1
+
+    if missing_mask[0]:
+        starts = np.insert(starts, 0, 0)
+    if missing_mask[-1]:
+        ends = np.append(ends, len(signal))
+
+    gap_lengths = ends - starts
+
+    for start, end, length in zip(starts, ends, gap_lengths):
+        if length > max_gap_samples:
+            continue
+        left_idx = start - 1
+        right_idx = end  # `ends` is exclusive, so `end` is the first sample after the gap
+        if left_idx < 0 or right_idx >= len(signal):
+            continue  # boundary gap -- no two-point line exists, leave as missing_value
+        left_val = processed_signal[left_idx]
+        right_val = processed_signal[right_idx]
+        gap_positions = np.arange(start, end)
+        interp_vals = np.interp(gap_positions, [left_idx, right_idx], [left_val, right_val])
+        if clip_min is not None or clip_max is not None:
+            interp_vals = np.clip(interp_vals, clip_min, clip_max)
+        processed_signal[start:end] = interp_vals
+
+    return np.nan_to_num(processed_signal, nan=0.0)
+
+
 # ---------------------------------------------------------------------------
 # Existing: Low-Pass Butterworth Filter
 # ---------------------------------------------------------------------------

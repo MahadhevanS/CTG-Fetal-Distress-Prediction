@@ -43,6 +43,13 @@ def set_seed(seed: int = 42):
     np.random.seed(seed)
     torch.manual_seed(seed)
     torch.cuda.manual_seed_all(seed)
+    # Without these, a given seed is NOT reproducible run-to-run on GPU --
+    # cudnn's default algorithm selection/atomic ops are nondeterministic,
+    # which is why identical seed=42 runs previously landed at 0.7834 and
+    # 0.7887. Needed so that a seed found via sweeping actually reproduces
+    # its result later, not just on the one run it was found on.
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
 
 
 class FocalLoss(nn.Module):
@@ -161,9 +168,20 @@ def main():
     parser.add_argument("--data_dir", type=str, default="data/processed/")
     parser.add_argument("--checkpoint_dir", type=str, default="checkpoints/ctg_crossformer/")
     parser.add_argument("--dry_run", action="store_true", help="Run 2-epoch synthetic verification pass")
+    parser.add_argument("--fold_mode", type=str, default="stratified_group",
+                        choices=["stratified_group", "patient_level"],
+                        help="stratified_group (default) = this script's original window-level "
+                             "StratifiedGroupKFold. patient_level = create_patient_level_folds() "
+                             "joint-stratified on y_figo, matching train_knowledge_infused.py so "
+                             "the two are directly comparable on identical folds.")
+    parser.add_argument("--pretrained_encoder", type=str, default=None,
+                         help="Path to a CTGCrossformerEncoder state_dict (e.g. from "
+                              "scripts/pretrain_ctg_crossformer_ssl.py) to initialize each "
+                              "fold's encoder from, instead of random init.")
+    parser.add_argument("--seed", type=int, default=42)
     args = parser.parse_args()
 
-    set_seed(42)
+    set_seed(args.seed)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Using compute device: {device}")
 
@@ -183,6 +201,7 @@ def main():
     train_pt = os.path.join(args.data_dir, "train_dataset.pt")
     test_pt  = os.path.join(args.data_dir, "test_dataset.pt")
 
+    y_figo = None
     if not args.dry_run and os.path.exists(train_pt):
         print(f"Loading preprocessed dataset from {train_pt}...")
         data = torch.load(train_pt, weights_only=False)
@@ -190,6 +209,7 @@ def main():
         y = data['y_primary'].numpy()
         metadata = data['metadata']
         patient_ids = np.array([m[0] for m in metadata])
+        y_figo = data.get('y_figo')
     else:
         if not args.dry_run:
             print(f"\n[!] Dataset file 'train_dataset.pt' not found at '{train_pt}'.")
@@ -200,7 +220,30 @@ def main():
 
     # 5-Fold Stratified Patient-Level Cross-Validation
     n_splits = 5
-    sgkf = StratifiedGroupKFold(n_splits=n_splits)
+
+    # FOLD MODE (added 2026-08-19, for valid head-to-head benchmarking):
+    # this script has always used window-level StratifiedGroupKFold, while
+    # train_knowledge_infused.py (Model 8) uses patient-level
+    # create_patient_level_folds() joint-stratified on y_figo. Those produce
+    # DIFFERENT partitions, so comparing this script's CV mean against Model 8's
+    # is not apples-to-apples -- per-fold AUROC has been observed to swing
+    # 0.72-0.91, which is larger than the effect sizes being claimed.
+    # --fold_mode patient_level reproduces Model 8's exact split so the two are
+    # directly comparable. Default 'stratified_group' preserves this script's
+    # original behaviour, so every previously reported benchmark stays reproducible.
+    if args.fold_mode == "patient_level":
+        from src.training.train import create_patient_level_folds
+        secondary = y_figo if y_figo is not None else None
+        fold_iter = create_patient_level_folds(
+            list(patient_ids), torch.as_tensor(y), k_folds=n_splits,
+            secondary_labels=secondary,
+        )
+        print(f"Fold mode: patient_level (matches train_knowledge_infused.py"
+              f"{' , joint-stratified on y_figo' if secondary is not None else ''})")
+    else:
+        sgkf = StratifiedGroupKFold(n_splits=n_splits)
+        fold_iter = list(sgkf.split(X, y, groups=patient_ids))
+        print("Fold mode: stratified_group (this script's original split)")
 
     fold_metrics = []
     os.makedirs(args.checkpoint_dir, exist_ok=True)
@@ -209,7 +252,7 @@ def main():
     start_time = time.time()
     epochs_run = 2 if args.dry_run else t_cfg.get("epochs", 50)
 
-    for fold, (train_idx, val_idx) in enumerate(sgkf.split(X, y, groups=patient_ids), 1):
+    for fold, (train_idx, val_idx) in enumerate(fold_iter, 1):
         train_sub = Subset(dataset, train_idx)
         val_sub   = Subset(dataset, val_idx)
 
@@ -236,6 +279,13 @@ def main():
             dropout=m_cfg.get("dropout", 0.1),
             latent_dim=m_cfg.get("latent_dim", 128)
         )
+        if args.pretrained_encoder:
+            encoder.load_state_dict(
+                torch.load(args.pretrained_encoder, map_location=device, weights_only=True),
+                strict=True,
+            )
+            if fold == 1:
+                print(f"Loaded pretrained encoder weights from {args.pretrained_encoder}")
         model = CTGCrossformerForClassification(
             encoder=encoder,
             hidden_dim=m_cfg.get("classifier_hidden_dim", 128),

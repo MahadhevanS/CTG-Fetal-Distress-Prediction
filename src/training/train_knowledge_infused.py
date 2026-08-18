@@ -780,6 +780,21 @@ def run_dry_run(device: torch.device, ablation: str = "full") -> None:
     print(f"{'='*65}\n")
 
 
+def _maybe_load_pretrained_encoder(
+    encoder: nn.Module, backbone_cfg: Optional[Dict], device: torch.device
+) -> nn.Module:
+    """Optionally initializes `encoder` from a self-supervised pretraining
+    checkpoint (scripts/pretrain_ctg_crossformer_ssl.py) instead of random
+    init, via `backbone.pretrained_path` in the config. No-op if unset."""
+    backbone_cfg = backbone_cfg or {}
+    path = backbone_cfg.get("pretrained_path")
+    if path:
+        encoder.load_state_dict(
+            torch.load(path, map_location=device, weights_only=True), strict=True
+        )
+    return encoder
+
+
 def build_encoder(backbone_cfg: Optional[Dict] = None) -> nn.Module:
     backbone_cfg = backbone_cfg or {}
     model_name = backbone_cfg.get("model", "patchtst")
@@ -1043,6 +1058,7 @@ def train_and_evaluate_model8(
                 dropout=backbone_cfg.get("dropout", 0.1),
                 latent_dim=backbone_cfg.get("latent_dim", 128),
             )
+            encoder = _maybe_load_pretrained_encoder(encoder, backbone_cfg, device)
             model = KnowledgeInfusedFrameworkWideDistress(
                 encoder=encoder,
                 head_hidden_dim=heads_cfg.get("hidden_dim", 64),
@@ -1058,6 +1074,7 @@ def train_and_evaluate_model8(
             # this is opt-in via heads.feature_fusion: true rather than
             # backbone.model, unlike the wide-distress variant.
             encoder = build_encoder(backbone_cfg)
+            encoder = _maybe_load_pretrained_encoder(encoder, backbone_cfg, device)
             model = KnowledgeInfusedFrameworkFeatureFusion(
                 encoder=encoder,
                 feature_means=feature_means,
@@ -1068,6 +1085,7 @@ def train_and_evaluate_model8(
             ).to(device)
         else:
             encoder = build_encoder(backbone_cfg)
+            encoder = _maybe_load_pretrained_encoder(encoder, backbone_cfg, device)
             model = KnowledgeInfusedFramework(
                 encoder=encoder,
                 head_hidden_dim=heads_cfg.get("hidden_dim", 64),
@@ -1176,6 +1194,10 @@ def main():
     parser.add_argument("--no_ema", action="store_true", help="Disable EMA")
     parser.add_argument("--no_swa", action="store_true", help="Disable SWA")
     parser.add_argument("--dry_run", action="store_true")
+    parser.add_argument("--pretrained_encoder", type=str, default=None,
+                        help="Path to a CTGCrossformerEncoder state_dict (e.g. from "
+                             "scripts/pretrain_ctg_crossformer_ssl.py) to initialize each "
+                             "fold's encoder from. Overrides backbone.pretrained_path if set.")
     parser.add_argument("--seed", type=int, default=42,
                         help="Random seed (reproducibility fix, 2026-08-13: this script previously had "
                              "no seeding anywhere -- weight init, data shuffling, dropout, augmentation "
@@ -1196,6 +1218,8 @@ def main():
             cfg = yaml.safe_load(f) or {}
 
     backbone_cfg = cfg.get("backbone", {})
+    if args.pretrained_encoder:
+        backbone_cfg["pretrained_path"] = args.pretrained_encoder
     heads_cfg = cfg.get("heads", {})
     train_cfg = cfg.get("training", {})
     loss_cfg = cfg.get("loss", {})

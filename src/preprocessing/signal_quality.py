@@ -1,5 +1,27 @@
 import numpy as np
 
+def assess_patient_missing_ratio(fhr: np.ndarray, missing_value: float = 0.0, max_missing_ratio: float = 0.5) -> bool:
+    """
+    Assesses if a whole recording meets a patient-level quality threshold,
+    evaluated on the raw, full-length signal before truncation/windowing.
+
+    Args:
+        fhr (np.ndarray): Full-length fetal heart rate recording.
+        missing_value (float): Value denoting missing signal (typically 0.0 in CTG).
+        max_missing_ratio (float): Maximum allowed ratio of missing data for the
+            whole recording (paper default: 0.5, i.e. exclude if >50% missing).
+
+    Returns:
+        bool: True if the recording is valid (missing data <= threshold), False otherwise.
+    """
+    if len(fhr) == 0:
+        return False
+
+    missing_count = np.sum(fhr == missing_value)
+    missing_ratio = missing_count / len(fhr)
+
+    return missing_ratio <= max_missing_ratio
+
 def assess_signal_quality(fhr: np.ndarray, missing_value: float = 0.0, max_missing_ratio: float = 0.3) -> bool:
     """
     Assesses if a signal window meets the quality threshold.
