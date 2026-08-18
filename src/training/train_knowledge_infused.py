@@ -334,6 +334,8 @@ def train_single_fold_multitask(
     model: KnowledgeInfusedFramework,
     train_loader: DataLoader,
     val_loader: DataLoader,
+    inner_val_loader: Optional[DataLoader],
+    patience: int,
     train_indices: np.ndarray,
     val_dataset: Subset,
     epochs: int,
@@ -460,6 +462,14 @@ def train_single_fold_multitask(
     scaler_amp = torch.amp.GradScaler("cuda", enabled=use_amp)
 
     best_val_auroc = -1.0
+    # Nested selection (added 2026-08-19): when inner_val_loader is supplied the
+    # epoch is chosen on an inner split carved out of the TRAINING fold, so the
+    # reported fold is never consulted during selection. best_val_* below then
+    # remain the protocol-matched (biased) figures for literature comparison,
+    # while unbiased_metrics holds the outer score at the inner-selected epoch.
+    best_inner_auroc = -1.0
+    unbiased_metrics = None
+    patience_ctr = 0
     best_metrics: Dict[str, float] = {}
     best_val_probs: Optional[np.ndarray] = None
     best_val_targets: Optional[np.ndarray] = None
@@ -635,8 +645,34 @@ def train_single_fold_multitask(
             best_val_logits = val_logits.copy()
             best_val_figo_preds = np.array(val_figo_preds_list)
             best_val_feature_preds = np.array(val_feature_preds_list)
-            if save_path:
+            if save_path and inner_val_loader is None:
                 torch.save(model.state_dict(), save_path)
+
+        if inner_val_loader is not None:
+            inner_targets_list, inner_probs_list = [], []
+            with eval_context:
+                with torch.no_grad():
+                    for X_b, yp_b, _, yfeat_b in inner_val_loader:
+                        X_b = X_b.to(device)
+                        yfeat_b = yfeat_b.to(device)
+                        with torch.amp.autocast("cuda", enabled=use_amp):
+                            d_logit, _, _, _ = _forward_model(model, X_b, yfeat_b)
+                            p = torch.sigmoid(d_logit.squeeze(-1))
+                        inner_targets_list.extend(yp_b.cpu().numpy())
+                        inner_probs_list.extend(p.cpu().numpy())
+            inner_metrics = calculate_metrics(np.array(inner_targets_list), np.array(inner_probs_list))
+            if inner_metrics["auroc"] > best_inner_auroc:
+                best_inner_auroc = inner_metrics["auroc"]
+                unbiased_metrics = metrics.copy()
+                patience_ctr = 0
+                if save_path:
+                    torch.save(model.state_dict(), save_path)
+            else:
+                patience_ctr += 1
+                if patience_ctr >= patience:
+                    print(f"   [nested] early stop at epoch {epoch} "
+                          f"(no inner improvement for {patience} epochs)")
+                    break
 
     # --- Post-fold: SWA evaluation ---
     if swa is not None and swa.n_checkpoints > 0:
@@ -713,6 +749,14 @@ def train_single_fold_multitask(
                 analyzer.save_report(report, err_path)
         except Exception as e:
             print(f"   [ErrorAnalysis] Warning: {e}")
+
+    if unbiased_metrics is not None:
+        # Carry the protocol-matched figures alongside, so a single run reports
+        # both the honest estimate and the literature-comparable one.
+        unbiased_metrics = unbiased_metrics.copy()
+        for k, v in best_metrics.items():
+            unbiased_metrics[f"biased_{k}"] = v
+        return unbiased_metrics
 
     return best_metrics
 
@@ -873,6 +917,9 @@ def train_and_evaluate_model8(
     calibration_cfg: Optional[Dict] = None,
     curriculum_cfg: Optional[Dict] = None,
     error_analysis_cfg: Optional[Dict] = None,
+    early_stop_mode: str = "outer_best",
+    patience: int = 15,
+    inner_val_frac: float = 0.2,
 ) -> Dict[str, Tuple[float, float]]:
     """Runs full 5-fold patient-level CV for a given ablation variant."""
     backbone_cfg = backbone_cfg or {}
@@ -962,6 +1009,7 @@ def train_and_evaluate_model8(
             missing_block_max=augmentation_cfg.get("missing_block_max", 48),
         )
 
+    biased_fold_results = {}
     fold_results = {
         m: [] for m in [
             "accuracy", "auroc", "auprc", "f1", "precision",
@@ -1039,6 +1087,36 @@ def train_and_evaluate_model8(
             task_names=["distress", "figo", "features", "knowledge"],
         )
 
+        # --- Nested selection: inner patient-level split out of the training fold ---
+        inner_val_loader = None
+        if early_stop_mode == "nested":
+            from sklearn.model_selection import train_test_split as _tts
+            pid_arr = np.array(patient_ids)
+            tr_pids = pid_arr[train_idx]
+            uniq_tr = np.array(sorted(set(tr_pids)))
+            p_lab = np.array([int(y_all[train_idx][tr_pids == p].max()) for p in uniq_tr])
+            strat = p_lab if (len(np.unique(p_lab)) > 1 and np.bincount(p_lab).min() >= 2) else None
+            _, inner_va_p = _tts(uniq_tr, test_size=inner_val_frac, stratify=strat, random_state=42)
+            va_set = set(inner_va_p.tolist())
+            is_inner_va = np.array([pid in va_set for pid in tr_pids])
+            inner_val_idx = train_idx[is_inner_va]
+            fit_idx = train_idx[~is_inner_va]
+            inner_val_loader = DataLoader(
+                Subset(dataset, inner_val_idx), batch_size=batch_size, shuffle=False, num_workers=0
+            )
+            # Refit the training loader on the reduced (inner-train) portion only
+            train_sub = Subset(dataset, fit_idx)
+            if sampling_method == "balanced":
+                train_loader = DataLoader(
+                    train_sub,
+                    batch_sampler=BalancedBatchSampler(y_all[fit_idx].numpy(), batch_size=batch_size),
+                    num_workers=0,
+                )
+            else:
+                train_loader = DataLoader(train_sub, batch_size=batch_size, shuffle=True, num_workers=0)
+            print(f" [nested] fit {len(fit_idx)} | inner-val {len(inner_val_idx)} "
+                  f"({len(set(pid_arr[inner_val_idx]))} patients) | outer-val {len(val_idx)}")
+
         # --- Build fresh model for each fold ---
         # Wide-distress prototype (2026-08-16): CrossFormer-only variant giving
         # DistressHead a private path to the 256-dim pre-adapter pooled
@@ -1098,6 +1176,8 @@ def train_and_evaluate_model8(
             model=model,
             train_loader=train_loader,
             val_loader=val_loader,
+            inner_val_loader=inner_val_loader,
+            patience=patience,
             train_indices=train_idx,
             val_dataset=val_sub,
             epochs=epochs,
@@ -1133,6 +1213,8 @@ def train_and_evaluate_model8(
         for m_key in fold_results:
             if m_key in metrics:
                 fold_results[m_key].append(metrics[m_key])
+            if f"biased_{m_key}" in metrics:
+                biased_fold_results.setdefault(m_key, []).append(metrics[f"biased_{m_key}"])
 
         print(
             f" Fold {fold_idx} → AUROC: {metrics.get('auroc', 0):.4f} | "
@@ -1154,7 +1236,23 @@ def train_and_evaluate_model8(
         summary[m_key] = (mean_val, std_val)
         unit = "%" if m_key in ["accuracy", "precision", "recall", "specificity", "sens_at_90spec"] else ""
         print(f" {m_key:<25}: {mean_val:.4f}{unit} ± {std_val:.4f}{unit}")
-    print(f"{'='*65}\n")
+    print(f"{'='*65}")
+
+    if biased_fold_results:
+        print("")
+        print(" PROTOCOL-MATCHED (best-epoch-on-reported-fold, as literature)")
+        print(f"{'='*65}")
+        for m_key, vals in biased_fold_results.items():
+            if not vals:
+                continue
+            unit = "%" if m_key in ["accuracy", "precision", "recall", "specificity", "sens_at_90spec"] else ""
+            print(f" {m_key:<25}: {float(np.mean(vals)):.4f}{unit} +/- {float(np.std(vals)):.4f}{unit}")
+        ub = float(np.mean(fold_results['auroc'])) if fold_results.get('auroc') else float('nan')
+        bi = float(np.mean(biased_fold_results['auroc'])) if biased_fold_results.get('auroc') else float('nan')
+        print("")
+        print(f" >>> selection inflation on AUROC: {bi - ub:+.4f} (protocol-matched {bi:.4f} vs unbiased {ub:.4f})")
+        print(f"{'='*65}")
+
 
     # Save results JSON
     results_path = os.path.join(results_dir, f"model8_{ablation}_cv_results.json")
@@ -1198,6 +1296,18 @@ def main():
                         help="Path to a CTGCrossformerEncoder state_dict (e.g. from "
                              "scripts/pretrain_ctg_crossformer_ssl.py) to initialize each "
                              "fold's encoder from. Overrides backbone.pretrained_path if set.")
+    parser.add_argument("--early_stop_mode", type=str, default="outer_best",
+                        choices=["outer_best", "nested"],
+                        help="outer_best (default, ORIGINAL): choose the epoch by AUROC on the "
+                             "reported validation fold -- selection-on-test, measured to inflate "
+                             "AUROC by ~0.077. Kept default so prior results reproduce and to match "
+                             "the convention used by the literature we benchmark against. nested: "
+                             "select on an inner patient-level split of the training fold, leaving "
+                             "the reported fold untouched; BOTH numbers are printed.")
+    parser.add_argument("--patience", type=int, default=15,
+                        help="Early-stopping patience on the inner split (nested mode only).")
+    parser.add_argument("--inner_val_frac", type=float, default=0.2,
+                        help="Fraction of training-fold PATIENTS held out for inner selection.")
     parser.add_argument("--seed", type=int, default=42,
                         help="Random seed (reproducibility fix, 2026-08-13: this script previously had "
                              "no seeding anywhere -- weight init, data shuffling, dropout, augmentation "
@@ -1304,6 +1414,9 @@ def main():
             calibration_cfg=calibration_cfg,
             curriculum_cfg=curriculum_cfg,
             error_analysis_cfg=error_analysis_cfg,
+            early_stop_mode=args.early_stop_mode,
+            patience=args.patience,
+            inner_val_frac=args.inner_val_frac,
         )
         all_results[variant] = results
 
