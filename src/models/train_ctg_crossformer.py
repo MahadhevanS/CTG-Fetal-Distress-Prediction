@@ -454,7 +454,32 @@ def main():
         test_data = torch.load(test_pt, weights_only=False)
         test_ds = CTGDataset(test_data['X'].numpy(), test_data['y_primary'].numpy())
         test_loader = DataLoader(test_ds, batch_size=batch_size, shuffle=False)
-        test_metrics = evaluate(model, test_loader, device, desc="[Test]")
+        # FIX (2026-08-19): this previously evaluated `model` -- whatever was left
+        # in memory after the fold loop, i.e. the LAST fold's end-of-training state,
+        # neither a saved best checkpoint nor an ensemble. That made every test
+        # number this project reported a single arbitrary fold's leftover weights
+        # (and fold 5 was often the weakest). Now evaluates the 5-fold ENSEMBLE by
+        # averaging the saved best checkpoints' predicted probabilities, which is
+        # both the standard approach and consistent with what CV actually selected.
+        import glob as _glob
+        ckpt_paths = sorted(_glob.glob(os.path.join(args.checkpoint_dir, 'ctg_crossformer_fold_*_best.pth')))
+        if ckpt_paths:
+            fold_probs = []
+            for cp in ckpt_paths:
+                model.load_state_dict(torch.load(cp, map_location=device, weights_only=True))
+                model.eval()
+                probs_one, targs = [], []
+                with torch.no_grad():
+                    for Xb, yb in test_loader:
+                        probs_one.extend(torch.sigmoid(model(Xb.to(device)).squeeze(-1)).cpu().numpy())
+                        targs.extend(yb.numpy())
+                fold_probs.append(np.array(probs_one))
+            ens = np.mean(np.stack(fold_probs, axis=0), axis=0)
+            test_metrics = compute_metrics(np.array(targs), ens)
+            print(f'(5-fold ensemble of {len(ckpt_paths)} checkpoints)')
+        else:
+            test_metrics = evaluate(model, test_loader, device, desc='[Test]')
+            print('(WARNING: no checkpoints found -- fell back to last in-memory model)')
         for k, v in test_metrics.items():
             print(f"Test {k.capitalize():<12}: {v:.4f}")
 
