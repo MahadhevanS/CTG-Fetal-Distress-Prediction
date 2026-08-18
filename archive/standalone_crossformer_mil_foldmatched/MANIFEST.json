@@ -58,7 +58,9 @@
       "?? src/training/mil_dataset.py",
       "?? src/training/ssl_masking.py",
       "?? src/training/train_mil.py"
-    ]
+    ],
+    "code_committed_at": "8e543fc",
+    "provenance_note": "Archived while the tree was dirty (32 uncommitted files) at commit 3fc0852. The exact code that produced these weights was committed immediately after as 8e543fc -- use that commit to reproduce, not 3fc0852."
   },
   "data": {
     "dir": "data/processed_mil/",

@@ -168,6 +168,23 @@ def main():
     parser.add_argument("--data_dir", type=str, default="data/processed/")
     parser.add_argument("--checkpoint_dir", type=str, default="checkpoints/ctg_crossformer/")
     parser.add_argument("--dry_run", action="store_true", help="Run 2-epoch synthetic verification pass")
+    parser.add_argument("--early_stop_mode", type=str, default="outer_best",
+                        choices=["outer_best", "nested"],
+                        help="outer_best (default, ORIGINAL behaviour): pick the epoch with the "
+                             "best AUROC on the reported validation fold. This is selection-on-test "
+                             "and inflates CV AUROC by ~0.077 (measured 2026-08-19: 0.8243 reported "
+                             "vs 0.7472 final-epoch vs 0.7305 held-out test). Kept as default so "
+                             "every previously reported number stays reproducible, and because it "
+                             "matches the convention used by the literature we benchmark against. "
+                             "nested: hold out an inner patient-level split from the training fold "
+                             "for epoch selection/early stopping, leaving the reported fold "
+                             "untouched -- an unbiased estimate. In nested mode BOTH numbers are "
+                             "reported so the bias is visible.")
+    parser.add_argument("--patience", type=int, default=15,
+                        help="Early-stopping patience on the INNER validation split (nested mode only).")
+    parser.add_argument("--inner_val_frac", type=float, default=0.2,
+                        help="Fraction of the training fold's PATIENTS held out for inner "
+                             "selection (nested mode only).")
     parser.add_argument("--fold_mode", type=str, default="stratified_group",
                         choices=["stratified_group", "patient_level"],
                         help="stratified_group (default) = this script's original window-level "
@@ -246,6 +263,7 @@ def main():
         print("Fold mode: stratified_group (this script's original split)")
 
     fold_metrics = []
+    biased_fold_metrics = []
     os.makedirs(args.checkpoint_dir, exist_ok=True)
 
     print(f"\n--- Starting CTG-CrossFormer {n_splits}-Fold Stratified Patient-Level CV ---")
@@ -253,11 +271,30 @@ def main():
     epochs_run = 2 if args.dry_run else t_cfg.get("epochs", 50)
 
     for fold, (train_idx, val_idx) in enumerate(fold_iter, 1):
-        train_sub = Subset(dataset, train_idx)
+        # NESTED MODE: carve an inner validation split out of the TRAINING fold,
+        # split at PATIENT level so no patient's windows straddle it, and use it
+        # (not the reported fold) for epoch selection / early stopping.
+        inner_val_idx = None
+        fit_idx = train_idx
+        if args.early_stop_mode == "nested":
+            from sklearn.model_selection import train_test_split as _tts
+            tr_pids = patient_ids[train_idx]
+            uniq_tr = np.array(sorted(set(tr_pids)))
+            p_lab = np.array([int(y[train_idx][tr_pids == p].max()) for p in uniq_tr])
+            strat = p_lab if len(np.unique(p_lab)) > 1 and np.bincount(p_lab).min() >= 2 else None
+            inner_tr_p, inner_va_p = _tts(
+                uniq_tr, test_size=args.inner_val_frac, stratify=strat, random_state=42
+            )
+            va_set = set(inner_va_p.tolist())
+            is_inner_va = np.array([pid in va_set for pid in tr_pids])
+            fit_idx = train_idx[~is_inner_va]
+            inner_val_idx = train_idx[is_inner_va]
+
+        train_sub = Subset(dataset, fit_idx)
         val_sub   = Subset(dataset, val_idx)
 
         # Sqrt-inverse frequency oversampling (WeightedRandomSampler)
-        y_train_sub = y[train_idx]
+        y_train_sub = y[fit_idx]
         class_counts = np.bincount(y_train_sub.astype(int))
         class_weights = 1.0 / np.sqrt(np.maximum(class_counts, 1))
         sample_weights = class_weights[y_train_sub.astype(int)]
@@ -266,6 +303,13 @@ def main():
         batch_size = t_cfg.get("batch_size", 32)
         train_loader = DataLoader(train_sub, batch_size=batch_size, sampler=sampler)
         val_loader   = DataLoader(val_sub,   batch_size=batch_size, shuffle=False)
+        inner_val_loader = (
+            DataLoader(Subset(dataset, inner_val_idx), batch_size=batch_size, shuffle=False)
+            if inner_val_idx is not None else None
+        )
+        if inner_val_loader is not None:
+            print(f"  [nested] fit on {len(fit_idx)} windows | inner-val {len(inner_val_idx)} "
+                  f"({len(set(patient_ids[inner_val_idx]))} patients) | outer-val {len(val_idx)}")
 
         # Build CTG-CrossFormer Model
         encoder = CTGCrossformerEncoder(
@@ -320,8 +364,11 @@ def main():
             pct_start=0.1
         )
 
-        best_val_auroc = 0.0
+        best_val_auroc = 0.0       # best on the REPORTED fold -> protocol-matched (biased)
         best_val_metrics = None
+        best_inner_auroc = -1.0    # best on the INNER split -> unbiased selection signal
+        unbiased_metrics = None    # outer metrics AT the inner-selected epoch
+        patience_ctr = 0
 
         epoch_pbar = tqdm(range(1, epochs_run + 1), desc=f"Fold {fold}/{n_splits} Epochs", unit="epoch")
         for epoch in epoch_pbar:
@@ -331,33 +378,76 @@ def main():
             )
             val_metrics = evaluate(model, val_loader, device, desc=f"Fold {fold} Ep {epoch} [Val]")
 
+            # Protocol-matched (biased) tracking -- best epoch on the reported fold.
             if val_metrics['auroc'] > best_val_auroc:
                 best_val_auroc = val_metrics['auroc']
                 best_val_metrics = val_metrics
-                ckpt_path = os.path.join(args.checkpoint_dir, f"ctg_crossformer_fold_{fold}_best.pth")
-                torch.save(model.state_dict(), ckpt_path)
+                if args.early_stop_mode == "outer_best":
+                    ckpt_path = os.path.join(args.checkpoint_dir, f"ctg_crossformer_fold_{fold}_best.pth")
+                    torch.save(model.state_dict(), ckpt_path)
 
-            epoch_pbar.set_postfix({
-                'loss': f'{loss:.4f}',
-                'val_auroc': f'{val_metrics["auroc"]:.4f}',
-                'val_f1': f'{val_metrics["f1"]:.4f}'
-            })
+            postfix = {'loss': f'{loss:.4f}', 'val_auroc': f'{val_metrics["auroc"]:.4f}'}
 
-        metrics = best_val_metrics if best_val_metrics is not None else val_metrics
+            if inner_val_loader is not None:
+                inner_metrics = evaluate(model, inner_val_loader, device,
+                                         desc=f"Fold {fold} Ep {epoch} [InnerVal]")
+                postfix['inner_auroc'] = f'{inner_metrics["auroc"]:.4f}'
+                if inner_metrics['auroc'] > best_inner_auroc:
+                    best_inner_auroc = inner_metrics['auroc']
+                    # The outer score at this epoch is the UNBIASED estimate: the
+                    # epoch was chosen without ever consulting the reported fold.
+                    unbiased_metrics = val_metrics
+                    patience_ctr = 0
+                    ckpt_path = os.path.join(args.checkpoint_dir, f"ctg_crossformer_fold_{fold}_best.pth")
+                    torch.save(model.state_dict(), ckpt_path)
+                else:
+                    patience_ctr += 1
+                    if patience_ctr >= args.patience:
+                        epoch_pbar.close()
+                        print(f"  [nested] early stop at epoch {epoch} "
+                              f"(no inner improvement for {args.patience} epochs)")
+                        break
+            else:
+                postfix['val_f1'] = f'{val_metrics["f1"]:.4f}'
+
+            epoch_pbar.set_postfix(postfix)
+
+        biased_metrics = best_val_metrics if best_val_metrics is not None else val_metrics
+        if args.early_stop_mode == "nested":
+            metrics = unbiased_metrics if unbiased_metrics is not None else val_metrics
+            biased_fold_metrics.append(biased_metrics)
+            print(f"\nFold {fold} | UNBIASED AUROC: {metrics['auroc']:.4f} "
+                  f"(AUPRC {metrics['auprc']:.4f}, Sens {metrics['recall']:.4f}, "
+                  f"Spec {metrics['specificity']:.4f})")
+            print(f"Fold {fold} | protocol-matched (biased) AUROC: {biased_metrics['auroc']:.4f} "
+                  f"| selection inflation: {biased_metrics['auroc'] - metrics['auroc']:+.4f}\n")
+        else:
+            metrics = biased_metrics
+            print(f"\nFold {fold} Best | AUROC: {metrics['auroc']:.4f} | AUPRC: {metrics['auprc']:.4f} | "
+                  f"Sens: {metrics['recall']:.4f} | Spec: {metrics['specificity']:.4f} | F1: {metrics['f1']:.4f}\n")
         fold_metrics.append(metrics)
-        print(f"\nFold {fold} Best | AUROC: {metrics['auroc']:.4f} | AUPRC: {metrics['auprc']:.4f} | "
-              f"Sens: {metrics['recall']:.4f} | Spec: {metrics['specificity']:.4f} | F1: {metrics['f1']:.4f}\n")
 
     elapsed_time = time.time() - start_time
     print(f"\nCompleted {n_splits}-Fold CV in {elapsed_time:.2f} seconds.")
 
     # Calculate Mean +/- Std across folds
     keys = fold_metrics[0].keys()
-    print("\n================ 5-FOLD CROSS-VALIDATION RESULTS ================")
+    header = ("UNBIASED (nested selection)" if args.early_stop_mode == "nested"
+              else "5-FOLD CROSS-VALIDATION RESULTS")
+    print(f"\n================ {header} ================")
     for k in keys:
         vals = [fm[k] for fm in fold_metrics]
-        mean_val, std_val = np.mean(vals), np.std(vals)
-        print(f"{k.capitalize():<12}: {mean_val:.4f} +/- {std_val:.4f}")
+        print(f"{k.capitalize():<12}: {np.mean(vals):.4f} +/- {np.std(vals):.4f}")
+
+    if args.early_stop_mode == "nested" and biased_fold_metrics:
+        print("\n======== PROTOCOL-MATCHED (best-epoch-on-reported-fold, as literature) ========")
+        for k in keys:
+            vals = [fm[k] for fm in biased_fold_metrics]
+            print(f"{k.capitalize():<12}: {np.mean(vals):.4f} +/- {np.std(vals):.4f}")
+        ub = np.mean([fm["auroc"] for fm in fold_metrics])
+        bi = np.mean([fm["auroc"] for fm in biased_fold_metrics])
+        print(f"\n>>> selection inflation on AUROC: {bi - ub:+.4f} "
+              f"(protocol-matched {bi:.4f} vs unbiased {ub:.4f})")
 
     if not args.dry_run and os.path.exists(test_pt):
         print("\n================ HELD-OUT TEST SET EVALUATION ================")
