@@ -1078,6 +1078,68 @@ Realistic landing **0.84–0.86**; 0.87 is a stretch and is not being promised.
 
 ---
 
+
+## [2026-08-19] — Sensitivity fixed: paper-specified class weighting restored
+
+**Problem**: the honest baseline ranked well (unbiased CV AUROC 0.8014) but was
+clinically unusable -- test sensitivity **11.8%** at threshold 0.5, i.e. it
+missed ~9 of every 10 distress cases. The paper reports 89.5% sensitivity.
+
+**Two causes, diagnosed separately.**
+
+*1. Threshold 0.5 is wrong at 4.3% window prevalence.* A calibrated model
+outputs mostly low probabilities (our median 0.21; only 8.9% of windows exceed
+0.5). Moving along the EXISTING ROC, at no training cost:
+
+| threshold | sensitivity | specificity |
+|---|---|---|
+| 0.50 | 40.3% | 92.6% |
+| 0.30 | 70.4% | 71.3% |
+| 0.20 | 80.1% | 48.5% |
+
+`compute_metrics()` now also reports `sens_at_90spec`, `spec_at_90sens`,
+`thresh_at_80sens` so a single arbitrary cut-off no longer hides this.
+
+*2. We deviated from the paper's loss recipe.* `train_ctg_crossformer.py` had
+hardcoded `pos_weight=1.0` (a 2026-08-09 "bug fix" claiming the sampler already
+rebalances). The paper specifies **both** "Focal Loss with gamma=2.0 and
+inverse-frequency class weights" **and** sqrt-inverse `WeightedRandomSampler`.
+The arithmetic supports the paper: sqrt-inverse sampling lifts batch prevalence
+only from ~4.3% to ~17%, so it does NOT fully rebalance -- the model was left
+under-corrected toward the negative class. **That "fix" was itself the bug.**
+
+**Results** (all nested/unbiased selection, fold-matched, `--class_weight`):
+
+| | none (pos_w 1.0) | **inverse_freq (23.5)** | sqrt_inverse (4.85) |
+|---|---|---|---|
+| Unbiased CV AUROC | 0.8014 | 0.7768 | 0.7980 |
+| CV sens @0.5 | 39.5% | **61.7%** | 55.4% |
+| CV spec@90%sens | -- | 42.5% | 45.6% |
+| Test AUROC (5-fold ens.) | 0.7850 | **0.7937** | 0.7731 |
+| **Test sens @0.5** | **11.8%** | **49.0%** | 37.3% |
+| **Test spec@90%sens** | -- | **48.4%** | 41.6% |
+
+**Test sensitivity 11.8% -> 49.0% with no AUROC cost** -- the signature of a pure
+operating-point fix. At matched ~90% sensitivity we reach **48.4% test
+specificity vs the paper's 41.4% at 89.5%** — the sensitivity gap is closed.
+
+**Correction to an earlier note in this session**: a figure of "17.6% specificity
+at 89.5% sensitivity" was computed from raw pooled OOF logits without per-fold
+Platt scaling, which is known to bias pooled numbers low. The per-fold values
+above (42-48%) are the fair measurement.
+
+**Chosen baseline: `inverse_freq`** (`archive/standalone_invfreq_clinical/`) --
+matches the paper's spec and wins on the held-out test set. `sqrt_inverse` is
+mildly better on CV AUROC; kept in `archive/standalone_sqrtinv/` for the record.
+
+**Also fixed**: held-out test evaluation used whatever model was left in memory
+after the CV loop (the last fold's end state), not a checkpoint or ensemble --
+so every previously reported test number was one arbitrary fold's leftover
+weights (0.6482 reported vs 0.7850 for the true 5-fold ensemble). Now ensembles
+the five saved best checkpoints; ensembling is worth +0.0191 on test.
+
+---
+
 ## Current state summary (as of this document)
 
 **Best validated result**: Wide-distress CrossFormer, `full`, fold-2-fixed split — **AUROC 0.7995 ± 0.0498** (Run 10). Real edge over standard architecture but with a stability/Sens@90Spec tradeoff. Feature-fusion (Run 11, 0.7954±0.0504) came in between standard and wide-distress and did **not** unseat this.

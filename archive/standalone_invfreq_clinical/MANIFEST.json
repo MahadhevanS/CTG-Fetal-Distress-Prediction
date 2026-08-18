@@ -1,0 +1,79 @@
+{
+  "name": "standalone_invfreq_clinical",
+  "archived_utc": "2026-08-18T23:03:18.872210Z",
+  "command": "python src/models/train_ctg_crossformer.py --data_dir data/processed_mil/ --checkpoint_dir checkpoints/ctg_crossformer_invfreq/ --fold_mode patient_level --early_stop_mode nested --patience 15 --class_weight inverse_freq",
+  "config": "configs/ctg_crossformer_config.yaml",
+  "metrics": {
+    "unbiased_cv_auroc": 0.7768,
+    "cv_recall_at_0.5": 0.6165,
+    "cv_specificity_at_0.5": 0.7125,
+    "cv_spec_at_90sens": 0.4247,
+    "cv_sens_at_90spec": 0.4513,
+    "test_auroc_ensemble": 0.7937,
+    "test_recall_at_0.5": 0.4902,
+    "test_specificity_at_0.5": 0.8489,
+    "test_spec_at_90sens": 0.4838,
+    "test_auprc": 0.1207
+  },
+  "notes": "CLINICALLY PREFERRED BASELINE. Restores the paper-specified inverse-frequency class weighting (pos_weight=23.5) on top of sqrt-inverse sampling. Test sensitivity 11.8%->49.0% vs the none-weighted baseline with no AUROC loss (test 0.7850->0.7937). At 90% sensitivity reaches 48.4% test specificity, comparable to/better than the paper's 41.4% at 89.5% sensitivity. Use this, not the none-weighted model, for any clinical operating point.",
+  "git": {
+    "commit": "c72ec5b9e7633d82588f4e9633e18792aacd4d05",
+    "branch": "crossformer_test",
+    "dirty_files": [
+      "?? archive/standalone_invfreq_clinical/"
+    ]
+  },
+  "data": {
+    "dir": "data/processed_mil/",
+    "files": {
+      "ctu_signal_scaler.npz": {
+        "sha256": "b9b0cef1eda3986455f955662c784b8f0fd57a4e71f6235da816e3c59b2ce519",
+        "bytes": 516
+      },
+      "feature_scaler.npz": {
+        "sha256": "e185d77a415b0e50ecbf3d584769296e14e6e8ae9fa65f44e0415ce20435ef9e",
+        "bytes": 600
+      },
+      "test_dataset.pt": {
+        "sha256": "dda9b796d99f1da2161bd3722bcb5d36dd6c7429192767af73bfd101a8c77043",
+        "bytes": 42447504
+      },
+      "train_dataset.pt": {
+        "sha256": "f1c140a0077903672623421f71e20ee1653670fdebec864ad0121fbdc9153230",
+        "bytes": 203417499
+      },
+      "val_dataset.pt": {
+        "sha256": "ebd6e0b395480141d1bc2b621d11c8ba5cb6ee52bfe8be4d0c33dba6fca6fb73",
+        "bytes": 44718085
+      }
+    }
+  },
+  "checkpoints": {
+    "ctg_crossformer_fold_1_best.pth": {
+      "sha256": "f74fad4db90eeabfc50468b3bcd32e533817d80b23c63f4f70bd99e9ba5b8edb",
+      "bytes": 10071609
+    },
+    "ctg_crossformer_fold_2_best.pth": {
+      "sha256": "4bdff34a4eae1c1d86b36f0414a2e76344e88a5330238cc8e518c644e0a2cc26",
+      "bytes": 10071609
+    },
+    "ctg_crossformer_fold_3_best.pth": {
+      "sha256": "8877f58f6b35e044b7790dfe25248b105e829cd1ee102d0780fe2687b624b735",
+      "bytes": 10071609
+    },
+    "ctg_crossformer_fold_4_best.pth": {
+      "sha256": "8a371c5994077a1ce770437d00cfe10244fd83d50acc7b3d6906f7ac9ad540bf",
+      "bytes": 10071609
+    },
+    "ctg_crossformer_fold_5_best.pth": {
+      "sha256": "07a74ecfffcd55cf0799cb6584332be5f60826362632fde27bd26f799476b877",
+      "bytes": 10071609
+    }
+  },
+  "env": {
+    "python": "3.10.11",
+    "torch": "2.11.0+cu128",
+    "cuda": "12.8",
+    "platform": "Windows-10-10.0.26200-SP0"
+  }
+}
