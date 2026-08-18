@@ -109,6 +109,30 @@ def compute_metrics(y_true, y_prob, threshold=0.5):
     except ValueError:
         auprc = 0.0
 
+    # Operating-point metrics. Threshold 0.5 is a poor cut-off at this
+    # prevalence (~4.3% positive windows): a well-calibrated model outputs
+    # mostly low probabilities, so 0.5 yields high specificity and unusable
+    # sensitivity. These threshold-free summaries describe the whole ROC, which
+    # is what matters clinically -- a missed acidosis costs far more than a
+    # false alarm, so the deployed operating point will not be 0.5.
+    sens_at_90spec = 0.0
+    spec_at_90sens = 0.0
+    thresh_at_80sens = 0.5
+    try:
+        from sklearn.metrics import roc_curve as _roc
+        fpr, tpr, thr = _roc(y_true, y_prob)
+        idx = np.where(fpr <= 0.10)[0]
+        if len(idx):
+            sens_at_90spec = float(tpr[idx].max())
+        idx = np.where(tpr >= 0.90)[0]
+        if len(idx):
+            spec_at_90sens = float(1.0 - fpr[idx].min())
+        idx = np.where(tpr >= 0.80)[0]
+        if len(idx):
+            thresh_at_80sens = float(thr[idx[0]])
+    except Exception:
+        pass
+
     return {
         'accuracy': acc,
         'precision': prec,
@@ -116,7 +140,10 @@ def compute_metrics(y_true, y_prob, threshold=0.5):
         'specificity': spec,
         'f1': f1,
         'auroc': auroc,
-        'auprc': auprc
+        'auprc': auprc,
+        'sens_at_90spec': sens_at_90spec,
+        'spec_at_90sens': spec_at_90sens,
+        'thresh_at_80sens': thresh_at_80sens,
     }
 
 
@@ -168,6 +195,13 @@ def main():
     parser.add_argument("--data_dir", type=str, default="data/processed/")
     parser.add_argument("--checkpoint_dir", type=str, default="checkpoints/ctg_crossformer/")
     parser.add_argument("--dry_run", action="store_true", help="Run 2-epoch synthetic verification pass")
+    parser.add_argument("--class_weight", type=str, default="none",
+                        choices=["none", "inverse_freq", "sqrt_inverse_freq"],
+                        help="Positive-class weight inside the focal loss, ON TOP of the "
+                             "sqrt-inverse WeightedRandomSampler. none (default) = pos_weight 1.0, "
+                             "this repo's historical behaviour. inverse_freq = n_neg/n_pos, which is "
+                             "what the benchmarked paper actually specifies. sqrt_inverse_freq = a "
+                             "milder middle ground.")
     parser.add_argument("--early_stop_mode", type=str, default="outer_best",
                         choices=["outer_best", "nested"],
                         help="outer_best (default, ORIGINAL behaviour): pick the epoch with the "
@@ -345,7 +379,27 @@ def main():
         # inference time (same failure mode diagnosed and fixed for Model 8's
         # BalancedBatchSampler in train_knowledge_infused.py). Since the sampler
         # already handles rebalancing here, pos_weight is fixed at 1.0.
-        pos_weight = torch.tensor([1.0]).to(device)
+        # CLASS WEIGHTING (2026-08-19): the 2026-08-09 note below fixed pos_weight
+        # to 1.0 on the reasoning that the sampler already rebalances. That is a
+        # DEVIATION from the paper, which specifies BOTH "Focal Loss with gamma=2.0
+        # and inverse-frequency class weights" AND "sqrt-inverse frequency
+        # oversampling via WeightedRandomSampler". The arithmetic supports the
+        # paper: sqrt-inverse sampling only lifts batch prevalence from ~4.3% to
+        # ~17%, so it does NOT fully rebalance and the model stays under-corrected
+        # toward the negative class -- which is why sensitivity at threshold 0.5 is
+        # ~40% here versus the paper's 89.5%.
+        n_pos = float(max(y_train_sub.sum(), 1))
+        n_neg = float(len(y_train_sub) - n_pos)
+        if args.class_weight == "inverse_freq":
+            pw = n_neg / n_pos
+        elif args.class_weight == "sqrt_inverse_freq":
+            pw = float(np.sqrt(n_neg / n_pos))
+        else:
+            pw = 1.0
+        pos_weight = torch.tensor([pw]).to(device)
+        if fold == 1:
+            print(f"Class weighting: {args.class_weight} -> pos_weight={pw:.2f} "
+                  f"(n_neg/n_pos = {n_neg/n_pos:.1f})")
         criterion = FocalLoss(gamma=t_cfg.get("focal_loss_gamma", 2.0), pos_weight=pos_weight)
 
         optimizer = torch.optim.AdamW(
