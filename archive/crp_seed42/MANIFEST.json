@@ -1,0 +1,90 @@
+{
+  "name": "crp_seed42",
+  "archived_utc": "2026-08-19T19:14:13.988101Z",
+  "command": "python scripts/run_clinical_relational_pretrain.py --epochs 60 --seed 42 --out checkpoints/clinical_relational/encoder_pretrained.pth && python src/models/train_ctg_crossformer.py --data_dir data/processed_mil/ --checkpoint_dir checkpoints/ctg_crossformer_crp/ --fold_mode patient_level --early_stop_mode nested --patience 15 --class_weight inverse_freq --seed 42 --pretrained_encoder checkpoints/clinical_relational/encoder_pretrained.pth",
+  "config": "configs/ctg_crossformer_config.yaml",
+  "metrics": {
+    "test_auroc": 0.8124,
+    "test_auprc": 0.2008,
+    "test_spec_at_90sens": 0.4857,
+    "paired_baseline_auroc": 0.7937,
+    "paired_baseline_auprc": 0.1265
+  },
+  "notes": "Clinical-relational pretraining (seed 42). Encoder pretrained to match clinical feature geometry (18-dim, no outcome labels), then fine-tuned with the inverse_freq recipe. One of three paired replications; mean gain over paired baseline +0.0199 AUROC / +0.0419 AUPRC, 3/3 runs positive.",
+  "git": {
+    "commit": "e8d63cf9e1234db5cf483b58ab3032bb00bf7338",
+    "branch": "crossformer_test",
+    "dirty_files": [
+      "?? archive/crp_seed42/",
+      "?? data/processed_mil/val_extended_features.npy",
+      "?? scripts/run_clinical_relational_pretrain.py",
+      "?? scripts/validate_selective_layer.py",
+      "?? src/training/clinical_relational_pretrain.py"
+    ]
+  },
+  "data": {
+    "dir": "data/processed_mil/",
+    "files": {
+      "ctu_signal_scaler.npz": {
+        "sha256": "b9b0cef1eda3986455f955662c784b8f0fd57a4e71f6235da816e3c59b2ce519",
+        "bytes": 516
+      },
+      "feature_scaler.npz": {
+        "sha256": "e185d77a415b0e50ecbf3d584769296e14e6e8ae9fa65f44e0415ce20435ef9e",
+        "bytes": 600
+      },
+      "test_dataset.pt": {
+        "sha256": "dda9b796d99f1da2161bd3722bcb5d36dd6c7429192767af73bfd101a8c77043",
+        "bytes": 42447504
+      },
+      "test_extended_features.npy": {
+        "sha256": "a284af83673ba56ca3bb67e85f04c6bdfd42722bda070babd7ff2270316833aa",
+        "bytes": 48660
+      },
+      "train_dataset.pt": {
+        "sha256": "f1c140a0077903672623421f71e20ee1653670fdebec864ad0121fbdc9153230",
+        "bytes": 203417499
+      },
+      "train_extended_features.npy": {
+        "sha256": "f39deb2514077fe1734662ac9b99c72beb1dba9bff86e05b2bbc722d9c36fff4",
+        "bytes": 232712
+      },
+      "val_dataset.pt": {
+        "sha256": "ebd6e0b395480141d1bc2b621d11c8ba5cb6ee52bfe8be4d0c33dba6fca6fb73",
+        "bytes": 44718085
+      },
+      "val_extended_features.npy": {
+        "sha256": "4e850166c25c1f22144dc0d8199b80b9c3cbea4df854e1bd8acd4c76a0f47de0",
+        "bytes": 51256
+      }
+    }
+  },
+  "checkpoints": {
+    "ctg_crossformer_fold_1_best.pth": {
+      "sha256": "856baac3931fed62691b4aadd0ac1eadd4499db4f40f5cf4b9701449d74f9bc5",
+      "bytes": 10071609
+    },
+    "ctg_crossformer_fold_2_best.pth": {
+      "sha256": "1abeff1ffea1c36f0c055283e35585ab2df4089e430c45fa36f226c2e3990b26",
+      "bytes": 10071609
+    },
+    "ctg_crossformer_fold_3_best.pth": {
+      "sha256": "e1e2dce0e4c10319cd6ea94467f5834aab07245181b0c3c95047d3b66ada8db9",
+      "bytes": 10071609
+    },
+    "ctg_crossformer_fold_4_best.pth": {
+      "sha256": "041536d7ee6a3047cc3784cca2955232310f36111fd16c0a7c97457c2da68f09",
+      "bytes": 10071609
+    },
+    "ctg_crossformer_fold_5_best.pth": {
+      "sha256": "ad7a6c69b2b61a855c0299040e2c43a1d980303b9f43a2632a6f13169d115b1f",
+      "bytes": 10071609
+    }
+  },
+  "env": {
+    "python": "3.10.11",
+    "torch": "2.11.0+cu128",
+    "cuda": "12.8",
+    "platform": "Windows-10-10.0.26200-SP0"
+  }
+}

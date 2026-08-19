@@ -1371,6 +1371,102 @@ predictions, not operating-point performance.
 
 ---
 
+
+## [2026-08-20] — KI PHASE CONCLUSION: clinical-relational pretraining works (11th mechanism)
+
+After ten mechanisms delivered ~0, an eleventh — designed from the accumulated
+evidence rather than from the original thesis — produced the project's first
+**replicated, positive** knowledge-infusion result.
+
+### Design
+
+**Clinical-relational pretraining** (`src/training/clinical_relational_pretrain.py`,
+`scripts/run_clinical_relational_pretrain.py`). Inspired by DeepCTG 2.0's
+feature-prediction pretraining, but differing in what is supervised:
+
+> If two windows sit close together in clinical feature space,
+> their embeddings should sit close together too.
+
+Pairwise latent distances are matched to pairwise distances in an 18-dimensional
+clinical feature space (8 original + 10 extended, rank-normalised, constant
+`uc_tachysystole` dropped). A projection head is used during pretraining and
+discarded; only the encoder is kept.
+
+Three properties distinguish it from the ten failures:
+1. **Consumes no outcome labels** — trains on all 5,286 windows, not the 226
+   positives. Our binding constraint is label scarcity, and knowledge-derived
+   objectives are the only ones that can exploit CTG data lacking pH (which is
+   most CTG data: of the public corpora, only CTU-UHB has pH at all).
+2. **Supervises relations, not values.** Predicting features (DeepCTG) asks the
+   encoder to reproduce the rule engine, risking capture at its measured 0.762
+   ceiling. Matching geometry constrains the space more loosely.
+3. **Preserves magnitude.** Contrastive grouping by binary FIGO signature was
+   designed, then rejected at a viability check: signatures cap at ~0.76 and
+   discard deceleration depth/area/duration — the one component shown to carry
+   complementary signal.
+
+Pretraining is run on the CV pool ONLY; val and test are never seen.
+
+### Result — three PAIRED replications (baseline and CRP at the same seed)
+
+| seed | dAUROC | dAUPRC | dSpec@90%sens |
+|---|---|---|---|
+| 42 | +0.0187 | +0.0743 | +0.0019 |
+| 1  | +0.0156 | +0.0250 | +0.0133 |
+| 7  | +0.0254 | +0.0263 | +0.0247 |
+| **mean** | **+0.0199** | **+0.0419** | **+0.0133** |
+
+**Test AUROC 0.7865 -> 0.8064.** Positive in 3/3 runs on all three metrics
+(9/9). Paired t on AUROC p=0.021, though with n=3 the power is negligible —
+**sign consistency across independent paired runs is the real evidence.**
+Baselines were stable across seeds (0.7937 / 0.7827 / 0.7831), confirming the
+deltas are not baseline drift.
+
+Pairing matters: comparing CRP at one seed against a baseline at another would
+confound method with seed, and per-fold AUROC on this data swings 0.68-0.87.
+
+### Corrections to interim claims made during this work
+
+- **AUPRC gain was overstated as +0.0743 ("59% relative") from seed 42 alone.**
+  Across three runs the mean is **+0.0419**; seed 42 was the favourable draw
+  (the others: +0.025, +0.026). Cite +0.042, not +0.074.
+- **Spec@90%sens was described as "essentially unchanged"** on seed-42 evidence
+  (+0.002). Across three runs it is **+0.0133, positive in 3/3**.
+- The ceiling-bias risk flagged in advance **did not materialise** — relational
+  supervision proved loose enough that the representation was not trapped at the
+  rule engine's 0.762.
+
+### Also settled this phase
+
+- **Selective knowledge layer: REJECTED.** Bootstrap CIs (patient-level, 2,000
+  resamples) all included zero; per-fold replication was 3/5, 2/5, 2/5 with
+  magnitudes from -0.32 to +0.48. The apparent crossover was noise. An earlier
+  claim that the AUPRC effect "replicated three times" was wrong — those were
+  three combiners on the same test set, i.e. one measurement repeated.
+- **DeepCTG's dataset is not public**; of public corpora only CTU-UHB carries
+  pH, and SPaM requires a Data Use Agreement (not pursued — no time). So no
+  additional supervised data is obtainable, which is precisely why a
+  label-free knowledge objective matters.
+
+### KI phase — final position (11 mechanisms, 5 layers)
+
+| Layer | Mechanisms | Outcome |
+|---|---|---|
+| Preprocessing | FIGO-derived feature basis | **In use** — everything depends on it |
+| Auxiliary heads / losses | FIGOHead, ClinicalFeatureHead, CriteriaHead, rule loss | ~0, removed |
+| Input fusion | late feature fusion, metadata fusion | ~0 / -0.089, removed |
+| Attention priors | knowledge-guided MIL | failed (substrate), removed |
+| Decision layer | FIGO fusion, extended-feature fusion, selective layer | not replicated, removed |
+| **Representation (pretraining)** | **clinical-relational pretraining** | **+0.0199 AUROC, 3/3 replicated — ADOPTED** |
+
+The organising finding stands and is now sharper: knowledge cannot be added to a
+model that already encodes it (7 FIGO flags reach 0.762 vs the network's 0.777),
+**but knowledge can still be used to shape HOW the model represents the signal,
+using data the supervised task cannot touch.** Ten mechanisms injected knowledge
+as information; the eleventh used it as geometry, and only that one worked.
+
+---
+
 ## Current state summary (as of this document)
 
 **Best validated result**: Wide-distress CrossFormer, `full`, fold-2-fixed split — **AUROC 0.7995 ± 0.0498** (Run 10). Real edge over standard architecture but with a stability/Sens@90Spec tradeoff. Feature-fusion (Run 11, 0.7954±0.0504) came in between standard and wide-distress and did **not** unseat this.
