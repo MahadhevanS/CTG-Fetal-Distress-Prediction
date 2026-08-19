@@ -1140,6 +1140,54 @@ the five saved best checkpoints; ensembling is worth +0.0191 on test.
 
 ---
 
+
+## [2026-08-19] — Label-confidence weighting: modest CV gain, WORSE on test, not adopted
+
+**Hypothesis**: pH <= 7.15 is a hard cut on a continuous measure -- a fetus at
+7.14 and one at 7.16 are physiologically indistinguishable but labelled
+oppositely. That boundary noise sits in every experiment run so far.
+
+**Design choice**: soft down-weighting, NOT gray-zone exclusion. Excluding a
+7.10-7.20 band would drop 116/552 patients including **52 of the 113 positives
+(46%)**, and positive scarcity is already this dataset's binding constraint
+(it is what killed the patient-level MIL attempt). Instead each window's loss
+is weighted by its patient's pH distance from 7.15: floor 0.30 at the
+threshold, ramping to 1.0 at +/-0.05. 1,324/5,286 windows down-weighted, mean
+weight 0.914 -- nothing discarded.
+
+**Results** (nested/unbiased, fold-matched, on top of `inverse_freq`):
+
+| | invfreq | + label-confidence |
+|---|---|---|
+| Unbiased CV AUROC | 0.7768 | 0.7955 (+0.019) |
+| CV AUPRC | 0.1679 | 0.2134 (+0.045) |
+| CV Sens@90%Spec | 0.4513 | 0.5021 (+0.051) |
+| **Test AUROC (ens.)** | **0.7937** | **0.7718 (-0.022)** |
+| **Test AUPRC** | **0.1207** | **0.1093 (-0.011)** |
+| Test spec@90%sens | 0.4838 | 0.4240 |
+
+Per-fold unbiased: 0.8089, 0.8517, 0.8978, **0.7255, 0.6935**.
+
+**Verdict: NOT adopted.** The CV gain (+0.019) is well inside the fold std
+(0.076), and it does not transfer -- on the held-out test set it is worse than
+`inverse_freq` on every metric. Folds 1-3 looked strong (0.81-0.90) and were
+reported as promising mid-run; folds 4-5 regressed hard. A repeat of the
+pattern seen in the knowledge-infusion run, where a 2-fold signal (+0.0074)
+decayed to +0.0027 by 5 folds. **`inverse_freq` remains the deliverable model.**
+Archived at `archive/standalone_labelconf/` for the ablation record.
+
+**Operating-point instability worth carrying forward**: sensitivity at a fixed
+0.5 threshold ranged 29%-94% across folds while AUROC stayed 0.69-0.90. For a
+device this matters more than AUROC -- a hard-coded factory threshold would
+behave inconsistently across populations. The threshold must be calibrated
+against a reference set, not fixed.
+
+**Bug fixed**: `CTGDataset` now returns a 3-tuple (X, y, weight); the held-out
+test loop still unpacked 2 values and crashed AFTER the CV completed. All five
+folds and checkpoints were unaffected.
+
+---
+
 ## Current state summary (as of this document)
 
 **Best validated result**: Wide-distress CrossFormer, `full`, fold-2-fixed split — **AUROC 0.7995 ± 0.0498** (Run 10). Real edge over standard architecture but with a stability/Sens@90Spec tradeoff. Feature-fusion (Run 11, 0.7954±0.0504) came in between standard and wide-distress and did **not** unseat this.

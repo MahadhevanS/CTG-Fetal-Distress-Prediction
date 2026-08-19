@@ -62,28 +62,45 @@ class FocalLoss(nn.Module):
         self.gamma = gamma
         self.pos_weight = pos_weight
 
-    def forward(self, logits: torch.Tensor, targets: torch.Tensor) -> torch.Tensor:
+    def forward(self, logits: torch.Tensor, targets: torch.Tensor,
+                sample_weight: Optional[torch.Tensor] = None) -> torch.Tensor:
         bce = F.binary_cross_entropy_with_logits(
             logits, targets, pos_weight=self.pos_weight, reduction="none"
         )
         probs = torch.sigmoid(logits)
         p_t = probs * targets + (1.0 - probs) * (1.0 - targets)
         focal_weight = (1.0 - p_t) ** self.gamma
-        return (focal_weight * bce).mean()
+        loss = focal_weight * bce
+        if sample_weight is not None:
+            # Normalise so the effective batch size (and hence the LR scale) is
+            # unchanged when weights are non-uniform.
+            return (loss * sample_weight).sum() / sample_weight.sum().clamp(min=1e-8)
+        return loss.mean()
 
 
 class CTGDataset(Dataset):
-    """PyTorch Dataset wrapper for CTG windowed signals."""
-    def __init__(self, X, y, patient_ids=None):
+    """PyTorch Dataset wrapper for CTG windowed signals.
+
+    sample_weight carries per-window label confidence (see --label_confidence_band):
+    umbilical pH is continuous, so a fetus at 7.14 and one at 7.16 are
+    physiologically near-identical yet receive opposite labels under the 7.15
+    cut. Down-weighting those boundary cases reduces label noise WITHOUT
+    discarding them -- outright exclusion of a 7.10-7.20 band would remove 46%
+    of all positives, and positive scarcity is already this dataset's binding
+    constraint.
+    """
+    def __init__(self, X, y, patient_ids=None, sample_weight=None):
         self.X = torch.as_tensor(X, dtype=torch.float32)
         self.y = torch.as_tensor(y, dtype=torch.float32)
         self.patient_ids = patient_ids
+        self.w = (torch.ones_like(self.y) if sample_weight is None
+                  else torch.as_tensor(sample_weight, dtype=torch.float32))
 
     def __len__(self):
         return len(self.X)
 
     def __getitem__(self, idx):
-        return self.X[idx], self.y[idx]
+        return self.X[idx], self.y[idx], self.w[idx]
 
 
 def compute_metrics(y_true, y_prob, threshold=0.5):
@@ -160,11 +177,12 @@ def train_epoch(model, train_loader, optimizer, scheduler, criterion, device, de
     model.train()
     train_loss = 0.0
     pbar = tqdm(train_loader, desc=desc, leave=False)
-    for X_batch, y_batch in pbar:
+    for X_batch, y_batch, w_batch in pbar:
         X_batch, y_batch = X_batch.to(device), y_batch.to(device)
+        w_batch = w_batch.to(device)
         optimizer.zero_grad()
         logits = model(X_batch).squeeze(-1)
-        loss = criterion(logits, y_batch)
+        loss = criterion(logits, y_batch, w_batch)
         loss.backward()
         nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
         optimizer.step()
@@ -180,7 +198,7 @@ def evaluate(model, val_loader, device, desc="[Val]"):
     model.eval()
     all_targets, all_probs = [], []
     pbar = tqdm(val_loader, desc=desc, leave=False)
-    for X_batch, y_batch in pbar:
+    for X_batch, y_batch, _w in pbar:
         X_batch = X_batch.to(device)
         logits = model(X_batch).squeeze(-1)
         probs = torch.sigmoid(logits)
@@ -195,6 +213,16 @@ def main():
     parser.add_argument("--data_dir", type=str, default="data/processed/")
     parser.add_argument("--checkpoint_dir", type=str, default="checkpoints/ctg_crossformer/")
     parser.add_argument("--dry_run", action="store_true", help="Run 2-epoch synthetic verification pass")
+    parser.add_argument("--label_confidence_band", type=float, default=0.0,
+                        help="Down-weight training windows whose patient's umbilical pH lies "
+                             "within this band of the 7.15 threshold (e.g. 0.05 covers "
+                             "7.10-7.20). pH is continuous, so cases near the cut are "
+                             "physiologically ambiguous but receive hard opposite labels. "
+                             "Weight ramps linearly from --min_label_weight at the threshold to "
+                             "1.0 at the band edge. 0.0 (default) disables. Chosen over outright "
+                             "exclusion because a 7.10-7.20 cut would discard 46% of all positives.")
+    parser.add_argument("--min_label_weight", type=float, default=0.3,
+                        help="Weight floor for a window sitting exactly at the pH threshold.")
     parser.add_argument("--class_weight", type=str, default="none",
                         choices=["none", "inverse_freq", "sqrt_inverse_freq"],
                         help="Positive-class weight inside the focal loss, ON TOP of the "
@@ -267,7 +295,25 @@ def main():
             print("    Running synthetic dataset pass for verification...\n")
         X, y, patient_ids = generate_synthetic_data(num_samples=160 if args.dry_run else 100, num_patients=20)
 
-    dataset = CTGDataset(X, y, patient_ids)
+    sample_weight = None
+    if args.label_confidence_band > 0 and not args.dry_run:
+        import pandas as pd
+        md_path = os.path.join("data", "raw", "ctu-chb-intrapartum", "clinical_metadata.csv")
+        md = pd.read_csv(md_path)
+        md.columns = [c.strip().lower() for c in md.columns]
+        md["record_id"] = md["record_id"].astype(str)
+        ph_map = pd.to_numeric(md.set_index("record_id")["ph"], errors="coerce").to_dict()
+        ph = np.array([ph_map.get(str(p), np.nan) for p in patient_ids], dtype=np.float64)
+        dist = np.abs(ph - 7.15)
+        b, wmin = args.label_confidence_band, args.min_label_weight
+        sample_weight = np.clip(wmin + (1.0 - wmin) * (dist / b), wmin, 1.0)
+        sample_weight[np.isnan(ph)] = 1.0   # unknown pH -> no down-weighting
+        n_down = int((sample_weight < 1.0).sum())
+        print(f"Label-confidence weighting: band +/-{b:.3f} around pH 7.15, floor {wmin:.2f} -> "
+              f"{n_down}/{len(sample_weight)} windows down-weighted "
+              f"(mean weight {sample_weight.mean():.3f}); NO windows discarded")
+
+    dataset = CTGDataset(X, y, patient_ids, sample_weight=sample_weight)
 
     # 5-Fold Stratified Patient-Level Cross-Validation
     n_splits = 5
@@ -524,7 +570,7 @@ def main():
                 model.eval()
                 probs_one, targs = [], []
                 with torch.no_grad():
-                    for Xb, yb in test_loader:
+                    for Xb, yb, _w in test_loader:
                         probs_one.extend(torch.sigmoid(model(Xb.to(device)).squeeze(-1)).cpu().numpy())
                         targs.extend(yb.numpy())
                 fold_probs.append(np.array(probs_one))
