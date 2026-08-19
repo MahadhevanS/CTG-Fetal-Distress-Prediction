@@ -1188,6 +1188,107 @@ folds and checkpoints were unaffected.
 
 ---
 
+
+## [2026-08-19] — Explainability delivered; decision-layer KI tested and rejected
+
+### A. Clinical explainability module (ADOPTED)
+
+`src/explainability/ctg_explainer.py` turns one 20-minute window into a
+clinician-readable account, in three layers ordered by trustworthiness:
+
+1. **FIGO criteria** — deterministic from the pipeline's computed clinical
+   features. Facts about the trace, not claims about the model, so they cannot
+   mislead; a clinician can verify them against the strip.
+2. **Temporal saliency** — gradient x input, aggregated per minute.
+3. **FHR<->UC cross-attention** — captured via forward hooks, so
+   `CTGCrossformerEncoder` and every existing checkpoint are untouched.
+
+**Faithfulness validated** (`faithfulness_report()`, 1,103 held-out windows).
+This check exists because a plausible-looking narrative beside an unrelated
+score is worse than no explanation — a clinician would reasonably read the
+cited findings as the model's reason for firing.
+
+| metric | value |
+|---|---|
+| Spearman(risk score, # concerning FIGO findings) | **+0.461** (p ~ 5e-59) |
+| mean concerning findings when flagged / not | 1.53 / 0.92 |
+| AUROC: model vs FIGO-criteria-count alone | 0.806 vs 0.611 |
+
+The model tracks the clinical criteria (so the narrative is honest) while
+clearly outperforming them (so it adds signal beyond the rule engine).
+
+**Illustrative case (from the tool, worth citing in the write-up).** The
+highest-risk true positive and the highest-risk false positive are clinically
+near-identical — both baseline 95 bpm with variable and prolonged decelerations;
+one infant was acidotic, one was not. A concrete demonstration of why the
+performance ceiling exists: the trace genuinely does not separate these cases.
+
+### B. AUROC is the wrong headline metric for a screening device
+
+Comparing `none` vs `inverse_freq` at MATCHED sensitivity on the test set:
+
+| test | AUROC | spec@90%sens | spec@80%sens |
+|---|---|---|---|
+| none | 0.7850 | 0.4629 | 0.6122 |
+| inverse_freq | 0.7937 | **0.4838** | **0.6892** |
+
+`inverse_freq` is better where the device operates (+0.021 / +0.077 specificity)
+even though its CV AUROC is the *lowest* of the four variants (0.7768 vs 0.8014).
+AUROC averages across the whole curve including the low-sensitivity region a
+screening device never uses. **Corrects an earlier characterisation in this
+session** that `inverse_freq` was "clinically better but not a better
+discriminator" — it discriminates better in the region that matters.
+
+### C. Decision-layer knowledge infusion (8th mechanism — REJECTED)
+
+Prior KI attempts all acted during training. This tested fusion at DECISION
+time, evaluated against operating-point metrics rather than global AUROC.
+Schemes: LR(model + 7 FIGO flags); suppress-if-clean; escalate-if-pathological.
+
+| | CV (per-fold) | **Held-out test** |
+|---|---|---|
+| spec@90%sens delta | **+0.0993** | **+0.0228** |
+| spec@80%sens delta | +0.0143 | **-0.0703** |
+| AUROC delta | +0.0024 | **-0.0288** |
+| AUPRC delta | -0.0185 | -0.0194 |
+
+**Rejected.** The large CV gain did not transfer; only one metric at one
+operating point moved the right way on test, by an amount well inside noise
+(51 positive test windows).
+
+### D. Standing methodological lesson
+
+Across label-confidence weighting, temporal alarm persistence, and decision-layer
+KI, **CV gains of +0.02 to +0.10 repeatedly failed to replicate on the test
+set.** Nested early stopping removed epoch-selection bias but not small-sample
+variance (379 patients / 226 positive windows). **Treat any CV-only gain below
+~0.05 as unproven until confirmed on held-out data.** Interim per-fold results
+were over-read as promising three separate times in this session.
+
+### E. Knowledge infusion — final position
+
+| Stage | Status |
+|---|---|
+| Preprocessing (FIGO-derived features) | **In use** — the entire feature basis |
+| Training / architecture | 7 mechanisms, all ~0. Not used. |
+| Decision layer | Tested, did not transfer. Not used. |
+| **Explainability** | **In use** — validated faithful |
+
+Eight mechanisms at three layers, one consistent explanation: **the network
+already encodes what the FIGO rules encode** (7 binary flags alone reach AUROC
+0.762 versus the network's 0.777), so knowledge has nothing left to add to the
+prediction — but it remains essential for making decisions auditable.
+
+Also rejected earlier the same day: **temporal alarm persistence** (requiring N
+consecutive flagged windows). CV showed a small gain, test showed none — the
+hypothesis assumed transient, independent false positives, but consecutive
+windows overlap 87.5% at a 2.5-min stride, so errors are strongly
+autocorrelated. And **patient-level aggregation**: precision roughly triples
+(0.08 -> 0.23) because patient prevalence is 4x window prevalence, but
+discrimination collapses (AUROC 0.79 -> 0.66).
+
+---
+
 ## Current state summary (as of this document)
 
 **Best validated result**: Wide-distress CrossFormer, `full`, fold-2-fixed split — **AUROC 0.7995 ± 0.0498** (Run 10). Real edge over standard architecture but with a stability/Sens@90Spec tradeoff. Feature-fusion (Run 11, 0.7954±0.0504) came in between standard and wide-distress and did **not** unseat this.
