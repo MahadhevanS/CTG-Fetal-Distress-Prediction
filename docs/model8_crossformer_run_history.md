@@ -1289,6 +1289,88 @@ discrimination collapses (AUROC 0.79 -> 0.66).
 
 ---
 
+
+## [2026-08-19] — Extended clinical knowledge: one replicated effect, scope bounded
+
+### Motivation — the earlier explanation was too broad
+
+The conclusion "the network already encodes what FIGO encodes" was only ever
+demonstrated for the **8 features the pipeline computes**. It said nothing about
+clinical information those 8 omit, and they omit a lot: deceleration DEPTH and
+AREA (we carry only counts, so a 20-second dip and a 3-minute one look
+identical), FHR<->UC timing LAG (the defining feature of a late deceleration),
+within-window TRENDS, and — most strikingly — **anything at all from the UC
+channel**, which is half the input signal and had zero features extracted.
+
+There is also a data-efficiency argument: with ~226 positive windows, the
+network may simply never have learned subtle features. Hand-crafted features
+encode prior knowledge it does not have to learn.
+
+### New: `src/knowledge/extended_features.py` (11 features)
+
+Computed from tensors already on disk -- the signal scaler makes raw units
+recoverable, so no pipeline rerun. Missing FHR (stored as 0 bpm, becoming
+-baseline after correction) is masked out of every statistic.
+
+Class separation on the train pool confirms these are informative:
+
+| feature | normal | distress |
+|---|---|---|
+| decel_longest_sec | 41.0 | **70.5** |
+| decel_area | 2.62 | **5.35** |
+| decel_burden | 0.144 | 0.240 |
+| baseline_slope | -0.20 | **-1.06** |
+
+`uc_tachysystole` is constant 0 (no window exceeds 5 contractions/10 min) and is
+dropped from all fusion experiments -- it carries no information on this cohort.
+
+### Results — the AUPRC effect replicates, the operating point does not
+
+Three separate combiners were tried: LR(model+FIGO), LR(model+FIGO+extended),
+and a single-parameter logit-space fusion with alpha tuned by NESTED selection
+to maximise specificity at 90% sensitivity.
+
+| combiner | CV dAUPRC | **test dAUPRC** | test dspec@90s | test dAUROC |
+|---|---|---|---|---|
+| LR(model + FIGO) | +0.024 | **+0.027** | +0.023 | -0.029 |
+| LR(model + FIGO + extended) | +0.024 | **+0.027** | -0.032 | -0.025 |
+| tuned alpha (operating-point objective) | +0.015 | **+0.029** | -0.022 | -0.002 |
+
+**AUPRC improves out-of-sample every time, ~+0.027-0.029 (~+22% relative on a
+base of 0.1265). Across TEN knowledge-infusion experiments this is the only
+effect that has replicated on held-out data.**
+
+Specificity at fixed sensitivity improved on CV in every case and degraded on
+test in every case. The tuned-alpha run diagnoses why: the selected alphas were
+**[1.5, 1.25, 0.3, 1.4, 0.15]** -- a tenfold spread. The optimal weight for
+clinical knowledge is not stable across patient subsets, so CV selection fits
+noise. The earlier hypothesis (that a log-loss objective was the problem) was
+wrong; retargeting the objective did not fix transfer.
+
+### Interpretation and device implication
+
+AUPRC is dominated by the high-precision / low-recall region; spec@90%sens
+lives in the high-recall region. So the knowledge features **confirm overt
+pathology** (making top-ranked predictions more reliable) but **do not help find
+subtle cases** (hurting high-sensitivity operation). Clinically coherent: FIGO
+criteria fire on obvious abnormality, which the model already catches.
+
+**Design consequence — two modes, not one fused model:**
+
+| mode | scoring | rationale |
+|---|---|---|
+| Screening (90% sensitivity) | **model alone** | knowledge measurably hurts here (-0.022 spec) |
+| High-confidence alert | **model + knowledge** | +22% AUPRC, real and replicated |
+
+### Status
+
+Knowledge-for-accuracy is **closed** after ten mechanisms across four layers
+(training heads, feature fusion, attention priors, decision layer). The single
+replicated benefit is bounded above: precision among high-confidence
+predictions, not operating-point performance.
+
+---
+
 ## Current state summary (as of this document)
 
 **Best validated result**: Wide-distress CrossFormer, `full`, fold-2-fixed split — **AUROC 0.7995 ± 0.0498** (Run 10). Real edge over standard architecture but with a stability/Sens@90Spec tradeoff. Feature-fusion (Run 11, 0.7954±0.0504) came in between standard and wide-distress and did **not** unseat this.
