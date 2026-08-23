@@ -1,0 +1,339 @@
+{
+  "prevalence": {
+    "val": 0.05249569707401033,
+    "test": 0.04623753399818677
+  },
+  "target_sensitivity": 0.8,
+  "models": {
+    "crp_s42": {
+      "checkpoint_dir": "checkpoints/ctg_crossformer_crp",
+      "description": "DELIVERED -- clinical-relational pretrain, seed 42",
+      "fold_mean_probs_test": [
+        0.1315,
+        0.4657,
+        0.0862,
+        0.113,
+        0.018
+      ],
+      "val_auroc": 0.7879424070517115,
+      "val_auprc": 0.21120302768241314,
+      "test_auroc": 0.8124207858048162,
+      "test_auprc": 0.19583433167707426,
+      "test_brier": 0.06098871186165928,
+      "test_ece": 0.11684028386853546,
+      "test_mean_prob": 0.16290928423404694,
+      "at_0.30": {
+        "acc": 0.8612873980054397,
+        "sens": 0.49019607843137253,
+        "spec": 0.879277566539924,
+        "ppv": 0.16447368421052633,
+        "alarm": 0.13780598368087035
+      },
+      "val_derived_threshold": 0.15105482935905457,
+      "at_val_thr_0.8sens": {
+        "acc": 0.6835902085222122,
+        "sens": 0.7843137254901961,
+        "spec": 0.6787072243346007,
+        "ppv": 0.10582010582010581,
+        "alarm": 0.34270172257479603
+      }
+    },
+    "crp_s1": {
+      "checkpoint_dir": "checkpoints/repl_crp_s1",
+      "description": "CRP replication, seed 1",
+      "fold_mean_probs_test": [
+        0.0338,
+        0.493,
+        0.4838,
+        0.1071,
+        0.4991
+      ],
+      "val_auroc": 0.7824779261773946,
+      "val_auprc": 0.20072838726766157,
+      "test_auroc": 0.7982740624767017,
+      "test_auprc": 0.15628709056064652,
+      "test_brier": 0.1266147419496228,
+      "test_ece": 0.27710598426198046,
+      "test_mean_prob": 0.32334354519844055,
+      "at_0.30": {
+        "acc": 0.557570262919311,
+        "sens": 0.8431372549019608,
+        "spec": 0.5437262357414449,
+        "ppv": 0.08221797323135756,
+        "alarm": 0.4741613780598368
+      },
+      "val_derived_threshold": 0.3241058886051178,
+      "at_val_thr_0.8sens": {
+        "acc": 0.6364460562103355,
+        "sens": 0.803921568627451,
+        "spec": 0.6283269961977186,
+        "ppv": 0.09490740740740741,
+        "alarm": 0.3916591115140526
+      }
+    },
+    "crp_s7": {
+      "checkpoint_dir": "checkpoints/repl_crp_s7",
+      "description": "CRP replication, seed 7",
+      "fold_mean_probs_test": [
+        0.2833,
+        0.3732,
+        0.4593,
+        0.0662,
+        0.4018
+      ],
+      "val_auroc": 0.7774601331129674,
+      "val_auprc": 0.19601813092456075,
+      "test_auroc": 0.8085253112651906,
+      "test_auprc": 0.16434332975129445,
+      "test_brier": 0.1304025211432945,
+      "test_ece": 0.27053036152343807,
+      "test_mean_prob": 0.3167678713798523,
+      "at_0.30": {
+        "acc": 0.6010879419764279,
+        "sens": 0.8235294117647058,
+        "spec": 0.5903041825095057,
+        "ppv": 0.08879492600422834,
+        "alarm": 0.42883046237534
+      },
+      "val_derived_threshold": 0.30243414640426636,
+      "at_val_thr_0.8sens": {
+        "acc": 0.6038077969174978,
+        "sens": 0.8235294117647058,
+        "spec": 0.5931558935361216,
+        "ppv": 0.08936170212765958,
+        "alarm": 0.42611060743427015
+      }
+    },
+    "base_s1": {
+      "checkpoint_dir": "checkpoints/repl_base_s1",
+      "description": "paired baseline (no CRP), seed 1",
+      "fold_mean_probs_test": [
+        0.529,
+        0.5236,
+        0.4655,
+        0.1004,
+        0.091
+      ],
+      "val_auroc": 0.7465493366686022,
+      "val_auprc": 0.14006129419948535,
+      "test_auroc": 0.7827480802206814,
+      "test_auprc": 0.1312804030684663,
+      "test_brier": 0.1398864749715513,
+      "test_ece": 0.2956805630559177,
+      "test_mean_prob": 0.34191808104515076,
+      "at_0.30": {
+        "acc": 0.5122393472348141,
+        "sens": 0.8823529411764706,
+        "spec": 0.49429657794676807,
+        "ppv": 0.0779896013864818,
+        "alarm": 0.5231187669990934
+      },
+      "val_derived_threshold": 0.33365532755851746,
+      "at_val_thr_0.8sens": {
+        "acc": 0.5974614687216682,
+        "sens": 0.803921568627451,
+        "spec": 0.5874524714828897,
+        "ppv": 0.0863157894736842,
+        "alarm": 0.43064369900271987
+      }
+    },
+    "base_s7": {
+      "checkpoint_dir": "checkpoints/repl_base_s7",
+      "description": "paired baseline (no CRP), seed 7",
+      "fold_mean_probs_test": [
+        0.5199,
+        0.4871,
+        0.5061,
+        0.2118,
+        0.0981
+      ],
+      "val_auroc": 0.7463855511383094,
+      "val_auprc": 0.1573510818314851,
+      "test_auroc": 0.7831208529038991,
+      "test_auprc": 0.13797726519577297,
+      "test_brier": 0.1568827706380833,
+      "test_ece": 0.3183723258518243,
+      "test_mean_prob": 0.36460986733436584,
+      "at_0.30": {
+        "acc": 0.4741613780598368,
+        "sens": 0.8627450980392157,
+        "spec": 0.4553231939163498,
+        "ppv": 0.0713128038897893,
+        "alarm": 0.5593834995466909
+      },
+      "val_derived_threshold": 0.3312070965766907,
+      "at_val_thr_0.8sens": {
+        "acc": 0.5412511332728921,
+        "sens": 0.8235294117647058,
+        "spec": 0.5275665399239544,
+        "ppv": 0.07792207792207792,
+        "alarm": 0.4886672710788758
+      }
+    },
+    "invfreq": {
+      "checkpoint_dir": "checkpoints/ctg_crossformer_invfreq",
+      "description": "pre-CRP inverse_freq baseline",
+      "fold_mean_probs_test": [
+        0.5233,
+        0.5134,
+        0.3493,
+        0.0646,
+        0.1618
+      ],
+      "val_auroc": 0.7660100355861288,
+      "val_auprc": 0.13737878396462164,
+      "test_auroc": 0.7936889584731232,
+      "test_auprc": 0.12069771942962808,
+      "test_brier": 0.13377254443460687,
+      "test_ece": 0.2762577041429708,
+      "test_mean_prob": 0.3224952816963196,
+      "at_0.30": {
+        "acc": 0.586582048957389,
+        "sens": 0.8431372549019608,
+        "spec": 0.5741444866920152,
+        "ppv": 0.08757637474541752,
+        "alarm": 0.44514959202175886
+      },
+      "val_derived_threshold": 0.29626330733299255,
+      "at_val_thr_0.8sens": {
+        "acc": 0.5802357207615594,
+        "sens": 0.8431372549019608,
+        "spec": 0.5674904942965779,
+        "ppv": 0.08634538152610442,
+        "alarm": 0.4514959202175884
+      }
+    },
+    "sqrtinv": {
+      "checkpoint_dir": "checkpoints/ctg_crossformer_sqrtinv",
+      "description": "sqrt-inverse class weighting",
+      "fold_mean_probs_test": [
+        0.3945,
+        0.4002,
+        0.314,
+        0.061,
+        0.1929
+      ],
+      "val_auroc": 0.7598755229969774,
+      "val_auprc": 0.13589173955236689,
+      "test_auroc": 0.7731305449936628,
+      "test_auprc": 0.110835552941604,
+      "test_brier": 0.11031350847639364,
+      "test_ece": 0.22629655242398558,
+      "test_mean_prob": 0.2725340723991394,
+      "at_0.30": {
+        "acc": 0.6899365367180417,
+        "sens": 0.7254901960784313,
+        "spec": 0.688212927756654,
+        "ppv": 0.10136986301369863,
+        "alarm": 0.33091568449682685
+      },
+      "val_derived_threshold": 0.23386912047863007,
+      "at_val_thr_0.8sens": {
+        "acc": 0.5648232094288305,
+        "sens": 0.803921568627451,
+        "spec": 0.5532319391634981,
+        "ppv": 0.08023483365949119,
+        "alarm": 0.46328195829555757
+      }
+    },
+    "labelconf": {
+      "checkpoint_dir": "checkpoints/ctg_crossformer_labelconf",
+      "description": "label-confidence variant",
+      "fold_mean_probs_test": [
+        0.5091,
+        0.4919,
+        0.3176,
+        0.08,
+        0.2452
+      ],
+      "val_auroc": 0.7632405711648129,
+      "val_auprc": 0.1492611365710765,
+      "test_auroc": 0.7717512860657572,
+      "test_auprc": 0.109295895283255,
+      "test_brier": 0.142172806950905,
+      "test_ece": 0.2825370306117039,
+      "test_mean_prob": 0.3287745714187622,
+      "at_0.30": {
+        "acc": 0.5738893925657298,
+        "sens": 0.803921568627451,
+        "spec": 0.5627376425855514,
+        "ppv": 0.08183632734530938,
+        "alarm": 0.4542157751586582
+      },
+      "val_derived_threshold": 0.3151319622993469,
+      "at_val_thr_0.8sens": {
+        "acc": 0.6029011786038078,
+        "sens": 0.803921568627451,
+        "spec": 0.5931558935361216,
+        "ppv": 0.08742004264392324,
+        "alarm": 0.4252039891205802
+      }
+    },
+    "mil_nested": {
+      "checkpoint_dir": "checkpoints/ctg_crossformer_mil_nested",
+      "description": "nested early stopping, no class weight",
+      "fold_mean_probs_test": [
+        0.287,
+        0.3033,
+        0.2751,
+        0.0389,
+        0.2447
+      ],
+      "val_auroc": 0.7652208871219904,
+      "val_auprc": 0.14148199041934206,
+      "test_auroc": 0.784984716319988,
+      "test_auprc": 0.1268865578958897,
+      "test_brier": 0.08271247104683756,
+      "test_ece": 0.18355039032285905,
+      "test_mean_prob": 0.2297879159450531,
+      "at_0.30": {
+        "acc": 0.7642792384406165,
+        "sens": 0.6666666666666666,
+        "spec": 0.7690114068441065,
+        "ppv": 0.12274368231046931,
+        "alarm": 0.2511332728921124
+      },
+      "val_derived_threshold": 0.21645048260688782,
+      "at_val_thr_0.8sens": {
+        "acc": 0.5775158658204895,
+        "sens": 0.8235294117647058,
+        "spec": 0.5655893536121673,
+        "ppv": 0.0841683366733467,
+        "alarm": 0.4524025385312783
+      }
+    },
+    "foldmatched": {
+      "checkpoint_dir": "checkpoints/ctg_crossformer_mil_foldmatched",
+      "description": "fold-matched vs Model 8",
+      "fold_mean_probs_test": [
+        0.0118,
+        0.1192,
+        0.2864,
+        0.3106,
+        0.2833
+      ],
+      "val_auroc": 0.7418442250710978,
+      "val_auprc": 0.17514167486888152,
+      "test_auroc": 0.7862148661746068,
+      "test_auprc": 0.13862256032127704,
+      "test_brier": 0.06956866042390307,
+      "test_ece": 0.15604741643043613,
+      "test_mean_prob": 0.20228494703769684,
+      "at_0.30": {
+        "acc": 0.8476881233000907,
+        "sens": 0.49019607843137253,
+        "spec": 0.8650190114068441,
+        "ppv": 0.1497005988023952,
+        "alarm": 0.1514052583862194
+      },
+      "val_derived_threshold": 0.16435149312019348,
+      "at_val_thr_0.8sens": {
+        "acc": 0.4968268359020852,
+        "sens": 0.9215686274509803,
+        "spec": 0.4762357414448669,
+        "ppv": 0.07859531772575251,
+        "alarm": 0.5421577515865821
+      }
+    }
+  }
+}

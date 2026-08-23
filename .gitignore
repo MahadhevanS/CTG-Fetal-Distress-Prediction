@@ -45,19 +45,60 @@ venv.bak/
 *.swo
 .DS_Store
 
-# PyTorch / Models
+# ===========================================================================
+# Model weights and data are ignored BY DEFAULT. The specific artefacts needed
+# for a clone-and-run checkout are re-included in the SHIPPED section below.
+# Everything else (2.0 GB of exploratory checkpoints, 1.4 GB data/processed/,
+# 481 MB archive/ weights, the 203 MB training tensor) stays out of history.
+# ===========================================================================
 *.pt
 *.pth
 *.ckpt
 
-# Data & Checkpoints (Ignore contents but keep the directories via .gitkeep)
 data/raw/*
-!data/raw/.gitkeep
 data/processed/*
-!data/processed/.gitkeep
-!checkpoints/.gitkeep
 
 # Ignore large archives
 *.zip
 *.tar.gz
 *.rar
+
+# ===========================================================================
+# SHIPPED -- required to clone onto a fresh device and run inference and
+# evaluation without retraining. Keep in sync with docs/reproduce_crp.md.
+# Total ~177 MB. Order matters: these negations must follow the rules above.
+# ===========================================================================
+
+# Directory markers
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+!checkpoints/.gitkeep
+
+# Delivered model: 5-fold CRP ensemble (seed 42), ~49 MB, plus the
+# validation-fit calibrator written by scripts/calibrate_crp.py
+!checkpoints/ctg_crossformer_crp/*.pth
+!checkpoints/ctg_crossformer_crp/calibration.json
+
+# Preprocessing scalers and MIL feature arrays (a few hundred KB).
+# ctu_signal_scaler.npz is REQUIRED for inference -- without it the
+# normalisation at inference diverges from training and scores are wrong.
+!data/processed_mil/*.npz
+!data/processed_mil/*.npy
+
+# Held-out splits, for eval_crp_metrics / eval_all_models / calibrate_crp.
+# train_dataset.pt (203 MB) stays out: it is only needed to retrain, and
+# retraining regenerates it from the raw records anyway.
+!data/processed_mil/val_dataset.pt
+!data/processed_mil/test_dataset.pt
+
+# CTU-UHB raw recordings (~42 MB), so run_clinical_review.py works on a fresh
+# clone. Open Data Commons Attribution License -- see README for the citation.
+!data/raw/ctu-chb-intrapartum/
+
+# UCI Cardiotocography dataset (~1.7 MB), used by the models-1-to-7 pipeline.
+!data/raw/cardiotocography/
+
+# NOTE: archive/*/checkpoints/*.pth are covered by the *.pth rule above and
+# stay out (~481 MB). The MANIFEST.json and config files in archive/ ARE
+# tracked -- they carry the provenance (SHA256 of every weight file, git
+# commit, exact command), which is what makes an archived run reproducible.
