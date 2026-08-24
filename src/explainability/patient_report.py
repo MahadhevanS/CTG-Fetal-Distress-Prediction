@@ -122,14 +122,12 @@ class PatientReport:
         # --- timeline -------------------------------------------------
         L.append("")
         L.append("  Timeline (each row = one 20-minute window)")
-        L.append(f"  {'start':>7}  {'risk':>6}  {'':<24} findings")
+        L.append(f"  {'start':>7}  {'risk':>6}  findings")
         L.append("  " + "-" * (width - 4))
         for w in self.windows:
-            bar_len = int(round(w.risk * 20))
-            bar = ("#" * bar_len).ljust(20)
             mark = ">>" if w.flagged else "  "
             names = ", ".join(_CRITERION_PHRASE[c].split(" (")[0] for c in w.concerning) or "-"
-            L.append(f"  {w.minutes_from_start:>5.0f}m {mark} {w.risk:>6.3f}  [{bar}] {names}")
+            L.append(f"  {w.minutes_from_start:>5.0f}m {mark} {w.risk:>6.3f}  {names}")
 
         # --- recurring findings --------------------------------------
         rec = self.recurring_findings()
