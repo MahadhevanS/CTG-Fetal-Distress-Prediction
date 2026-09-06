@@ -99,8 +99,8 @@ def plot_fig2_experimental_progression():
     fig, ax = plt.subplots(figsize=(11, 5.5))
     
     phases = [
-        "Ph 2: Signal Rep\n(AUROC 0.684)",
-        "Ph 3: Pooling\n(P90 0.692)",
+        "Ph 2: Signal Rep\n(AUROC 0.659)",
+        "Ph 3: Pooling\n(P90 0.670)",
         "Ph 4: Clinical Fusion\n(AUROC 0.736)",
         "Ph 6: Continuous Huber\n(AUROC 0.743)",
         "Ph 8: Rolling Causal\n(>=30m: 0.570)",
@@ -109,7 +109,7 @@ def plot_fig2_experimental_progression():
         "Ph 11.5: Attribution\n(78% Multidomain Gain)"
     ]
     
-    aurocs = [0.6842, 0.6915, 0.7361, 0.7426, 0.5699, 0.6142, 0.6872, 0.6872]
+    aurocs = [0.6593, 0.6701, 0.7361, 0.7426, 0.5699, 0.6142, 0.6872, 0.6872]
     x_pos = np.arange(len(phases))
     
     colors = [SLATE, SLATE, TEAL, TEAL, AMBER, PURPLE, CRIMSON, CRIMSON]

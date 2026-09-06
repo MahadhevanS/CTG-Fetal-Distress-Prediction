@@ -44,7 +44,7 @@ def run_master_synthesis():
             "phase": "Phase 2",
             "scientific_purpose": "Signal Representation Learning",
             "evaluated_concept": "1D Temporal CNN vs 2D CWT vs Recurrence Plots vs Late Fusion",
-            "primary_metric": "AUROC = 0.6842",
+            "primary_metric": "AUROC = 0.6593",
             "statistical_support": "1D temporal representation significantly outperformed 2D transforms",
             "core_scientific_takeaway": "Preserved raw temporal CTG signal structure without lossy 2D time-frequency projections"
         },
@@ -52,7 +52,7 @@ def run_master_synthesis():
             "phase": "Phase 3",
             "scientific_purpose": "Temporal Instance Aggregation",
             "evaluated_concept": "Attention MIL vs Fixed Pooling (Mean, Max, P90, P95)",
-            "primary_metric": "AUROC = 0.6915 (P90)",
+            "primary_metric": "AUROC = 0.6701 (P90)",
             "statistical_support": "Fixed extreme-value pooling (P90) outperformed learned attention MIL",
             "core_scientific_takeaway": "Under limited patient sample size (N=547), robust extreme-value aggregation prevents attention overfitting"
         },

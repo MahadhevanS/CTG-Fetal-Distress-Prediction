@@ -12,8 +12,8 @@ This document establishes the direct, auditable mapping between the primary rese
 
 | Hypothesis | Proposition | Primary Experimental Source | Empirical Result & Effect Size | Bootstrap 95% CI & $p$-value | Scientific Verdict |
 | :--- | :--- | :--- | :---: | :---: | :---: |
-| **H1: Signal Representation** | A causally constrained 1D temporal representation preserves predictive CTG morphology better than 2D transform projections. | Phase 2, Phase 4, Phase 6 | 1D CNN: $\text{AUROC} = 0.6842$ vs 2D CWT: $0.6215$ vs Recurrence: $0.6084$ | $p < 0.05$ (1D CNN superior to 2D transforms) | **CONFIRMED** |
-| **H2: Multidomain Clinical Fusion** | Clinical physiological descriptors provide orthogonal, complementary predictive information beyond learned signal representations. | Phase 4, Phase 11.5 | Signal + 19 FIGO Descriptors: $\text{AUROC} = 0.7361$ vs Signal Alone: $0.6915$ | $\Delta = +0.0446, p < 0.01$ | **CONFIRMED** |
+| **H1: Signal Representation** | A causally constrained 1D temporal representation preserves predictive CTG morphology better than 2D transform projections. | Phase 2, Phase 4, Phase 6 | 1D CNN: $\text{AUROC} = 0.6593$ vs 2D CWT: $0.5672$ vs Recurrence: $0.5566$ | $p < 0.05$ (1D CNN superior to 2D transforms) | **CONFIRMED** |
+| **H2: Multidomain Clinical Fusion** | Clinical physiological descriptors provide orthogonal, complementary predictive information beyond learned signal representations. | Phase 4, Phase 11.5 | Signal + 19 FIGO Descriptors: $\text{AUROC} = 0.7361$ vs Signal Alone: $0.6701$ | $\Delta = +0.0660, p < 0.01$ | **CONFIRMED** |
 | **H3: Temporal Trajectory Value** | Temporal trajectory contains predictive information beyond instantaneous snapshot risk ($P5 > P3$). | Phase 11, Phase 11.5-B | Snapshot + Trajectory (P5): $0.6142$ vs Snapshot Baseline (P3): $0.5976$ | $\Delta = +0.0165$ [$+0.0006, +0.0319$], $p = 0.041$ | **CONFIRMED** |
 | **H4: State & Trajectory Complementarity** | Physiological state ($S_t$) and temporal direction ($D_t$) provide complementary information beyond snapshot risk ($R_t$). | Phase 11.5-C | Nested progression: $0.5958 \to 0.5945 \to 0.6031 \to 0.6128$ | $\Delta = +0.0170$ [$+0.0005, +0.0336$], $p = 0.043$ | **CONFIRMED** |
 | **H5: Multidomain Fusion as Primary Gain Driver** | Multidomain physiological severity fusion is the principal source of the full framework's gain over snapshot baselines. | Phase 11.5-E (Component Ladder) | Step 6 (Adding 6 domain severities): $\text{AUROC} = 0.6818$ vs Step 5 (Traj): $0.6142$ | $\Delta = +0.0676$ [$+0.0192, +0.1292$], $p < 0.001$ (~78% of gain) | **CONFIRMED** |
@@ -25,11 +25,11 @@ This document establishes the direct, auditable mapping between the primary rese
 
 ### Hypothesis H1 — Causally Constrained 1D Signal Representation
 * **Theoretical Rationale**: Time-frequency transforms (e.g., Continuous Wavelet Transform) impose fixed filter bank assumptions and discard phase relationships in non-stationary fetal heart rate patterns.
-* **Empirical Evidence**: Phase 2 demonstrated that raw 1D temporal convolutional representations ($\text{AUROC} = 0.6842$) preserved fine-grained beat-to-beat variability and deceleration steepness far better than 2D image-based projections ($0.6084$–$0.6215$).
+* **Empirical Evidence**: Phase 2 demonstrated that raw 1D temporal convolutional representations ($\text{AUROC} = 0.6593$) preserved fine-grained beat-to-beat variability and deceleration steepness far better than 2D image-based projections ($0.5566$–$0.5672$).
 
 ### Hypothesis H2 — Multidomain Physiological Descriptors as Orthogonal Information
 * **Theoretical Rationale**: Pure deep-learning embeddings often overfit to background noise in small clinical cohorts ($N=547$). Expert physiological descriptors provide clinically structured regularization.
-* **Empirical Evidence**: Phase 4 demonstrated that combining learned signal embeddings with the 19 FIGO descriptors produced a jump from $\text{AUROC} = 0.6915$ to $0.7361$ ($\Delta = +0.0446, p < 0.01$).
+* **Empirical Evidence**: Phase 4 demonstrated that combining learned signal embeddings with the 19 FIGO descriptors produced a jump from Signal P90 alone ($\text{AUROC} = 0.6701$) to Logit Prior Modulation ($\text{AUROC} = 0.7361$, $\Delta = +0.0660, p < 0.01$).
 
 ### Hypothesis H3 — Incremental Value of Temporal Trajectory ($P5 > P3$)
 * **Theoretical Rationale**: Instantaneous risk scores reflect current morphology but cannot distinguish a transient autonomic deceleration from progressive fetal hypoxemic exhaustion.

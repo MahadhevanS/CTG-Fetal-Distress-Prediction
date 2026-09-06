@@ -1,0 +1,4 @@
+prior_art_family,baseline_code,reproduced_concept,headline_delivery_auroc,headline_30m_auroc,thesis_differentiation
+Compact CTG Models (DeepCTG-Inspired),P1,"4 compact features (min/max baseline, accel/decel area) per 20-min epoch",0.509,0.5727,"P6 significantly outperforms P1 near delivery (+0.1801, p<0.001); compact features fail to capture multivariable hypoxemic collapse."
+Sequential Event Models (Vargas-Calixto-Inspired),P2,Epoch deceleration features + EWMA temporal persistence filtering,0.6774,0.5983,P2 provides strong early stability at >=30m (0.5983 vs 0.5857); P6 captures acute multidomain decompensation near delivery (0.6872 vs 0.6774). Comparable performance.
+Static FIGO Snapshot Models (Clinical Huber),P3,19 FIGO descriptors evaluated independently per 20-min window,0.5976,0.5461,"P6 significantly outperforms P3 near delivery (+0.0896, p<0.001) and extends warning lead time from 10.0m to 17.5m."
