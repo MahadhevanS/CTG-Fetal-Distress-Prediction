@@ -1,0 +1,58 @@
+{
+  "State 1 (Emerging)": {
+    "n_total_patients": 547,
+    "n_progressing_patients": 0,
+    "n_reversing_patients": 0,
+    "p_prog_715": 0.0,
+    "p_rev_715": 0.0,
+    "risk_diff": 0.0,
+    "risk_ratio": null,
+    "odds_ratio": null,
+    "ci95_diff": null,
+    "p_value": null,
+    "p_prog_705": 0.0,
+    "p_rev_705": 0.0
+  },
+  "State 2 (Persistent)": {
+    "n_total_patients": 445,
+    "n_progressing_patients": 51,
+    "n_reversing_patients": 358,
+    "p_prog_715": 0.17647058823529413,
+    "p_rev_715": 0.20391061452513967,
+    "risk_diff": -0.027440026289845543,
+    "risk_ratio": 0.8654311039484287,
+    "odds_ratio": 0.8365949119373777,
+    "ci95_diff": [
+      -0.1311206046664476,
+      0.09032615839631908
+    ],
+    "p_value": 0.605,
+    "p_prog_705": 0.0784313725490196,
+    "p_rev_705": 0.07541899441340782
+  },
+  "State 3 (Progressive)": {
+    "n_total_patients": 301,
+    "n_progressing_patients": 139,
+    "n_reversing_patients": 131,
+    "p_prog_715": 0.2302158273381295,
+    "p_rev_715": 0.1984732824427481,
+    "risk_diff": 0.03174254489538142,
+    "risk_ratio": 1.159933591588268,
+    "odds_ratio": 1.207764198418404,
+    "ci95_diff": [
+      -0.06486902081388321,
+      0.12835411060464602
+    ],
+    "p_value": 0.5,
+    "p_prog_705": 0.08633093525179857,
+    "p_rev_705": 0.07633587786259542
+  },
+  "incremental_information": {
+    "delivery_m1_auroc": 0.4558,
+    "delivery_m2_auroc": 0.5102,
+    "delivery_delta_auroc": 0.0544,
+    "horizon30_m1_auroc": 0.5279,
+    "horizon30_m2_auroc": 0.5267,
+    "horizon30_delta_auroc": -0.0012
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "gate": "9C-A",
+  "status": "PASS",
+  "mathematical_root_cause": "The 60-minute recording duration minus 20-minute window length establishes an absolute theoretical maximum lead time of 40.0 minutes before delivery (T_delivery - T_prediction <= 40.0 min). Consequently, evaluation horizons >=60m and >=45m evaluate the exact same earliest available prediction (at T=40.0m) across all 547 patients, guaranteeing mathematically identical AUROC (0.5360).",
+  "max_window_lead_time_min": 40.0,
+  "n_patients_identical_scores_60_vs_45": 547,
+  "auc_60_fallback": 0.536,
+  "auc_45_fallback": 0.536,
+  "ge30m_patients_strict": 492,
+  "ge20m_patients_strict": 534,
+  "ge10m_patients_strict": 545,
+  "delivery_patients_strict": 547
+}

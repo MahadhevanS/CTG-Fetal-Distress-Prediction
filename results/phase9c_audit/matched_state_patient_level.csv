@@ -1,0 +1,4 @@
+State,State_Index,Velocity_Metric_Used,Total_Patients_In_State,Progressing_Patients,Reversing_Patients,Stable_Equal_Patients,Acidemia_Rate_Progressing_715,Acidemia_Rate_Reversing_715,Risk_Difference_715,Risk_Ratio_715,Odds_Ratio_715,CI95_Risk_Diff_Low,CI95_Risk_Diff_High,P_Value_Bootstrap,Severe_Rate_Progressing_705,Severe_Rate_Reversing_705
+State 1 (Emerging),1,vel_1step,547,0,0,547,0.0,0.0,0.0,N/A,N/A,N/A,N/A,N/A,0.0,0.0
+State 2 (Persistent),2,vel_4step,445,51,358,36,17.65,20.39,-2.74,0.87,0.84,-13.11,9.03,0.605,7.84,7.54
+State 3 (Progressive),3,vel_4step,301,139,131,31,23.02,19.85,3.17,1.16,1.21,-6.49,12.84,0.5,8.63,7.63

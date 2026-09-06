@@ -1,0 +1,7 @@
+Horizon,Horizon_Min,Windows,Patients_Strict,Positive_Patients_Strict,Negative_Patients_Strict,Severe_Positive_Strict,Patients_Total_Cohort,Patients_Using_Fallback,Earliest_Warning_Min,Latest_Warning_Min
+>=60m,60,0,0,0,0,0,547,547,40.0,40.0
+>=45m,45,0,0,0,0,0,547,547,40.0,40.0
+>=30m,30,2228,492,91,401,29,547,55,40.0,30.0
+>=20m,20,4241,534,103,431,37,547,13,40.0,20.0
+>=10m,10,6346,545,108,437,41,547,2,40.0,10.0
+Delivery (0m),0,8517,547,110,437,41,547,0,40.0,0.0

@@ -1,0 +1,5 @@
+State,State_Index,Patients_Entered_Ever,Cohort_Entered_Pct,Median_Lead_Time_Min,IQR_Lead_Time_Min,Mean_Lead_Time_Min,Min_Lead_Time_Min,Max_Lead_Time_Min,Pct_Warned_ge60m,Pct_Warned_ge45m,Pct_Warned_ge30m,Pct_Warned_ge20m,Pct_Warned_ge10m,Patients_Sustained_Pge2,Median_Sustained_Lead_Time_Min,Pct_Sustained_ge30m
+State 1 (Emerging),1,547,100.0,40.0,40.0 - 40.0,37.2,5.0,40.0,0.0,0.0,89.9,97.6,99.6,547,37.5,85.6
+State 2 (Persistent),2,547,100.0,37.5,35.0 - 37.5,34.6,2.5,37.5,0.0,0.0,85.6,95.8,99.6,547,35.0,81.7
+State 3 (Progressive),3,547,100.0,37.5,32.5 - 37.5,33.9,0.0,37.5,0.0,0.0,82.1,94.7,99.3,542,35.0,71.0
+State 4 (Severe),4,547,100.0,37.5,32.5 - 37.5,33.4,0.0,37.5,0.0,0.0,79.9,92.9,98.5,540,35.0,67.8
