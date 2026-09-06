@@ -1,0 +1,13 @@
+{
+  "total_acidemic_patients": 110,
+  "total_detected": 33,
+  "detection_rate_pct": 30.0,
+  "median_warning_time_min": 10.0,
+  "mean_warning_time_min": 13.79,
+  "iqr_warning_time_min": 15.0,
+  "pct_detected_ge_10m": 16.36,
+  "pct_detected_ge_20m": 8.18,
+  "pct_detected_ge_30m": 3.64,
+  "pct_detected_ge_45m": 0.0,
+  "pct_detected_ge_60m": 0.0
+}

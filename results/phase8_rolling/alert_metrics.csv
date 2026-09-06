@@ -1,0 +1,3 @@
+rule,sensitivity,specificity,pct_normal_with_false_alert,total_false_alerts,false_alerts_per_patient,false_alerts_per_monitoring_hour,median_false_alerts_normal,total_normal_monitoring_hours
+1-Window Alert Rule,34.55,90.85,9.15,63,0.14,0.15,0.0,413.2
+2-Window Alert Rule,18.18,97.25,2.75,19,0.04,0.05,0.0,413.2

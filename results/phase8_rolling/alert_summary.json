@@ -1,0 +1,24 @@
+{
+  "single_alert": {
+    "rule": "1-Window Alert Rule",
+    "sensitivity": 34.55,
+    "specificity": 90.85,
+    "pct_normal_with_false_alert": 9.15,
+    "total_false_alerts": 63,
+    "false_alerts_per_patient": 0.14,
+    "false_alerts_per_monitoring_hour": 0.15,
+    "median_false_alerts_normal": 0.0,
+    "total_normal_monitoring_hours": 413.2
+  },
+  "persistent_alert_2win": {
+    "rule": "2-Window Alert Rule",
+    "sensitivity": 18.18,
+    "specificity": 97.25,
+    "pct_normal_with_false_alert": 2.75,
+    "total_false_alerts": 19,
+    "false_alerts_per_patient": 0.04,
+    "false_alerts_per_monitoring_hour": 0.05,
+    "median_false_alerts_normal": 0.0,
+    "total_normal_monitoring_hours": 413.2
+  }
+}
