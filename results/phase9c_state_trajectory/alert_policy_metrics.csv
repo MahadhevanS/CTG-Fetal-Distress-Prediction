@@ -1,0 +1,6 @@
+policy_name,sensitivity_pct,specificity_pct,false_alert_rate_per_hour,false_alerts_per_patient,total_false_alarms,median_lead_time_min
+Policy 1: Threshold-Only,74.55,58.81,1.933,1.25,686,17.5
+Policy 2: 2-Window Persistence,61.82,72.08,1.2,0.78,426,13.8
+Policy 3: State-Based Alert,98.18,0.69,11.565,7.5,4104,35.0
+Policy 4: State Progression Alert,100.0,0.0,13.909,9.02,4936,37.5
+Policy 5: Hybrid State-Prediction Alert,76.36,52.17,2.02,1.31,717,17.5

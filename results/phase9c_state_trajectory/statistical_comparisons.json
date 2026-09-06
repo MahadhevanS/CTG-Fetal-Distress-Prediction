@@ -1,0 +1,410 @@
+{
+  ">=60m": {
+    "Phase 8 Snapshot Baseline": {
+      "auroc_715": 0.5976,
+      "auprc_715": 0.2967,
+      "auroc_705": 0.5589,
+      "delta_vs_baseline": 0.0,
+      "ci_95": [
+        0.0,
+        0.0
+      ],
+      "p_value": 2.0
+    },
+    "Model 1 (Current State Only)": {
+      "auroc_715": 0.4558,
+      "auprc_715": 0.1882,
+      "auroc_705": 0.4555,
+      "delta_vs_baseline": -0.1412,
+      "ci_95": [
+        -0.227,
+        -0.0532
+      ],
+      "p_value": 0.0
+    },
+    "Model 2 (Current State + Trajectory)": {
+      "auroc_715": 0.5102,
+      "auprc_715": 0.2077,
+      "auroc_705": 0.5298,
+      "delta_vs_baseline": -0.0878,
+      "ci_95": [
+        -0.1802,
+        0.0033
+      ],
+      "p_value": 0.061
+    },
+    "Model 3 (Current Features + Trajectory)": {
+      "auroc_715": 0.6847,
+      "auprc_715": 0.3841,
+      "auroc_705": 0.6688,
+      "delta_vs_baseline": 0.0865,
+      "ci_95": [
+        0.034,
+        0.1417
+      ],
+      "p_value": 0.001
+    },
+    "Model 4 (Prediction Trajectory Only)": {
+      "auroc_715": 0.6897,
+      "auprc_715": 0.3628,
+      "auroc_705": 0.6777,
+      "delta_vs_baseline": 0.0919,
+      "ci_95": [
+        0.0573,
+        0.1272
+      ],
+      "p_value": 0.0
+    },
+    "Model 5 (Combined Prediction + State Trajectory)": {
+      "auroc_715": 0.6872,
+      "auprc_715": 0.4067,
+      "auroc_705": 0.6771,
+      "delta_vs_baseline": 0.0894,
+      "ci_95": [
+        0.0346,
+        0.1485
+      ],
+      "p_value": 0.0
+    }
+  },
+  ">=45m": {
+    "Phase 8 Snapshot Baseline": {
+      "auroc_715": 0.5976,
+      "auprc_715": 0.2967,
+      "auroc_705": 0.5589,
+      "delta_vs_baseline": 0.0,
+      "ci_95": [
+        0.0,
+        0.0
+      ],
+      "p_value": 2.0
+    },
+    "Model 1 (Current State Only)": {
+      "auroc_715": 0.4558,
+      "auprc_715": 0.1882,
+      "auroc_705": 0.4555,
+      "delta_vs_baseline": -0.1412,
+      "ci_95": [
+        -0.227,
+        -0.0532
+      ],
+      "p_value": 0.0
+    },
+    "Model 2 (Current State + Trajectory)": {
+      "auroc_715": 0.5102,
+      "auprc_715": 0.2077,
+      "auroc_705": 0.5298,
+      "delta_vs_baseline": -0.0878,
+      "ci_95": [
+        -0.1802,
+        0.0033
+      ],
+      "p_value": 0.061
+    },
+    "Model 3 (Current Features + Trajectory)": {
+      "auroc_715": 0.6847,
+      "auprc_715": 0.3841,
+      "auroc_705": 0.6688,
+      "delta_vs_baseline": 0.0865,
+      "ci_95": [
+        0.034,
+        0.1417
+      ],
+      "p_value": 0.001
+    },
+    "Model 4 (Prediction Trajectory Only)": {
+      "auroc_715": 0.6897,
+      "auprc_715": 0.3628,
+      "auroc_705": 0.6777,
+      "delta_vs_baseline": 0.0919,
+      "ci_95": [
+        0.0573,
+        0.1272
+      ],
+      "p_value": 0.0
+    },
+    "Model 5 (Combined Prediction + State Trajectory)": {
+      "auroc_715": 0.6872,
+      "auprc_715": 0.4067,
+      "auroc_705": 0.6771,
+      "delta_vs_baseline": 0.0894,
+      "ci_95": [
+        0.0346,
+        0.1485
+      ],
+      "p_value": 0.0
+    }
+  },
+  ">=30m": {
+    "Phase 8 Snapshot Baseline": {
+      "auroc_715": 0.5461,
+      "auprc_715": 0.2892,
+      "auroc_705": 0.6005,
+      "delta_vs_baseline": 0.0,
+      "ci_95": [
+        0.0,
+        0.0
+      ],
+      "p_value": 2.0
+    },
+    "Model 1 (Current State Only)": {
+      "auroc_715": 0.473,
+      "auprc_715": 0.1922,
+      "auroc_705": 0.3223,
+      "delta_vs_baseline": -0.0713,
+      "ci_95": [
+        -0.1675,
+        0.0182
+      ],
+      "p_value": 0.126
+    },
+    "Model 2 (Current State + Trajectory)": {
+      "auroc_715": 0.4615,
+      "auprc_715": 0.1868,
+      "auroc_705": 0.3234,
+      "delta_vs_baseline": -0.0839,
+      "ci_95": [
+        -0.1796,
+        0.0184
+      ],
+      "p_value": 0.106
+    },
+    "Model 3 (Current Features + Trajectory)": {
+      "auroc_715": 0.5933,
+      "auprc_715": 0.3008,
+      "auroc_705": 0.5973,
+      "delta_vs_baseline": 0.0471,
+      "ci_95": [
+        -0.0112,
+        0.1037
+      ],
+      "p_value": 0.107
+    },
+    "Model 4 (Prediction Trajectory Only)": {
+      "auroc_715": 0.548,
+      "auprc_715": 0.291,
+      "auroc_705": 0.624,
+      "delta_vs_baseline": 0.002,
+      "ci_95": [
+        -0.011,
+        0.0163
+      ],
+      "p_value": 0.782
+    },
+    "Model 5 (Combined Prediction + State Trajectory)": {
+      "auroc_715": 0.5857,
+      "auprc_715": 0.2946,
+      "auroc_705": 0.5939,
+      "delta_vs_baseline": 0.0399,
+      "ci_95": [
+        -0.0132,
+        0.088
+      ],
+      "p_value": 0.135
+    }
+  },
+  ">=20m": {
+    "Phase 8 Snapshot Baseline": {
+      "auroc_715": 0.55,
+      "auprc_715": 0.2869,
+      "auroc_705": 0.6118,
+      "delta_vs_baseline": 0.0,
+      "ci_95": [
+        0.0,
+        0.0
+      ],
+      "p_value": 2.0
+    },
+    "Model 1 (Current State Only)": {
+      "auroc_715": 0.4824,
+      "auprc_715": 0.1953,
+      "auroc_705": 0.3644,
+      "delta_vs_baseline": -0.0662,
+      "ci_95": [
+        -0.1552,
+        0.0215
+      ],
+      "p_value": 0.139
+    },
+    "Model 2 (Current State + Trajectory)": {
+      "auroc_715": 0.4798,
+      "auprc_715": 0.1945,
+      "auroc_705": 0.3619,
+      "delta_vs_baseline": -0.069,
+      "ci_95": [
+        -0.1569,
+        0.0271
+      ],
+      "p_value": 0.153
+    },
+    "Model 3 (Current Features + Trajectory)": {
+      "auroc_715": 0.595,
+      "auprc_715": 0.2948,
+      "auroc_705": 0.6492,
+      "delta_vs_baseline": 0.0447,
+      "ci_95": [
+        -0.0072,
+        0.0965
+      ],
+      "p_value": 0.089
+    },
+    "Model 4 (Prediction Trajectory Only)": {
+      "auroc_715": 0.5464,
+      "auprc_715": 0.2721,
+      "auroc_705": 0.6158,
+      "delta_vs_baseline": -0.0035,
+      "ci_95": [
+        -0.0122,
+        0.0049
+      ],
+      "p_value": 0.41
+    },
+    "Model 5 (Combined Prediction + State Trajectory)": {
+      "auroc_715": 0.5869,
+      "auprc_715": 0.2868,
+      "auroc_705": 0.639,
+      "delta_vs_baseline": 0.0367,
+      "ci_95": [
+        -0.0127,
+        0.0846
+      ],
+      "p_value": 0.136
+    }
+  },
+  ">=10m": {
+    "Phase 8 Snapshot Baseline": {
+      "auroc_715": 0.536,
+      "auprc_715": 0.26,
+      "auroc_705": 0.5882,
+      "delta_vs_baseline": 0.0,
+      "ci_95": [
+        0.0,
+        0.0
+      ],
+      "p_value": 2.0
+    },
+    "Model 1 (Current State Only)": {
+      "auroc_715": 0.4923,
+      "auprc_715": 0.1993,
+      "auroc_705": 0.391,
+      "delta_vs_baseline": -0.0426,
+      "ci_95": [
+        -0.1265,
+        0.0419
+      ],
+      "p_value": 0.334
+    },
+    "Model 2 (Current State + Trajectory)": {
+      "auroc_715": 0.4877,
+      "auprc_715": 0.1966,
+      "auroc_705": 0.3805,
+      "delta_vs_baseline": -0.0473,
+      "ci_95": [
+        -0.1369,
+        0.0457
+      ],
+      "p_value": 0.313
+    },
+    "Model 3 (Current Features + Trajectory)": {
+      "auroc_715": 0.5884,
+      "auprc_715": 0.2891,
+      "auroc_705": 0.636,
+      "delta_vs_baseline": 0.052,
+      "ci_95": [
+        0.0035,
+        0.1013
+      ],
+      "p_value": 0.038
+    },
+    "Model 4 (Prediction Trajectory Only)": {
+      "auroc_715": 0.5343,
+      "auprc_715": 0.2528,
+      "auroc_705": 0.5951,
+      "delta_vs_baseline": -0.0017,
+      "ci_95": [
+        -0.0098,
+        0.006
+      ],
+      "p_value": 0.675
+    },
+    "Model 5 (Combined Prediction + State Trajectory)": {
+      "auroc_715": 0.5814,
+      "auprc_715": 0.2837,
+      "auroc_705": 0.6292,
+      "delta_vs_baseline": 0.045,
+      "ci_95": [
+        0.0003,
+        0.0875
+      ],
+      "p_value": 0.048
+    }
+  },
+  "Delivery (0m)": {
+    "Phase 8 Snapshot Baseline": {
+      "auroc_715": 0.5976,
+      "auprc_715": 0.2967,
+      "auroc_705": 0.5589,
+      "delta_vs_baseline": 0.0,
+      "ci_95": [
+        0.0,
+        0.0
+      ],
+      "p_value": 2.0
+    },
+    "Model 1 (Current State Only)": {
+      "auroc_715": 0.4558,
+      "auprc_715": 0.1882,
+      "auroc_705": 0.4555,
+      "delta_vs_baseline": -0.1412,
+      "ci_95": [
+        -0.227,
+        -0.0532
+      ],
+      "p_value": 0.0
+    },
+    "Model 2 (Current State + Trajectory)": {
+      "auroc_715": 0.5102,
+      "auprc_715": 0.2077,
+      "auroc_705": 0.5298,
+      "delta_vs_baseline": -0.0878,
+      "ci_95": [
+        -0.1802,
+        0.0033
+      ],
+      "p_value": 0.061
+    },
+    "Model 3 (Current Features + Trajectory)": {
+      "auroc_715": 0.6847,
+      "auprc_715": 0.3841,
+      "auroc_705": 0.6688,
+      "delta_vs_baseline": 0.0865,
+      "ci_95": [
+        0.034,
+        0.1417
+      ],
+      "p_value": 0.001
+    },
+    "Model 4 (Prediction Trajectory Only)": {
+      "auroc_715": 0.6897,
+      "auprc_715": 0.3628,
+      "auroc_705": 0.6777,
+      "delta_vs_baseline": 0.0919,
+      "ci_95": [
+        0.0573,
+        0.1272
+      ],
+      "p_value": 0.0
+    },
+    "Model 5 (Combined Prediction + State Trajectory)": {
+      "auroc_715": 0.6872,
+      "auprc_715": 0.4067,
+      "auroc_705": 0.6771,
+      "delta_vs_baseline": 0.0894,
+      "ci_95": [
+        0.0346,
+        0.1485
+      ],
+      "p_value": 0.0
+    }
+  }
+}

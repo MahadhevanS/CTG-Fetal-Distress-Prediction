@@ -1,0 +1,5 @@
+state_code,state_name,n_acidemic_entered,acidemic_entry_rate_pct,median_lead_time_min,iqr_lead_time_min,mean_lead_time_min,detected_ge_60m_pct,detected_ge_45m_pct,detected_ge_30m_pct,detected_ge_20m_pct,detected_ge_10m_pct
+1,State 1: Emerging Abnormality,110,100.0,40.0,7.5,35.4,0.0,0.0,82.73,93.64,98.18
+2,State 2: Persistent Abnormality,88,80.0,22.5,17.5,21.7,0.0,0.0,26.36,48.18,69.09
+3,State 3: Progressive Deterioration,62,56.36,15.0,19.4,17.0,0.0,0.0,10.91,23.64,39.09
+4,State 4: Severe Multidomain Deterioration,110,100.0,37.5,10.0,31.8,0.0,0.0,70.91,89.09,96.36
