@@ -1,0 +1,54 @@
+{
+  "phase3": {
+    "n_epochs": 998,
+    "binary": {
+      "sens": 0.7142857142857143,
+      "prec": 0.41125541125541126,
+      "f1": 0.521978021978022,
+      "agreement": 0.8256513026052105,
+      "kappa": 0.4246618912883584,
+      "ours_pos": 0.23146292585170342,
+      "exp_pos": 0.13326653306613226
+    },
+    "continuous": {
+      "frac_contractions_with_decel": {
+        "spearman": 0.4747488077009182,
+        "pearson": 0.5664426863520521,
+        "ours_mean": 0.3947955434678882,
+        "exp_mean": 0.2356105067277412
+      },
+      "decel_area_per_min": {
+        "spearman": 0.5324633153160498,
+        "pearson": 0.6164512468465151,
+        "ours_mean": 482.2183673852216,
+        "exp_mean": 306.2107944874876
+      },
+      "area_per_contraction": {
+        "spearman": 0.6288068004961832,
+        "pearson": 0.7319373710748661,
+        "ours_mean": 1260.9731551132156,
+        "exp_mean": 845.900194343313
+      },
+      "max_consecutive_uc_w_decel": {
+        "spearman": 0.6141926041467844,
+        "pearson": 0.643990471789951,
+        "ours_mean": 1.282565130260521,
+        "exp_mean": 0.8336673346693386
+      },
+      "n_decels": {
+        "spearman": 0.3443235109107628,
+        "pearson": 0.4162594574282748,
+        "ours_mean": 1.9488977955911824,
+        "exp_mean": 1.2645290581162325
+      }
+    }
+  },
+  "phase4": {
+    "n_epochs": 3497,
+    "median_contractions": 4,
+    "frac_le4": 0.5253074063482985,
+    "frac_zero_uc": 0.10208750357449242,
+    "flippable_upper_bound": 1.0,
+    "median_margin_events": 0.5
+  }
+}

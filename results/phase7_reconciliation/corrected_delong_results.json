@@ -1,0 +1,6 @@
+{
+  "comparison": "Model B vs Phase 4 Gold",
+  "auc_phase4_gold": 0.7360723944247972,
+  "auc_model_b": 0.7425837320574162,
+  "delong_p_value": 0.6457163584096217
+}

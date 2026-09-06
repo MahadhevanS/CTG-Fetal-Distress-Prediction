@@ -1,0 +1,13 @@
+{
+  "arm": "B_concat",
+  "label": "B  FHR+UC, input concatenation",
+  "arch": "concat",
+  "shuffle": null,
+  "repeat": 0,
+  "seed": 0,
+  "epochs": 40,
+  "batch": 48,
+  "lr": 0.0003,
+  "n_params": 222818,
+  "runtime_s": 75.4
+}

@@ -1,0 +1,27 @@
+[
+  {
+    "record_id": "2006",
+    "split": "train",
+    "reason": "patient_quality"
+  },
+  {
+    "record_id": "2025",
+    "split": "train",
+    "reason": "patient_quality"
+  },
+  {
+    "record_id": "2013",
+    "split": "train",
+    "reason": "patient_quality"
+  },
+  {
+    "record_id": "1058",
+    "split": "train",
+    "reason": "patient_quality"
+  },
+  {
+    "record_id": "1431",
+    "split": "train",
+    "reason": "patient_quality"
+  }
+]

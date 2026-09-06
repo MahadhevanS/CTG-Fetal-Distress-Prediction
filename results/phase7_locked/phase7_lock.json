@@ -1,0 +1,31 @@
+{
+  "phase": 7,
+  "date_locked": "2026-09-06",
+  "cohort_size": 547,
+  "positive_count_715": 110,
+  "positive_count_705": 41,
+  "window_count": 8517,
+  "window_duration_min": 20,
+  "sampling_rate_hz": 4.0,
+  "stride_min": 2.5,
+  "hashes": {
+    "p2_dataset_sha256": "ea0ddcfad3131c60d3414e66c8ba420db1cc7f4c17ba5401604356803651a903",
+    "folds_json_sha256": "d3f842b9f8651e3e58ef2cd4153c7e29e0da104be02bbf4fcbb561273d961fc8",
+    "clinical_metadata_sha256": "986069cc6ffd563fb8e9074969cd147abf4e2d085369ffe627d2e3ac79e3207f"
+  },
+  "seeds": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "evaluation_protocol": "patient_grouped_5_fold_stratified_cv",
+  "primary_endpoint": "pH <= 7.15",
+  "secondary_endpoint": "pH <= 7.05",
+  "master_candidates": [
+    "Model A: Phase-4 Master (1D ResNet + 19 Descriptors + Logit Prior Modulation)",
+    "Model B: Continuous Clinical (19 Descriptors + Huber Regression)",
+    "Model C: Continuous Knowledge Fusion (1D ResNet + 19 Descriptors + Continuous Fusion)"
+  ]
+}

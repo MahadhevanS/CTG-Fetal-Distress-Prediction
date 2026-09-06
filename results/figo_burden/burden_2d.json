@@ -1,0 +1,251 @@
+{
+  "phase2_complementarity": {
+    "severity ref (expert area/contraction)": {
+      "sev": 0.6288068004961832,
+      "per": 0.463014104288085,
+      "sev_given_per": 0.5386508483245765,
+      "per_given_sev": 0.2502220901548335
+    },
+    "persistence ref (expert max-run)": {
+      "sev": -0.007141284095901333,
+      "per": 0.6141926041467844,
+      "sev_given_per": -0.3469695367861656,
+      "per_given_sev": 0.6291129834478614
+    }
+  },
+  "phase3": {
+    "severity ref (expert area/contraction)": {
+      "area_per_contraction alone": {
+        "median": 0.39999999999999997,
+        "q1": 0.39999999999999997,
+        "q3": 0.6773943579133271,
+        "n": 144,
+        "nonpos": 0.034722222222222224,
+        "ci_lo": 0.39999999999999997,
+        "ci_hi": 0.39999999999999997
+      },
+      "max_consecutive_uc_with_decel alone": {
+        "median": 0.28867513459481287,
+        "q1": 0.28867513459481287,
+        "q3": 0.29433756729740645,
+        "n": 143,
+        "nonpos": 0.06293706293706294,
+        "ci_lo": 0.28867513459481287,
+        "ci_hi": 0.28867513459481287
+      },
+      "2D, LOO-fitted combination": {
+        "median": 0.7999999999999999,
+        "q1": 0.7999999999999999,
+        "q3": 0.7999999999999999,
+        "n": 144,
+        "nonpos": 0.020833333333333332,
+        "ci_lo": 0.7999999999999999,
+        "ci_hi": 0.7999999999999999
+      },
+      "pareto": {
+        "concordance": 0.8333333333333334,
+        "coverage": 0.6,
+        "n": 143
+      }
+    },
+    "persistence ref (expert max-run)": {
+      "area_per_contraction alone": {
+        "median": -0.8660254037844386,
+        "q1": -0.8660254037844386,
+        "q3": 0.0,
+        "n": 143,
+        "nonpos": 0.7552447552447552,
+        "ci_lo": -0.8660254037844386,
+        "ci_hi": -0.8660254037844386
+      },
+      "max_consecutive_uc_with_decel alone": {
+        "median": 0.6666666666666667,
+        "q1": 0.6666666666666667,
+        "q3": 0.6666666666666667,
+        "n": 143,
+        "nonpos": 0.055944055944055944,
+        "ci_lo": 0.6666666666666667,
+        "ci_hi": 0.6666666666666667
+      },
+      "2D, LOO-fitted combination": {
+        "median": 0.8660254037844386,
+        "q1": 0.6744143350943763,
+        "q3": 0.8660254037844386,
+        "n": 143,
+        "nonpos": 0.06993006993006994,
+        "ci_lo": 0.8660254037844386,
+        "ci_hi": 0.8660254037844386
+      },
+      "pareto": {
+        "concordance": 0.8038461538461539,
+        "coverage": 0.47619047619047616,
+        "n": 52
+      }
+    }
+  },
+  "phase4": {
+    "severity ref (expert area/contraction)": {
+      "area_per_contraction alone": {
+        "exact": 0.48697394789579157,
+        "within1": 0.8647294589178357,
+        "wkappa": 0.5451830600024197,
+        "per_tier": [
+          0.501002004008016,
+          0.5180722891566265,
+          0.428,
+          NaN
+        ]
+      },
+      "max_consecutive_uc_with_decel alone": {
+        "exact": 0.530060120240481,
+        "within1": 0.842685370741483,
+        "wkappa": 0.19320243900341416,
+        "per_tier": [
+          0.8136272545090181,
+          0.44176706827309237,
+          0.052,
+          NaN
+        ]
+      },
+      "2D, LOO-fitted": {
+        "exact": 0.38877755511022044,
+        "within1": 0.8647294589178357,
+        "wkappa": 0.5674809771726071,
+        "per_tier": [
+          0.501002004008016,
+          0.5060240963855421,
+          0.048,
+          NaN
+        ]
+      }
+    },
+    "persistence ref (expert max-run)": {
+      "area_per_contraction alone": {
+        "exact": 0.3066132264529058,
+        "within1": 0.5210420841683366,
+        "wkappa": -0.005905577807182372,
+        "per_tier": [
+          0.268464243845252,
+          0.5310344827586206,
+          NaN,
+          NaN
+        ]
+      },
+      "max_consecutive_uc_with_decel alone": {
+        "exact": 0.6763527054108216,
+        "within1": 0.9889779559118237,
+        "wkappa": 0.34565813949205304,
+        "per_tier": [
+          0.7233294255568582,
+          0.4,
+          NaN,
+          NaN
+        ]
+      },
+      "2D, LOO-fitted": {
+        "exact": 0.2745490981963928,
+        "within1": 0.5490981963927856,
+        "wkappa": 0.0952706195926899,
+        "per_tier": [
+          0.3106682297772567,
+          0.06206896551724138,
+          NaN,
+          NaN
+        ]
+      }
+    }
+  },
+  "phase5": {
+    "severity ref (expert area/contraction)": {
+      "area_per_contraction alone": {
+        "top 25%": 0.9235133689839572,
+        "top 10%": 0.982431592039801
+      },
+      "max_consecutive_uc_with_decel alone": {
+        "top 25%": 0.6430828877005347,
+        "top 10%": 0.45325456053068
+      },
+      "2D, LOO-fitted": {
+        "top 25%": 0.9697914438502674,
+        "top 10%": 0.8910482310668878
+      }
+    },
+    "persistence ref (expert max-run)": {
+      "area_per_contraction alone": {
+        "top 25%": 0.5118714711015296,
+        "top 10%": 0.45454177952055624
+      },
+      "max_consecutive_uc_with_decel alone": {
+        "top 25%": 0.8143927728159326,
+        "top 10%": 0.778061203864656
+      },
+      "2D, LOO-fitted": {
+        "top 25%": 0.8579776203675189,
+        "top 10%": 0.809791001334034
+      }
+    }
+  },
+  "phase6": {
+    "A  persistence HIGH, expert burden LOW": {
+      "n": 216,
+      "frac": 0.21643286573146292,
+      "mean_uc": 4.37962962962963,
+      "mean_exp": 800.4908724322717
+    },
+    "B  severity HIGH, persistence LOW": {
+      "n": 242,
+      "frac": 0.24248496993987975,
+      "mean_uc": 3.768595041322314,
+      "mean_exp": 1355.4225762992598
+    },
+    "C  BOTH high": {
+      "n": 225,
+      "frac": 0.22545090180360722,
+      "mean_uc": 4.417777777777777,
+      "mean_exp": 1422.4291567901791
+    },
+    "D  BOTH low, expert burden HIGH": {
+      "n": 2,
+      "frac": 0.002004008016032064,
+      "mean_uc": 4.0,
+      "mean_exp": 1448.6496541846736
+    }
+  },
+  "phase7": {
+    "high persistence AND high severity": {
+      "fires": 0.028056112224448898,
+      "sens": 0.096,
+      "prec": 0.8571428571428571,
+      "f1": 0.17266187050359713,
+      "kappa": 0.12869528248887796
+    },
+    "high persistence OR high severity": {
+      "fires": 0.5701402805611222,
+      "sens": 0.976,
+      "prec": 0.4288224956063269,
+      "f1": 0.5958485958485958,
+      "kappa": 0.3800683854356288
+    },
+    "persistence >= 2 alone": {
+      "fires": 0.34168336673346694,
+      "sens": 0.5,
+      "prec": 0.36656891495601174,
+      "f1": 0.4230118443316413,
+      "kappa": 0.1884011657024024
+    },
+    "severity >= p75 alone": {
+      "fires": 0.2565130260521042,
+      "sens": 0.572,
+      "prec": 0.55859375,
+      "f1": 0.5652173913043478,
+      "kappa": 0.41759419397964914
+    },
+    "current v3 rule (>50% of contractions)": {
+      "fires": 0.23146292585170342,
+      "sens": 0.512,
+      "prec": 0.5541125541125541,
+      "f1": 0.5322245322245324,
+      "kappa": 0.3840148352160817
+    }
+  }
+}

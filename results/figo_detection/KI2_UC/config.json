@@ -1,0 +1,90 @@
+{
+  "arm": "KI2_UC",
+  "label": "KI-2 + UC     REFINEMENT",
+  "mode": "ki2",
+  "use_uc": true,
+  "lambda_grid": [
+    0.1,
+    0.3,
+    1.0
+  ],
+  "lambda_per_fold": [
+    0.3,
+    1.0,
+    0.3,
+    0.3,
+    1.0
+  ],
+  "n_params": 79343,
+  "epochs": 40,
+  "lr": 0.0003,
+  "seed": 0,
+  "concept_quality": {
+    "baseline_bpm": {
+      "kind": "continuous",
+      "r2": 0.6753389835357666,
+      "corr": 0.8280425349128196
+    },
+    "variability_bpm": {
+      "kind": "continuous",
+      "r2": 0.1928701400756836,
+      "corr": 0.44527351654810665
+    },
+    "stv_bpm": {
+      "kind": "continuous",
+      "r2": 0.7078180909156799,
+      "corr": 0.8442645562975482
+    },
+    "n_accels": {
+      "kind": "continuous",
+      "r2": 0.2938581109046936,
+      "corr": 0.5461728275390567
+    },
+    "n_contractions": {
+      "kind": "continuous",
+      "r2": 0.5797742605209351,
+      "corr": 0.7767522413412943
+    },
+    "n_decels": {
+      "kind": "continuous",
+      "r2": 0.5134896636009216,
+      "corr": 0.7182417416110228
+    },
+    "n_decel_late": {
+      "kind": "continuous",
+      "r2": 0.06402987241744995,
+      "corr": 0.25376497945735393
+    },
+    "n_decel_prolonged": {
+      "kind": "continuous",
+      "r2": 0.2755470871925354,
+      "corr": 0.5281564302916496
+    },
+    "frac_time_in_decel": {
+      "kind": "continuous",
+      "r2": 0.6390827894210815,
+      "corr": 0.8013334103270094
+    },
+    "longest_decel_s": {
+      "kind": "continuous",
+      "r2": 0.48251277208328247,
+      "corr": 0.6971348262976865
+    },
+    "deepest_decel_bpm": {
+      "kind": "continuous",
+      "r2": 0.44891053438186646,
+      "corr": 0.6726138061483579
+    },
+    "decel_repetitive": {
+      "kind": "binary",
+      "auroc": 0.773298336865087,
+      "prevalence": 0.232199028134346
+    },
+    "variability_measurable": {
+      "kind": "binary",
+      "auroc": 0.7912698656902414,
+      "prevalence": 0.9782670736312866
+    }
+  },
+  "runtime_s": 242.1
+}

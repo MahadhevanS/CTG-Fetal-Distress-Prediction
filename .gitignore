@@ -98,7 +98,22 @@ data/processed/*
 # UCI Cardiotocography dataset (~1.7 MB), used by the models-1-to-7 pipeline.
 !data/raw/cardiotocography/
 
-# NOTE: archive/*/checkpoints/*.pth are covered by the *.pth rule above and
-# stay out (~481 MB). The MANIFEST.json and config files in archive/ ARE
-# tracked -- they carry the provenance (SHA256 of every weight file, git
-# commit, exact command), which is what makes an archived run reproducible.
+# Final Deliverable Models (Continuous Clinical Huber & Phase 4 Master)
+!models/**
+
+# Temporary Scratch and Intermediate Folders
+scratch/
+results_sweep_console.log
+data/phase5_multires/
+data/processed_figo/
+experiments/
+
+# Ignore large binary cache dumps (>50MB) in results
+results/**/*.npz
+results/**/*.npy
+results/**/ssl/*.npy
+results/phase10/*.npz
+results/phase10/*.npy
+
+
+

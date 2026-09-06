@@ -1,0 +1,94 @@
+{
+  "arm": "KI1_concept",
+  "label": "KI-1  concept supervision",
+  "mode": "ki1",
+  "lambda_grid": [
+    0.1,
+    0.3,
+    1.0
+  ],
+  "lambda_per_fold": [
+    0.1,
+    0.3,
+    0.1,
+    1.0,
+    0.3
+  ],
+  "n_params": 78511,
+  "epochs": 40,
+  "lr": 0.0003,
+  "seed": 0,
+  "concept_quality": {
+    "baseline_bpm": {
+      "kind": "continuous",
+      "r2": 0.7094484567642212,
+      "corr": 0.8509620592539523
+    },
+    "variability_bpm": {
+      "kind": "continuous",
+      "r2": 0.2443353533744812,
+      "corr": 0.5006821630140923
+    },
+    "stv_bpm": {
+      "kind": "continuous",
+      "r2": 0.8257513046264648,
+      "corr": 0.913257019629804
+    },
+    "n_accels": {
+      "kind": "continuous",
+      "r2": 0.3204342722892761,
+      "corr": 0.5723662492303855
+    },
+    "n_contractions": {
+      "kind": "continuous",
+      "r2": 0.019939661026000977,
+      "corr": 0.14497545177576082
+    },
+    "n_decels": {
+      "kind": "continuous",
+      "r2": 0.553925633430481,
+      "corr": 0.7473565037599902
+    },
+    "n_decel_late": {
+      "kind": "continuous",
+      "r2": 0.04456198215484619,
+      "corr": 0.2127983118815545
+    },
+    "n_decel_prolonged": {
+      "kind": "continuous",
+      "r2": 0.30256152153015137,
+      "corr": 0.5530754054839341
+    },
+    "frac_time_in_decel": {
+      "kind": "continuous",
+      "r2": 0.6601561307907104,
+      "corr": 0.8143503947212738
+    },
+    "longest_decel_s": {
+      "kind": "continuous",
+      "r2": 0.5104191303253174,
+      "corr": 0.7174672038532454
+    },
+    "deepest_decel_bpm": {
+      "kind": "continuous",
+      "r2": 0.4733234643936157,
+      "corr": 0.6952325090241689
+    },
+    "decel_repetitive": {
+      "kind": "binary",
+      "auroc": 0.7704307363477081,
+      "prevalence": 0.232199028134346
+    },
+    "variability_measurable": {
+      "kind": "binary",
+      "auroc": 0.8255973168817983,
+      "prevalence": 0.9782670736312866
+    },
+    "has_acute_hypoxia_decel": {
+      "kind": "binary",
+      "auroc": 0.097254004576659,
+      "prevalence": 0.00028595939511433244
+    }
+  },
+  "runtime_s": 226.3
+}

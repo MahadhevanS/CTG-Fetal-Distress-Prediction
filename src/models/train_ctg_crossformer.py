@@ -36,6 +36,8 @@ if BASE_DIR not in sys.path:
     sys.path.insert(0, BASE_DIR)
 
 from src.models.ctg_crossformer import CTGCrossformerEncoder, CTGCrossformerForClassification
+from src.models.encoder_registry import (ENCODER_NAMES, build_classifier, build_encoder,
+                                         param_count)
 
 
 def set_seed(seed: int = 42):
@@ -193,8 +195,41 @@ def train_epoch(model, train_loader, optimizer, scheduler, criterion, device, de
     return train_loss / len(train_loader.dataset)
 
 
+def patient_level_metrics(y_true, y_prob, patient_ids):
+    """Aggregate window scores into one score per patient.
+
+    In data/processed_clinical/ the label is CONSTANT within a patient (the
+    horizon rule is gone), so the clinical unit is the patient, not the window.
+    The window-level number both understates performance -- most windows of a
+    bad labour genuinely look normal -- and overstates the effective sample
+    size, since consecutive windows share 87.5% of their samples at a 2.5-min
+    stride. Measured 2026-09-03: window 0.6159 vs patient 0.7290 on identical
+    predictions. Reported ALONGSIDE the window metrics, never instead of them.
+    """
+    pids = np.asarray(patient_ids)
+    uniq = np.unique(pids)
+    lab = np.array([int(y_true[pids == p].max()) for p in uniq])
+    if len(np.unique(lab)) < 2:
+        return {"auroc_pat_max": 0.5, "auroc_pat_mean": 0.5, "auprc_pat_max": 0.0,
+                "n_patients": float(len(uniq))}
+    out = {"n_patients": float(len(uniq))}
+    for name, fn in (("max", np.max), ("mean", np.mean)):
+        s = np.array([fn(y_prob[pids == p]) for p in uniq])
+        try:
+            out[f"auroc_pat_{name}"] = roc_auc_score(lab, s)
+        except ValueError:
+            out[f"auroc_pat_{name}"] = 0.5
+        if name == "max":
+            try:
+                pr, rc, _ = precision_recall_curve(lab, s)
+                out["auprc_pat_max"] = auc(rc, pr)
+            except ValueError:
+                out["auprc_pat_max"] = 0.0
+    return out
+
+
 @torch.no_grad()
-def evaluate(model, val_loader, device, desc="[Val]"):
+def evaluate(model, val_loader, device, desc="[Val]", patient_ids=None):
     model.eval()
     all_targets, all_probs = [], []
     pbar = tqdm(val_loader, desc=desc, leave=False)
@@ -204,7 +239,11 @@ def evaluate(model, val_loader, device, desc="[Val]"):
         probs = torch.sigmoid(logits)
         all_targets.extend(y_batch.numpy())
         all_probs.extend(probs.cpu().numpy())
-    return compute_metrics(np.array(all_targets), np.array(all_probs))
+    y_true, y_prob = np.array(all_targets), np.array(all_probs)
+    metrics = compute_metrics(y_true, y_prob)
+    if patient_ids is not None:
+        metrics.update(patient_level_metrics(y_true, y_prob, patient_ids))
+    return metrics
 
 
 def main():
@@ -248,15 +287,48 @@ def main():
                         help="Fraction of the training fold's PATIENTS held out for inner "
                              "selection (nested mode only).")
     parser.add_argument("--fold_mode", type=str, default="stratified_group",
-                        choices=["stratified_group", "patient_level"],
+                        choices=["stratified_group", "patient_level", "window_random"],
                         help="stratified_group (default) = this script's original window-level "
                              "StratifiedGroupKFold. patient_level = create_patient_level_folds() "
                              "joint-stratified on y_figo, matching train_knowledge_infused.py so "
-                             "the two are directly comparable on identical folds.")
+                             "the two are directly comparable on identical folds. "
+                             "window_random = NEGATIVE CONTROL: plain StratifiedKFold over "
+                             "WINDOWS, so one labour contributes windows to both train and "
+                             "test. This is NOT a valid protocol -- it is provided so the "
+                             "inflation it produces can be measured. Do not report a "
+                             "window_random number as a result.")
+    parser.add_argument("--permute_labels", action="store_true",
+                        help="NEGATIVE CONTROL: replace every patient's outcome with a "
+                             "randomly assigned label (same overall prevalence, permuted "
+                             "across patients, constant within a patient). A valid protocol "
+                             "must score ~0.50 here. Measured 2026-09-03 with 19 features: "
+                             "0.517 patient-grouped vs 0.909 window_random.")
+    parser.add_argument("--results_json", type=str, default=None,
+                        help="Write the CV/test summary to this JSON path, for "
+                             "scripts/run_protocol_sweep.py to collect.")
+    parser.add_argument("--target", type=str, default="y_primary",
+                        help="label column to train on. data/processed_clinical/ also "
+                             "provides y_adverse (composite: pH<=7.05 OR BDecf>=12 OR "
+                             "Apgar5<7). See docs/preprocessing_redesign.md.")
+    parser.add_argument("--in_channels", type=int, default=2, choices=[2, 3],
+                        help="2 = FHR+UC (default, comparable to all prior runs). "
+                             "3 adds the missingness mask, which only exists in "
+                             "data/processed_clinical/ and which the CrossFormer's "
+                             "dual-branch encoder cannot consume.")
+    parser.add_argument("--encoder", type=str, default="crossformer", choices=ENCODER_NAMES,
+                        help="temporal encoder. 'crossformer' (default) keeps the original "
+                             "256-d pooled head and reproduces the delivered model. "
+                             "'crossformer_latent', 'cnn1d' and 'mslstm' all classify from the "
+                             "128-d latent via the shared head -- see encoder_registry.py. "
+                             "Must match the --encoder used for --pretrained_encoder.")
     parser.add_argument("--pretrained_encoder", type=str, default=None,
                          help="Path to a CTGCrossformerEncoder state_dict (e.g. from "
                               "scripts/pretrain_ctg_crossformer_ssl.py) to initialize each "
                               "fold's encoder from, instead of random init.")
+    parser.add_argument("--epochs", type=int, default=None,
+                        help="Override the config's training.epochs. Used by "
+                             "scripts/run_protocol_sweep.py to keep a 18-cell sweep "
+                             "tractable; leave unset to reproduce prior runs exactly.")
     parser.add_argument("--seed", type=int, default=42)
     args = parser.parse_args()
 
@@ -284,8 +356,17 @@ def main():
     if not args.dry_run and os.path.exists(train_pt):
         print(f"Loading preprocessed dataset from {train_pt}...")
         data = torch.load(train_pt, weights_only=False)
-        X = data['X'].numpy()
-        y = data['y_primary'].numpy()
+        # data/processed_clinical/ ships 3 channels (FHR, UC, missingness mask).
+        # Default to the first 2 so the label fix can be measured on its own --
+        # adding an input channel at the same time would confound the comparison.
+        X = data['X'].numpy()[:, :args.in_channels, :]
+        if args.target not in data:
+            sys.exit(f"[ABORT] target '{args.target}' not in {train_pt}. "
+                     f"available: {[k for k in data if k.startswith('y_')]}")
+        y = data[args.target].numpy()
+        m_cfg["in_channels"] = args.in_channels
+        print(f"Target: {args.target} | in_channels: {args.in_channels} "
+              f"| positives {int(y.sum())}/{len(y)} ({y.mean()*100:.1f}%)")
         metadata = data['metadata']
         patient_ids = np.array([m[0] for m in metadata])
         y_figo = data.get('y_figo')
@@ -294,6 +375,20 @@ def main():
             print(f"\n[!] Dataset file 'train_dataset.pt' not found at '{train_pt}'.")
             print("    Running synthetic dataset pass for verification...\n")
         X, y, patient_ids = generate_synthetic_data(num_samples=160 if args.dry_run else 100, num_patients=20)
+
+    if args.permute_labels:
+        # NEGATIVE CONTROL. Shuffle the outcome ACROSS patients, keeping it
+        # constant within a patient and preserving overall prevalence. The
+        # signal is now unrelated to the label, so a sound protocol must score
+        # ~0.50. Anything materially above that is the protocol recovering
+        # patient identity rather than physiology.
+        rng = np.random.default_rng(args.seed)
+        uniq = np.unique(patient_ids)
+        plab = np.array([int(y[patient_ids == p].max()) for p in uniq])
+        fmap = dict(zip(uniq, rng.permutation(plab)))
+        y = np.array([fmap[q] for q in patient_ids], dtype=y.dtype)
+        print(f"[PERMUTE_LABELS] outcome shuffled across {len(uniq)} patients "
+              f"-- {int(plab.sum())} positives preserved. Expect AUROC ~0.50.")
 
     sample_weight = None
     if args.label_confidence_band > 0 and not args.dry_run:
@@ -337,6 +432,15 @@ def main():
         )
         print(f"Fold mode: patient_level (matches train_knowledge_infused.py"
               f"{' , joint-stratified on y_figo' if secondary is not None else ''})")
+    elif args.fold_mode == "window_random":
+        # NEGATIVE CONTROL -- deliberately invalid. StratifiedKFold over WINDOWS
+        # with no grouping, so a labour's overlapping windows land in both train
+        # and test. Provided to measure the inflation, not to report a result.
+        from sklearn.model_selection import StratifiedKFold as _SKF
+        fold_iter = list(_SKF(n_splits=n_splits, shuffle=True,
+                              random_state=args.seed).split(X, y))
+        print("Fold mode: window_random  [NEGATIVE CONTROL -- patients straddle "
+              "folds; this number is NOT a result]")
     else:
         sgkf = StratifiedGroupKFold(n_splits=n_splits)
         fold_iter = list(sgkf.split(X, y, groups=patient_ids))
@@ -348,7 +452,8 @@ def main():
 
     print(f"\n--- Starting CTG-CrossFormer {n_splits}-Fold Stratified Patient-Level CV ---")
     start_time = time.time()
-    epochs_run = 2 if args.dry_run else t_cfg.get("epochs", 50)
+    epochs_run = (2 if args.dry_run
+                  else (args.epochs if args.epochs else t_cfg.get("epochs", 50)))
 
     for fold, (train_idx, val_idx) in enumerate(fold_iter, 1):
         # NESTED MODE: carve an inner validation split out of the TRAINING fold,
@@ -391,18 +496,9 @@ def main():
             print(f"  [nested] fit on {len(fit_idx)} windows | inner-val {len(inner_val_idx)} "
                   f"({len(set(patient_ids[inner_val_idx]))} patients) | outer-val {len(val_idx)}")
 
-        # Build CTG-CrossFormer Model
-        encoder = CTGCrossformerEncoder(
-            in_channels=2,
-            seq_len=4800,
-            cnn_channels=m_cfg.get("cnn_channels", 128),
-            n_heads_cross=m_cfg.get("n_heads_cross", 4),
-            n_heads_tf=m_cfg.get("n_heads_tf", 8),
-            n_tf_layers=m_cfg.get("n_tf_layers", 4),
-            d_ff=m_cfg.get("d_ff", 512),
-            dropout=m_cfg.get("dropout", 0.1),
-            latent_dim=m_cfg.get("latent_dim", 128)
-        )
+        # Build the temporal encoder + classification head (see
+        # src/models/encoder_registry.py for the head-mismatch caveat).
+        encoder = build_encoder(args.encoder, m_cfg)
         if args.pretrained_encoder:
             encoder.load_state_dict(
                 torch.load(args.pretrained_encoder, map_location=device, weights_only=True),
@@ -410,11 +506,10 @@ def main():
             )
             if fold == 1:
                 print(f"Loaded pretrained encoder weights from {args.pretrained_encoder}")
-        model = CTGCrossformerForClassification(
-            encoder=encoder,
-            hidden_dim=m_cfg.get("classifier_hidden_dim", 128),
-            dropout=m_cfg.get("classifier_dropout", 0.3)
-        ).to(device)
+        model = build_classifier(args.encoder, encoder, m_cfg).to(device)
+        if fold == 1:
+            print(f"Encoder: {args.encoder} | encoder params {param_count(encoder):,} "
+                  f"| total {param_count(model):,}")
 
         # Focal Loss (gamma=2.0) with pos_weight
         # BUG FIX (2026-08-09): the WeightedRandomSampler above already rebalances
@@ -476,7 +571,9 @@ def main():
                 model, train_loader, optimizer, scheduler, criterion, device,
                 desc=f"Fold {fold} Ep {epoch} [Train]"
             )
-            val_metrics = evaluate(model, val_loader, device, desc=f"Fold {fold} Ep {epoch} [Val]")
+            val_metrics = evaluate(model, val_loader, device,
+                                   desc=f"Fold {fold} Ep {epoch} [Val]",
+                                   patient_ids=patient_ids[val_idx])
 
             # Protocol-matched (biased) tracking -- best epoch on the reported fold.
             if val_metrics['auroc'] > best_val_auroc:
@@ -490,7 +587,8 @@ def main():
 
             if inner_val_loader is not None:
                 inner_metrics = evaluate(model, inner_val_loader, device,
-                                         desc=f"Fold {fold} Ep {epoch} [InnerVal]")
+                                         desc=f"Fold {fold} Ep {epoch} [InnerVal]",
+                                         patient_ids=patient_ids[inner_val_idx])
                 postfix['inner_auroc'] = f'{inner_metrics["auroc"]:.4f}'
                 if inner_metrics['auroc'] > best_inner_auroc:
                     best_inner_auroc = inner_metrics['auroc']
@@ -549,10 +647,22 @@ def main():
         print(f"\n>>> selection inflation on AUROC: {bi - ub:+.4f} "
               f"(protocol-matched {bi:.4f} vs unbiased {ub:.4f})")
 
+    test_metrics = None
     if not args.dry_run and os.path.exists(test_pt):
         print("\n================ HELD-OUT TEST SET EVALUATION ================")
         test_data = torch.load(test_pt, weights_only=False)
-        test_ds = CTGDataset(test_data['X'].numpy(), test_data['y_primary'].numpy())
+        test_pids = np.array([m[0] for m in test_data['metadata']])
+        y_test = test_data[args.target].numpy()
+        if args.permute_labels:
+            # Test patients are disjoint from train, so they get their own
+            # permutation -- same construction, same expectation of ~0.50.
+            _rng = np.random.default_rng(args.seed + 1)
+            _u = np.unique(test_pids)
+            _pl = np.array([int(y_test[test_pids == q].max()) for q in _u])
+            _fm = dict(zip(_u, _rng.permutation(_pl)))
+            y_test = np.array([_fm[q] for q in test_pids], dtype=y_test.dtype)
+            print(f"[PERMUTE_LABELS] test outcome shuffled across {len(_u)} patients.")
+        test_ds = CTGDataset(test_data['X'].numpy()[:, :args.in_channels, :], y_test)
         test_loader = DataLoader(test_ds, batch_size=batch_size, shuffle=False)
         # FIX (2026-08-19): this previously evaluated `model` -- whatever was left
         # in memory after the fold loop, i.e. the LAST fold's end-of-training state,
@@ -576,12 +686,34 @@ def main():
                 fold_probs.append(np.array(probs_one))
             ens = np.mean(np.stack(fold_probs, axis=0), axis=0)
             test_metrics = compute_metrics(np.array(targs), ens)
+            test_metrics.update(patient_level_metrics(np.array(targs), ens, test_pids))
             print(f'(5-fold ensemble of {len(ckpt_paths)} checkpoints)')
         else:
-            test_metrics = evaluate(model, test_loader, device, desc='[Test]')
+            test_metrics = evaluate(model, test_loader, device, desc='[Test]',
+                                    patient_ids=test_pids)
             print('(WARNING: no checkpoints found -- fell back to last in-memory model)')
         for k, v in test_metrics.items():
             print(f"Test {k.capitalize():<12}: {v:.4f}")
+
+    if args.results_json:
+        import json
+        summary = {
+            "encoder": args.encoder, "fold_mode": args.fold_mode,
+            "permute_labels": bool(args.permute_labels), "target": args.target,
+            "in_channels": args.in_channels, "class_weight": args.class_weight,
+            "early_stop_mode": args.early_stop_mode, "seed": args.seed,
+            "data_dir": args.data_dir, "n_params": param_count(model),
+            "cv": {k: {"mean": float(np.mean([fm[k] for fm in fold_metrics])),
+                       "std": float(np.std([fm[k] for fm in fold_metrics])),
+                       "folds": [float(fm[k]) for fm in fold_metrics]}
+                   for k in fold_metrics[0]},
+            "test": ({k: float(v) for k, v in test_metrics.items()} if test_metrics else None),
+            "elapsed_sec": elapsed_time,
+        }
+        os.makedirs(os.path.dirname(os.path.abspath(args.results_json)), exist_ok=True)
+        with open(args.results_json, "w") as fh:
+            json.dump(summary, fh, indent=2)
+        print(f"Wrote results summary -> {args.results_json}")
 
 
 if __name__ == "__main__":

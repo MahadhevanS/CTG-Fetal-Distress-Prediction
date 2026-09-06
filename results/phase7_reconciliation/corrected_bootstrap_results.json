@@ -1,0 +1,31 @@
+{
+  "gold_baseline": {
+    "model_name": "Phase-4 Master (Logit Prior Modulation Gold)",
+    "auroc": 0.7360723944247972,
+    "ci_95": [
+      0.682889051677932,
+      0.7874902841128729
+    ],
+    "auprc": 0.4514053327649708
+  },
+  "model_b_continuous_clinical": {
+    "model_name": "Model B (Continuous Clinical Huber Regression)",
+    "auroc": 0.7425837320574162,
+    "ci_95": [
+      0.687647543305623,
+      0.7930630779058788
+    ],
+    "auprc": 0.47727209370985296
+  },
+  "corrected_paired_comparison": {
+    "comparison": "Model B (Continuous Clinical) - Phase 4 Master (Gold)",
+    "delta_auroc": 0.006108969740650626,
+    "ci_95": [
+      -0.021821534837589886,
+      0.033267819613634564
+    ],
+    "bootstrap_p_value": 0.338,
+    "delong_p_value": 0.6457163584096217,
+    "statistical_verdict": "No statistically significant difference (95% CI contains zero, p > 0.05). Both models perform comparably in the 0.736 - 0.743 AUROC range."
+  }
+}

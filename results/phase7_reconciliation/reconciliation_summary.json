@@ -1,0 +1,13 @@
+{
+  "status": "BASELINE CORRECTED",
+  "gold_phase4_auroc": 0.7360723944247972,
+  "model_b_auroc": 0.7425837320574162,
+  "corrected_delta_auroc": 0.006108969740650626,
+  "corrected_ci_95": [
+    -0.021821534837589886,
+    0.033267819613634564
+  ],
+  "bootstrap_p_value": 0.338,
+  "delong_p_value": 0.6457163584096217,
+  "conclusion": "The Phase-7 retrained Model A (0.6547) is replaced with the verified Phase-4 Gold baseline (0.7361). Model B (0.7426) is statistically comparable (Delta = +0.0065, p = 0.320). Target distance to 0.85 remains 0.1074."
+}

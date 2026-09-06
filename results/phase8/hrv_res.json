@@ -1,0 +1,42 @@
+{
+ "19": {
+  "name": "19 clinical descriptors (baseline)",
+  "agg": "max",
+  "auroc": 0.727085500312045,
+  "auprc": 0.4094054391658846,
+  "ci_lo": 0.6702745486417425,
+  "ci_hi": 0.779027146156224,
+  "n_patients": 547.0,
+  "n_positive": 110.0
+ },
+ "hrv": {
+  "name": "18 HRV / nonlinear only",
+  "agg": "max",
+  "auroc": 0.6434782608695652,
+  "auprc": 0.2779511710374941,
+  "ci_lo": 0.5871765804816653,
+  "ci_hi": 0.6959026694054903,
+  "n_patients": 547.0,
+  "n_positive": 110.0
+ },
+ "19+hrv": {
+  "name": "19 + 18 HRV",
+  "agg": "max",
+  "auroc": 0.7118993135011442,
+  "auprc": 0.38186503112533077,
+  "ci_lo": 0.6552869218553563,
+  "ci_hi": 0.7647824999407904,
+  "n_patients": 547.0,
+  "n_positive": 110.0
+ },
+ "19+hrv+s": {
+  "name": "19 + HRV + stage-II flag",
+  "agg": "max",
+  "auroc": 0.7179945912211361,
+  "auprc": 0.3937742621315225,
+  "ci_lo": 0.6615824120632544,
+  "ci_hi": 0.770969597118044,
+  "n_patients": 547.0,
+  "n_positive": 110.0
+ }
+}

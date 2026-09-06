@@ -1,0 +1,37 @@
+{
+  "phase1_p2_dataset": {
+    "path": "data/phase1_candidates/p2_dataset.pt",
+    "sha256": "ea0ddcfad3131c60d3414e66c8ba420db1cc7f4c17ba5401604356803651a903",
+    "size_bytes": 654460093
+  },
+  "folds_json": {
+    "path": "data/processed_clinical/folds.json",
+    "sha256": "d3f842b9f8651e3e58ef2cd4153c7e29e0da104be02bbf4fcbb561273d961fc8",
+    "size_bytes": 29105
+  },
+  "clinical_metadata": {
+    "path": "data/raw/ctu-chb-intrapartum/clinical_metadata.csv",
+    "sha256": "986069cc6ffd563fb8e9074969cd147abf4e2d085369ffe627d2e3ac79e3207f",
+    "size_bytes": 101256
+  },
+  "phase3_embeddings": {
+    "path": "results/phase3_mil/extracted_embeddings.npz",
+    "sha256": "bbc0e04d766871f7b8d18a77e978a035e178b0f1e408f48ae0f4a19f7abf149b",
+    "size_bytes": 4066596
+  },
+  "phase4_results": {
+    "path": "results/phase4_fusion/phase4_results.json",
+    "sha256": "d262a4c4f4af2698a5b9ebfa196a25a619096a546125bcc798f65a26b5712a69",
+    "size_bytes": 115239
+  },
+  "phase6_results": {
+    "path": "results/phase6_outcome_supervision/phase6_results.json",
+    "sha256": "561a87cd03af21aa604d536aa6b873aff7f38fe59eae6fb6bb3b27c3560f268a",
+    "size_bytes": 144730
+  },
+  "phase7_predictions": {
+    "path": "results/phase7_locked/patient_oof_predictions.csv",
+    "sha256": "94c0b8a897b6ebbb20200b329b75cce3a551a264c583a3bc89541d40df65b991",
+    "size_bytes": 29741
+  }
+}

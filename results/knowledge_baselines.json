@@ -1,0 +1,152 @@
+[
+  {
+    "name": "A   19 feats -> LR -> max-agg",
+    "agg": "max",
+    "auroc": 0.7268150613688372,
+    "auprc": 0.40929412073887655,
+    "ci_lo": 0.6698255127903229,
+    "ci_hi": 0.7789353434999448,
+    "n_patients": 547,
+    "n_positive": 110
+  },
+  {
+    "name": "A'  19 feats -> MLP -> max-agg",
+    "agg": "max",
+    "auroc": 0.7066361556064072,
+    "auprc": 0.4255704413504483,
+    "ci_lo": 0.647684926722906,
+    "ci_hi": 0.7611333138488495,
+    "n_patients": 547,
+    "n_positive": 110
+  },
+  {
+    "name": "C   patient feats -> MLP",
+    "agg": "native",
+    "auroc": 0.6977324734761805,
+    "auprc": 0.3675974045851875,
+    "ci_lo": 0.640533750828185,
+    "ci_hi": 0.7546340342691421,
+    "n_patients": 547,
+    "n_positive": 110
+  },
+  {
+    "name": "C'  patient feats -> LR",
+    "agg": "native",
+    "auroc": 0.6554191803619721,
+    "auprc": 0.4103538594852184,
+    "ci_lo": 0.587105882640285,
+    "ci_hi": 0.7165933331888659,
+    "n_patients": 547,
+    "n_positive": 110
+  },
+  {
+    "name": "A minus baseline        (1 feats)",
+    "agg": "max",
+    "auroc": 0.7261493655086332,
+    "auprc": 0.4144875434923931,
+    "ci_lo": 0.6675071778379112,
+    "ci_hi": 0.7806651207209488,
+    "n_patients": 547,
+    "n_positive": 110,
+    "delta_vs_A": -0.0006656958602040408
+  },
+  {
+    "name": "A minus variability     (2 feats)",
+    "agg": "max",
+    "auroc": 0.7262533804867902,
+    "auprc": 0.4210389243451223,
+    "ci_lo": 0.66897408375809,
+    "ci_hi": 0.7791614995591872,
+    "n_patients": 547,
+    "n_positive": 110,
+    "delta_vs_A": -0.0005616808820469998
+  },
+  {
+    "name": "A minus accelerations   (1 feats)",
+    "agg": "max",
+    "auroc": 0.6985853962970667,
+    "auprc": 0.37558346801796316,
+    "ci_lo": 0.6411012465117707,
+    "ci_hi": 0.7538908719070093,
+    "n_patients": 547,
+    "n_positive": 110,
+    "delta_vs_A": -0.028229665071770493
+  },
+  {
+    "name": "A minus decelerations   (4 feats)",
+    "agg": "max",
+    "auroc": 0.7278968171416684,
+    "auprc": 0.40479511138226765,
+    "ci_lo": 0.6705910550877153,
+    "ci_hi": 0.7795402543039687,
+    "n_patients": 547,
+    "n_positive": 110,
+    "delta_vs_A": 0.0010817557728312055
+  },
+  {
+    "name": "A minus extended        (11 feats)",
+    "agg": "max",
+    "auroc": 0.7057416267942584,
+    "auprc": 0.35112460571689297,
+    "ci_lo": 0.6560145263533188,
+    "ci_hi": 0.7549619092715822,
+    "n_patients": 547,
+    "n_positive": 110,
+    "delta_vs_A": -0.021073434574578775
+  },
+  {
+    "name": "A using ONLY baseline     (1 feats)",
+    "agg": "max",
+    "auroc": 0.5737570210110255,
+    "auprc": 0.24153457011781826,
+    "ci_lo": 0.5148647714949394,
+    "ci_hi": 0.6328585032767065,
+    "n_patients": 547,
+    "n_positive": 110,
+    "group_only": true
+  },
+  {
+    "name": "A using ONLY variability  (2 feats)",
+    "agg": "max",
+    "auroc": 0.643415851882671,
+    "auprc": 0.27500967265581894,
+    "ci_lo": 0.5874308359394513,
+    "ci_hi": 0.7020646426086314,
+    "n_patients": 547,
+    "n_positive": 110,
+    "group_only": true
+  },
+  {
+    "name": "A using ONLY accelerations (1 feats)",
+    "agg": "max",
+    "auroc": 0.6772207197836487,
+    "auprc": 0.3745610874371506,
+    "ci_lo": 0.6169085794823703,
+    "ci_hi": 0.7338944763950663,
+    "n_patients": 547,
+    "n_positive": 110,
+    "group_only": true
+  },
+  {
+    "name": "A using ONLY decelerations (4 feats)",
+    "agg": "max",
+    "auroc": 0.6682650301643437,
+    "auprc": 0.31347935004082506,
+    "ci_lo": 0.6101272948955606,
+    "ci_hi": 0.7206702050828763,
+    "n_patients": 547,
+    "n_positive": 110,
+    "group_only": true
+  },
+  {
+    "name": "A using ONLY extended     (11 feats)",
+    "agg": "max",
+    "auroc": 0.687767838568754,
+    "auprc": 0.37512107269636125,
+    "ci_lo": 0.6273763797972018,
+    "ci_hi": 0.7457147443876401,
+    "n_patients": 547,
+    "n_positive": 110,
+    "group_only": true
+  }
+]

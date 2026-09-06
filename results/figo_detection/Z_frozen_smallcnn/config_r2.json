@@ -1,0 +1,13 @@
+{
+  "arm": "Z_frozen_smallcnn",
+  "label": "Z  frozen Gate-2 SmallCNN (FHR+mask)",
+  "arch": "smallcnn",
+  "shuffle": null,
+  "repeat": 2,
+  "seed": 0,
+  "epochs": 40,
+  "batch": 48,
+  "lr": 0.0003,
+  "n_params": 69281,
+  "runtime_s": 54.9
+}

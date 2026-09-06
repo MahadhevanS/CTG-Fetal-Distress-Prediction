@@ -6,8 +6,13 @@ are never seen during pretraining, so no information from them can leak into the
 representation -- important because the pretraining objective needs no outcome
 labels and would otherwise be tempting to run on everything.
 
-Saves a bare CTGCrossformerEncoder state_dict, loadable by
-train_ctg_crossformer.py --pretrained_encoder.
+Saves a bare encoder state_dict, loadable by train_ctg_crossformer.py with
+--pretrained_encoder. Works with any encoder in src/models/encoder_registry.py
+(crossformer, crossformer_latent, cnn1d, mslstm) -- the relational objective
+only requires a (B,2,4800) -> (B,128) encoder, nothing CrossFormer-specific.
+
+The SAME --encoder must be passed to both this script and the fine-tuner, or
+the state_dict will not load.
 """
 import argparse
 import os
@@ -21,6 +26,7 @@ BASE = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 if BASE not in sys.path:
     sys.path.insert(0, BASE)
 
+from src.models.encoder_registry import ENCODER_NAMES, build_encoder, param_count
 from src.training.clinical_relational_pretrain import (
     ClinicalRelationalPretrainer, build_clinical_space, relational_loss,
 )
@@ -35,6 +41,11 @@ def main():
     ap.add_argument("--lr", type=float, default=3e-4)
     ap.add_argument("--holdout_frac", type=float, default=0.1)
     ap.add_argument("--seed", type=int, default=42)
+    ap.add_argument("--in_channels", type=int, default=2, choices=[2, 3],
+                    help="must match the --in_channels used for fine-tuning")
+    ap.add_argument("--encoder", default="crossformer", choices=ENCODER_NAMES,
+                    help="temporal encoder to pretrain. The saved state_dict must be "
+                         "loaded back with the SAME --encoder in train_ctg_crossformer.py.")
     a = ap.parse_args()
 
     torch.manual_seed(a.seed)
@@ -43,7 +54,9 @@ def main():
     os.makedirs(os.path.dirname(a.out), exist_ok=True)
 
     d = torch.load(os.path.join(a.data_dir, "train_dataset.pt"), map_location="cpu", weights_only=False)
-    X = d["X"]
+    # data/processed_clinical ships 3 channels (FHR, UC, missingness mask); the
+    # encoders are built for --in_channels, so slice to match.
+    X = d["X"][:, :a.in_channels, :]
     yf = d["y_features"].numpy()
     ext = np.load(os.path.join(a.data_dir, "train_extended_features.npy"))
     pids = np.array([m[0] for m in d["metadata"]])
@@ -68,7 +81,9 @@ def main():
     train_ld = DataLoader(train_ds, batch_size=a.batch_size, shuffle=True, drop_last=True)
     ho_ld = DataLoader(ho_ds, batch_size=a.batch_size, shuffle=False, drop_last=True)
 
-    model = ClinicalRelationalPretrainer().to(dev)
+    enc = build_encoder(a.encoder, m_cfg={"latent_dim": 128})
+    print(f"[pretrain] encoder: {a.encoder} ({param_count(enc):,} params)")
+    model = ClinicalRelationalPretrainer(encoder=enc).to(dev)
     opt = torch.optim.AdamW(model.parameters(), lr=a.lr, weight_decay=1e-5)
     sched = torch.optim.lr_scheduler.OneCycleLR(
         opt, max_lr=a.lr, total_steps=max(a.epochs * max(len(train_ld), 1), 10), pct_start=0.1)
