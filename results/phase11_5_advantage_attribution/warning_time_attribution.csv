@@ -1,0 +1,7 @@
+model_code,model_name,operating_point_type,operating_threshold,sensitivity,specificity,ppv,npv,false_alerts_per_hour,median_warning_min,iqr_warning_min,mean_warning_min,pct_warned_ge10m,pct_warned_ge20m,pct_warned_ge30m
+P1,P1 (Compact CTG Baseline),Locked FAR Match (~0.65 / hr),0.3026,0.4455,0.7826,0.3403,0.8486,0.9939,15.0,20.0,18.06,69.39,42.86,20.41
+P2,P2 (Sequential/Event Baseline),Locked FAR Match (~0.65 / hr),0.3593,0.4636,0.8581,0.4513,0.8641,0.7699,12.5,18.75,13.14,52.94,27.45,9.8
+P3,P3 (Locked Snapshot Baseline),Locked FAR Match (~0.65 / hr),0.3545,0.5727,0.7551,0.3706,0.8753,0.8469,7.5,15.0,12.38,49.21,23.81,12.7
+P4,P4 (Snapshot + State),Locked FAR Match (~0.65 / hr),0.3465,0.5364,0.7483,0.3491,0.8651,0.8609,10.0,15.0,12.71,50.85,25.42,13.56
+P5,P5 (Snapshot + Trajectory),Locked FAR Match (~0.65 / hr),0.3483,0.5364,0.7551,0.3554,0.8661,0.8609,7.5,16.25,13.31,49.15,28.81,15.25
+P6,P6 (Full Proposed Framework),Locked FAR Match (~0.65 / hr),0.4264,0.4636,0.8192,0.3923,0.8585,0.7559,10.0,25.0,16.13,56.86,33.33,25.49
