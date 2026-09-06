@@ -1,0 +1,14 @@
+{
+  "work_package": "10D \u2014 Prediction-Horizon Boundary",
+  "dataset_observation_limit": "60 minutes pre-delivery recording duration",
+  "causal_window_duration": "20 minutes sliding window",
+  "theoretical_max_lead_time_min": 40.0,
+  "ge60_ge45_equivalence": "Mathematically identical (0.5360) due to fallback to earliest available window (T=40.0m)",
+  "discrimination_trajectory": {
+    "far_horizon_ge30m": "AUROC = 0.5461 to 0.5933 (baseline / subtle early warning)",
+    "intermediate_ge20m": "AUROC = 0.5960 to 0.6272 (emerging decelerations)",
+    "near_delivery_ge10m": "AUROC = 0.6729 to 0.6789 (active second stage)",
+    "delivery_0m": "AUROC = 0.7259 to 0.7426 (terminal decompensation)"
+  },
+  "scientific_interpretation": "The observed discriminative signal is substantially stronger closer to delivery. This retrospective analysis is consistent with a temporal boundary in which CTG-derived physiological deterioration becomes more discriminative near the time of delivery, while retrospective data cannot establish the underlying biological mechanism."
+}

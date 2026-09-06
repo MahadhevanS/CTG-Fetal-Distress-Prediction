@@ -1,0 +1,11 @@
+Phase,Experiment,AUROC_Delivery,Key_Finding
+Phase 2,Raw FHR Representation (CNN1D / TCN),0.6593,Raw temporal sequence alone insufficient; patient context required.
+Phase 3,Patient-Level Aggregation (P90 / Attention MIL),0.6701,Extreme-value pooling (P90) superior to complex learned bag attention.
+Phase 4,Clinical Knowledge Fusion (19 Descriptors),0.7361,Infusion of FIGO morphological features yields largest single predictive gain.
+Phase 6,Continuous Acid-Base Supervision (Huber pH),0.7426,Continuous pH target regression improves calibration and discrimination.
+Phase 7,Locked Replication & Statistical Audit,0.7426,Verified reproducible baseline; reconciled Phase 4 vs Continuous Huber.
+Phase 8,Causal Rolling 20-Min Inference,0.7426,Causal real-time feasibility established (11.4 ms latency; AUROC>=30m = 0.5461).
+Phase 9A,Generic Temporal Modelling (Seq/Multi-horizon),0.7312,Generic sequence architectures fail to solve >=30m early warning.
+Phase 9B,Physiology-Guided Deterioration States,0.739,Monotonic state-risk gradient observed (8.6% -> 47.6% acidemia).
+Phase 9C,"State Transitions, Trajectory & Timing",0.7303,Trajectory informs acute distress; biological boundary confirmed at >=30m.
+Phase 10,Final Clinical Decision & System Lock,0.7426,Snapshot + Trajectory Alerting locked; theoretical max lead time = 40 min.

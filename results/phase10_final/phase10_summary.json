@@ -1,0 +1,20 @@
+{
+  "phase": "Phase 10 \u2014 Final Clinical Decision & Contribution Analysis",
+  "cohort_patients": 547,
+  "primary_acidemia_715_count": 110,
+  "primary_acidemia_715_prevalence": 0.2011,
+  "severe_acidemia_705_count": 41,
+  "severe_acidemia_705_prevalence": 0.075,
+  "total_rolling_windows": 8517,
+  "execution_time_sec": 11.89,
+  "primary_snapshot_baseline_auroc": 0.7426,
+  "primary_horizon_ge30m_auroc": 0.5461,
+  "full_fusion_ge30m_auroc": 0.5857,
+  "best_clinical_policy": "Policy 5 (Hybrid: p >= 0.85*tau + S >= 2 + P >= 2)",
+  "clinical_policy_sensitivity": 0.7545,
+  "clinical_policy_specificity": 0.5149,
+  "clinical_policy_far_per_hour": 1.0464,
+  "clinical_policy_median_lead_min": 10.0,
+  "final_scientific_contribution": "A causally constrained, physiology-guided framework for modelling intrapartum CTG as evolving multidomain physiological states, with explicit representation of persistence, progression and reversal, and rigorous patient-level evaluation of their relationship with subsequent fetal acidemia.",
+  "thesis_lock_status": "LOCKED (Phase 10 Complete)"
+}

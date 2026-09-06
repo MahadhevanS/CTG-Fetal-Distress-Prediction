@@ -1,0 +1,6 @@
+policy,tp,fp,tn,fn,sensitivity_pct,specificity_pct,ppv_pct,npv_pct,fpr_pct,false_alerts_per_hour,alerts_per_patient,median_lead_time_min,pct_warned_ge30m
+Policy 1 (Single Window Threshold: p >= tau),79,185,252,31,71.82,57.67,29.92,89.05,42.33,0.8434,0.483,10.0,15.5
+Policy 2 (Two Consecutive Windows: p >= tau),61,121,316,49,55.45,72.31,33.52,86.58,27.69,0.4759,0.333,7.5,11.0
+Policy 3 (State-Based: Two Consecutive S >= 3),108,434,3,2,98.18,0.69,19.93,60.0,99.31,2.4602,0.991,35.0,71.0
+Policy 4 (State Progression: S >= 3 and V >= 0),110,437,0,0,100.0,0.0,20.11,0.0,100.0,3.0271,1.0,37.5,82.1
+Policy 5 (Hybrid: p >= 0.85*tau + S >= 2 + P >= 2),83,212,225,27,75.45,51.49,28.14,89.29,48.51,1.0464,0.539,10.0,10.5

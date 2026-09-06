@@ -1,0 +1,15 @@
+{
+  "work_package": "10A \u2014 Final System Definition",
+  "cohort_size": 547,
+  "total_rolling_windows": 8517,
+  "models_defined": [
+    "Model_A_Snapshot_Baseline",
+    "Model_B_Snapshot_plus_State",
+    "Model_C_Snapshot_plus_State_plus_Trajectory",
+    "Model_D_Snapshot_plus_Trajectory",
+    "Model_E_Full_Physiological_Fusion"
+  ],
+  "cross_validation": "Patient-stratified 5-fold CV",
+  "causal_window_length_min": 20.0,
+  "window_stride_min": 2.5
+}

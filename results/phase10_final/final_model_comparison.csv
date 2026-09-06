@@ -1,0 +1,31 @@
+model,horizon,horizon_min,auroc_715,auprc_715,auroc_705,auprc_705,brier_score
+Model A (Snapshot Baseline),>=60m,60,0.5976,0.2967,0.5589,0.14,0.163
+Model B (Snapshot + State),>=60m,60,0.5945,0.2893,0.5542,0.1383,0.1628
+Model C (Snapshot + State + Trajectory),>=60m,60,0.6179,0.3002,0.5866,0.15,0.1606
+Model D (Snapshot + Trajectory),>=60m,60,0.6142,0.2982,0.5792,0.1482,0.1608
+Model E (Full Physiological Fusion),>=60m,60,0.6872,0.4067,0.6771,0.256,0.1484
+Model A (Snapshot Baseline),>=45m,45,0.5976,0.2967,0.5589,0.14,0.163
+Model B (Snapshot + State),>=45m,45,0.5945,0.2893,0.5542,0.1383,0.1628
+Model C (Snapshot + State + Trajectory),>=45m,45,0.6179,0.3002,0.5866,0.15,0.1606
+Model D (Snapshot + Trajectory),>=45m,45,0.6142,0.2982,0.5792,0.1482,0.1608
+Model E (Full Physiological Fusion),>=45m,45,0.6872,0.4067,0.6771,0.256,0.1484
+Model A (Snapshot Baseline),>=30m,30,0.5461,0.2892,0.6005,0.1735,0.1627
+Model B (Snapshot + State),>=30m,30,0.5459,0.2862,0.5725,0.1739,0.1573
+Model C (Snapshot + State + Trajectory),>=30m,30,0.5345,0.2738,0.5534,0.1624,0.1582
+Model D (Snapshot + Trajectory),>=30m,30,0.5355,0.2733,0.552,0.1612,0.1583
+Model E (Full Physiological Fusion),>=30m,30,0.5857,0.2946,0.5939,0.1794,0.1592
+Model A (Snapshot Baseline),>=20m,20,0.55,0.2869,0.6118,0.175,0.1628
+Model B (Snapshot + State),>=20m,20,0.5505,0.2838,0.5896,0.1759,0.1574
+Model C (Snapshot + State + Trajectory),>=20m,20,0.5471,0.277,0.5993,0.1751,0.158
+Model D (Snapshot + Trajectory),>=20m,20,0.5489,0.2773,0.6012,0.1754,0.1582
+Model E (Full Physiological Fusion),>=20m,20,0.5869,0.2868,0.639,0.1621,0.1601
+Model A (Snapshot Baseline),>=10m,10,0.536,0.26,0.5882,0.1273,0.1659
+Model B (Snapshot + State),>=10m,10,0.536,0.2566,0.5656,0.1271,0.1597
+Model C (Snapshot + State + Trajectory),>=10m,10,0.5313,0.2523,0.5698,0.1304,0.16
+Model D (Snapshot + Trajectory),>=10m,10,0.5327,0.2533,0.5715,0.132,0.1601
+Model E (Full Physiological Fusion),>=10m,10,0.5814,0.2837,0.6292,0.1619,0.1611
+Model A (Snapshot Baseline),Delivery (0m),0,0.5976,0.2967,0.5589,0.14,0.163
+Model B (Snapshot + State),Delivery (0m),0,0.5945,0.2893,0.5542,0.1383,0.1628
+Model C (Snapshot + State + Trajectory),Delivery (0m),0,0.6179,0.3002,0.5866,0.15,0.1606
+Model D (Snapshot + Trajectory),Delivery (0m),0,0.6142,0.2982,0.5792,0.1482,0.1608
+Model E (Full Physiological Fusion),Delivery (0m),0,0.6872,0.4067,0.6771,0.256,0.1484
