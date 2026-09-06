@@ -1,0 +1,37 @@
+horizon,model,brier_score,calibration_slope,calibration_intercept
+>=60m,Phase 8 Baseline,0.1662,0.33,-0.71
+>=60m,Model 1: Temporal LR,0.1585,0.559,-0.406
+>=60m,Model 2: Temporal GBM,0.2035,0.688,-1.152
+>=60m,Model 3: Trajectory EWMA,0.1662,0.33,-0.71
+>=60m,Model 4: Sequential GRU,0.2007,0.103,-1.128
+>=60m,Model 5: Multi-Horizon,0.1613,0.372,-0.723
+>=45m,Phase 8 Baseline,0.1662,0.33,-0.71
+>=45m,Model 1: Temporal LR,0.1585,0.559,-0.406
+>=45m,Model 2: Temporal GBM,0.2035,0.688,-1.152
+>=45m,Model 3: Trajectory EWMA,0.1662,0.33,-0.71
+>=45m,Model 4: Sequential GRU,0.2007,0.103,-1.128
+>=45m,Model 5: Multi-Horizon,0.1613,0.372,-0.723
+>=30m,Phase 8 Baseline,0.1637,0.482,-0.415
+>=30m,Model 1: Temporal LR,0.1567,0.652,-0.313
+>=30m,Model 2: Temporal GBM,0.2015,0.692,-1.14
+>=30m,Model 3: Trajectory EWMA,0.1639,0.498,-0.384
+>=30m,Model 4: Sequential GRU,0.2082,0.075,-1.193
+>=30m,Model 5: Multi-Horizon,0.1629,0.325,-0.776
+>=20m,Phase 8 Baseline,0.1589,0.709,-0.057
+>=20m,Model 1: Temporal LR,0.1575,0.576,-0.493
+>=20m,Model 2: Temporal GBM,0.2094,0.669,-1.201
+>=20m,Model 3: Trajectory EWMA,0.1587,0.845,0.223
+>=20m,Model 4: Sequential GRU,0.2166,0.035,-1.292
+>=20m,Model 5: Multi-Horizon,0.1749,0.106,-1.176
+>=10m,Phase 8 Baseline,0.1487,1.014,0.34
+>=10m,Model 1: Temporal LR,0.1446,0.97,-0.067
+>=10m,Model 2: Temporal GBM,0.2091,1.087,-1.268
+>=10m,Model 3: Trajectory EWMA,0.1499,1.292,0.872
+>=10m,Model 4: Sequential GRU,0.1954,0.158,-1.014
+>=10m,Model 5: Multi-Horizon,0.1575,0.408,-0.691
+Delivery (0m),Phase 8 Baseline,0.163,0.471,-0.786
+Delivery (0m),Model 1: Temporal LR,0.155,0.77,-0.615
+Delivery (0m),Model 2: Temporal GBM,0.2581,0.843,-1.552
+Delivery (0m),Model 3: Trajectory EWMA,0.1478,1.207,0.326
+Delivery (0m),Model 4: Sequential GRU,0.2156,0.12,-1.152
+Delivery (0m),Model 5: Multi-Horizon,0.1632,0.412,-0.848

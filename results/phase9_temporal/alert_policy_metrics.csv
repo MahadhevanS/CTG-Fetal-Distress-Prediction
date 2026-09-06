@@ -1,0 +1,6 @@
+policy_name,sensitivity,specificity,false_alert_rate_per_hour,false_alerts_per_patient,total_false_alarms,median_warning_time_min
+Single Window,34.55,90.85,0.152,0.14,63,7.5
+2-Window Persistence,18.18,97.25,0.046,0.04,19,13.8
+3-Window Persistence,10.0,99.08,0.017,0.02,7,12.5
+Sustained Trend,33.64,87.41,0.196,0.19,81,15.0
+Hysteresis Dual-Thresh,34.55,90.85,0.097,0.09,40,7.5

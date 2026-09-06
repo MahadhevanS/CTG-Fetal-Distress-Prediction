@@ -1,0 +1,25 @@
+model,horizon,subgroup,n_patients,auroc_715
+Phase 8 Baseline,>=30m,Overall Cohort,547,0.5699
+Phase 8 Baseline,>=30m,Short Monitoring (<= 42m),547,0.5699
+Phase 8 Baseline,Delivery,Overall Cohort,547,0.5976
+Phase 8 Baseline,Delivery,Short Monitoring (<= 42m),547,0.5976
+Model 1: Temporal LR,>=30m,Overall Cohort,547,0.6066
+Model 1: Temporal LR,>=30m,Short Monitoring (<= 42m),547,0.6066
+Model 1: Temporal LR,Delivery,Overall Cohort,547,0.6704
+Model 1: Temporal LR,Delivery,Short Monitoring (<= 42m),547,0.6704
+Model 2: Temporal GBM,>=30m,Overall Cohort,547,0.6122
+Model 2: Temporal GBM,>=30m,Short Monitoring (<= 42m),547,0.6122
+Model 2: Temporal GBM,Delivery,Overall Cohort,547,0.655
+Model 2: Temporal GBM,Delivery,Short Monitoring (<= 42m),547,0.655
+Model 3: Trajectory EWMA,>=30m,Overall Cohort,547,0.5607
+Model 3: Trajectory EWMA,>=30m,Short Monitoring (<= 42m),547,0.5607
+Model 3: Trajectory EWMA,Delivery,Overall Cohort,547,0.6993
+Model 3: Trajectory EWMA,Delivery,Short Monitoring (<= 42m),547,0.6993
+Model 4: Sequential GRU,>=30m,Overall Cohort,547,0.5368
+Model 4: Sequential GRU,>=30m,Short Monitoring (<= 42m),547,0.5368
+Model 4: Sequential GRU,Delivery,Overall Cohort,547,0.5837
+Model 4: Sequential GRU,Delivery,Short Monitoring (<= 42m),547,0.5837
+Model 5: Multi-Horizon,>=30m,Overall Cohort,547,0.608
+Model 5: Multi-Horizon,>=30m,Short Monitoring (<= 42m),547,0.608
+Model 5: Multi-Horizon,Delivery,Overall Cohort,547,0.6566
+Model 5: Multi-Horizon,Delivery,Short Monitoring (<= 42m),547,0.6566

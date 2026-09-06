@@ -1,0 +1,38 @@
+{
+  "horizon_60m": {
+    "horizon_min": 60,
+    "auroc_715": 0.5709,
+    "auprc_715": 0.2643,
+    "auroc_severe_705": 0.5914
+  },
+  "horizon_45m": {
+    "horizon_min": 45,
+    "auroc_715": 0.5875,
+    "auprc_715": 0.2805,
+    "auroc_severe_705": 0.6116
+  },
+  "horizon_30m": {
+    "horizon_min": 30,
+    "auroc_715": 0.4979,
+    "auprc_715": 0.2089,
+    "auroc_severe_705": 0.5068
+  },
+  "horizon_20m": {
+    "horizon_min": 20,
+    "auroc_715": 0.5777,
+    "auprc_715": 0.2801,
+    "auroc_severe_705": 0.5383
+  },
+  "horizon_10m": {
+    "horizon_min": 10,
+    "auroc_715": 0.6105,
+    "auprc_715": 0.3547,
+    "auroc_severe_705": 0.5985
+  },
+  "horizon_0m": {
+    "horizon_min": 0,
+    "auroc_715": 0.6299,
+    "auprc_715": 0.3153,
+    "auroc_severe_705": 0.67
+  }
+}
