@@ -1,0 +1,31 @@
+model,horizon,brier_score,calibration_slope,calibration_intercept
+Model A (Snapshot Baseline),>=60m,0.163,0.471,-0.786
+Model B (Generic Temporal Baseline),>=60m,0.1543,0.864,-0.522
+Model C (Physiological Deterioration),>=60m,0.1506,1.132,-0.152
+Model D (Snapshot + Deterioration),>=60m,0.1521,0.848,-0.513
+Model E (Full Trajectory + Domain),>=60m,0.151,0.873,-0.53
+Model A (Snapshot Baseline),>=45m,0.163,0.471,-0.786
+Model B (Generic Temporal Baseline),>=45m,0.1543,0.864,-0.522
+Model C (Physiological Deterioration),>=45m,0.1506,1.132,-0.152
+Model D (Snapshot + Deterioration),>=45m,0.1521,0.848,-0.513
+Model E (Full Trajectory + Domain),>=45m,0.151,0.873,-0.53
+Model A (Snapshot Baseline),>=30m,0.1627,0.48,-0.426
+Model B (Generic Temporal Baseline),>=30m,0.1567,0.64,-0.347
+Model C (Physiological Deterioration),>=30m,0.1573,0.78,-0.327
+Model D (Snapshot + Deterioration),>=30m,0.1583,0.561,-0.585
+Model E (Full Trajectory + Domain),>=30m,0.1591,0.531,-0.633
+Model A (Snapshot Baseline),>=20m,0.1628,0.488,-0.407
+Model B (Generic Temporal Baseline),>=20m,0.1579,0.59,-0.415
+Model C (Physiological Deterioration),>=20m,0.1578,0.766,-0.351
+Model D (Snapshot + Deterioration),>=20m,0.1584,0.572,-0.588
+Model E (Full Trajectory + Domain),>=20m,0.1595,0.507,-0.674
+Model A (Snapshot Baseline),>=10m,0.1659,0.344,-0.682
+Model B (Generic Temporal Baseline),>=10m,0.1594,0.522,-0.519
+Model C (Physiological Deterioration),>=10m,0.1585,0.698,-0.44
+Model D (Snapshot + Deterioration),>=10m,0.1593,0.533,-0.643
+Model E (Full Trajectory + Domain),>=10m,0.1607,0.463,-0.735
+Model A (Snapshot Baseline),Delivery (0m),0.163,0.471,-0.786
+Model B (Generic Temporal Baseline),Delivery (0m),0.1543,0.864,-0.522
+Model C (Physiological Deterioration),Delivery (0m),0.1506,1.132,-0.152
+Model D (Snapshot + Deterioration),Delivery (0m),0.1521,0.848,-0.513
+Model E (Full Trajectory + Domain),Delivery (0m),0.151,0.873,-0.53

@@ -1,0 +1,6 @@
+policy_name,sensitivity_pct,specificity_pct,false_alert_rate_per_hour,false_alerts_per_patient,total_false_alarms,median_lead_time_min
+Policy 1: Current Threshold,77.27,58.12,1.933,1.25,686,15.0
+Policy 2: 2-Window Confirmation,67.27,71.62,1.184,0.77,420,12.5
+Policy 3: Rising-Risk Policy,89.09,24.49,2.753,1.79,977,17.5
+Policy 4: Sustained Rising-Risk,77.27,58.12,1.465,0.95,520,15.0
+Policy 5: Physiological Deterioration Policy,83.64,43.71,2.874,1.86,1020,17.5
