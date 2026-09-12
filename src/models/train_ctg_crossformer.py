@@ -329,6 +329,13 @@ def main():
                         help="Override the config's training.epochs. Used by "
                              "scripts/run_protocol_sweep.py to keep a 18-cell sweep "
                              "tractable; leave unset to reproduce prior runs exactly.")
+    parser.add_argument("--weighting_scheme", type=str, default="none",
+                        choices=["none", "label_confidence", "patient_norm", "novelty", "information_density"],
+                        help="Adaptive weighting scheme to apply to loss sample_weight.")
+    parser.add_argument("--weight_beta", type=float, default=1.0,
+                        help="Beta shrinkage weight for information-density empirical prior.")
+    parser.add_argument("--weight_span", type=float, default=3.0,
+                        help="EWMA smoothing span for novelty weighting.")
     parser.add_argument("--seed", type=int, default=42)
     args = parser.parse_args()
 
@@ -474,6 +481,20 @@ def main():
             is_inner_va = np.array([pid in va_set for pid in tr_pids])
             fit_idx = train_idx[~is_inner_va]
             inner_val_idx = train_idx[is_inner_va]
+
+        # Adaptive per-fold sample weighting
+        if args.weighting_scheme in ["patient_norm", "novelty", "information_density"]:
+            from src.training.information_density_weighting import InformationDensityWeighter
+            feats = data["y_features"].numpy() if "y_features" in data else np.zeros((len(X), 19), dtype=np.float32)
+            weighter = InformationDensityWeighter(span=args.weight_span, beta=args.weight_beta)
+            weighter.fit(feats[fit_idx], patient_ids[fit_idx])
+            w_out = weighter.transform(feats, patient_ids)
+            if args.weighting_scheme == "patient_norm":
+                dataset.w = torch.as_tensor(w_out["w_patient"], dtype=torch.float32)
+            elif args.weighting_scheme == "novelty":
+                dataset.w = torch.as_tensor(w_out["w_novelty"], dtype=torch.float32)
+            else:
+                dataset.w = torch.as_tensor(w_out["w_combined"], dtype=torch.float32)
 
         train_sub = Subset(dataset, fit_idx)
         val_sub   = Subset(dataset, val_idx)

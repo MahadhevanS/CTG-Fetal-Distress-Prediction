@@ -1,0 +1,7 @@
+{
+  "mean_gap_all": -0.0512,
+  "median_gap_all": -0.0341,
+  "mean_gap_positive_patients": -0.0628,
+  "mean_gap_negative_patients": -0.0483,
+  "frac_patients_p90_equals_max_within_0.01": 0.159
+}

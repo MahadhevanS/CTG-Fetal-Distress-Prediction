@@ -1,0 +1,5 @@
+horizon_min,cv_auroc_existing_convention,cv_auroc_corrected_convention,cv_auprc_existing,cv_auprc_corrected,test_auroc_existing_convention,test_auroc_corrected_convention
+0,0.6872,0.6872,0.4067,0.4067,0.6497,0.6497
+10,0.5814,0.6859,0.2837,0.3656,0.68,0.5802
+20,0.5869,0.6238,0.2868,0.3261,0.6809,0.6123
+30,0.5857,0.5828,0.2946,0.3265,0.6845,0.6078

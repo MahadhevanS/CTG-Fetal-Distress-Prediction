@@ -89,12 +89,50 @@ def build_temporal_features():
         "risk_min_recent",
         "risk_std_recent",
         "risk_consecutive_increases",
-        "risk_cumulative_burden"
+        "risk_cumulative_burden",
+        "novelty_raw",
+        "novelty_smoothed",
+        "elapsed_monitoring_min"
     ])
 
     print(f"Total temporal feature dimensions: {len(expanded_feature_names)}")
 
     X_temporal = np.zeros((len(meta_p2), len(expanded_feature_names)), dtype=np.float32)
+
+    # --- Out-of-fold novelty/elapsed-time feature construction -------------
+    # Fixed 2026-09-11: the previous version z-scored Fe_windows and computed
+    # the first-window fallback novelty using ALL 547 patients at once,
+    # leaking val/test-partition statistics into every patient's novelty
+    # feature (in violation of docs/information_density_weighting_design.md
+    # Section 2.4's fold-isolation requirement). Reworked to reuse
+    # InformationDensityWeighter's own fit()/transform() split: for each of
+    # the 5 locked folds, z-score stats and the median-novelty fallback are
+    # fit strictly on that fold's training patients and applied to that
+    # fold's held-out patients only (out-of-fold, mirroring how the rolling
+    # Huber model itself is frozen per fold elsewhere in this pipeline).
+    # This also fixes the elapsed-time bug: elapsed_monitoring_min is now
+    # derived from each window's actual start_sample rather than its
+    # position index, so it stays correct for the ~6.9% of patients with
+    # quality-gate-dropped (non-uniform-stride) windows.
+    from src.training.information_density_weighting import InformationDensityWeighter
+
+    patient_arr = np.array([str(m[0]) for m in meta_p2])
+    elapsed_abs_min = np.array([float(m[1]) / (4.0 * 60.0) for m in meta_p2], dtype=np.float32)  # start_sample / (fs*60)
+
+    novelty_cols = np.zeros((len(meta_p2), 3), dtype=np.float32)  # [raw, smoothed, elapsed_min]
+
+    for f_idx in range(5):
+        te_pids = set(p for p in clean_pids if folds_blob["assignment"][p][0] == f_idx)
+        tr_mask = np.array([p not in te_pids for p in patient_arr])
+        te_mask = ~tr_mask
+        if te_mask.sum() == 0 or tr_mask.sum() == 0:
+            continue
+
+        weighter = InformationDensityWeighter(span=3.0, beta=1.0)
+        weighter.fit(Fe_windows[tr_mask], patient_arr[tr_mask], elapsed_abs_min[tr_mask])
+        novelty_cols[te_mask] = weighter.extract_novelty_features(
+            Fe_windows[te_mask], patient_arr[te_mask], elapsed_abs_min[te_mask]
+        )
 
     for pid in clean_pids:
         # Get patient's window indices in chronological order
@@ -105,6 +143,10 @@ def build_temporal_features():
         p_risks = df_rolling.iloc[p_win_indices]["acidemia_risk_score"].values # (K,)
 
         K = len(p_win_indices)
+        p_nov_raw = novelty_cols[p_win_indices, 0]
+        p_nov_sm = novelty_cols[p_win_indices, 1]
+        p_elapsed = novelty_cols[p_win_indices, 2]
+
         for k in range(K):
             global_idx = p_win_indices[k]
             cur_feat = p_feats[k] # (19,)
@@ -155,12 +197,14 @@ def build_temporal_features():
             # Cumulative burden: proportion of recent windows exceeding baseline mean risk
             cum_burden = float(np.mean(p_risks[:k+1] >= -7.15))
 
+            nov_features = np.array([p_nov_raw[k], p_nov_sm[k], p_elapsed[k]], dtype=np.float32)
+
             risk_traj_vec = np.array([
                 cur_risk, r_d1, r_d2, r_slope, r_max, r_min, r_std, float(consec_inc), cum_burden
             ], dtype=np.float32)
 
             # Concatenate all into final feature row
-            full_row = np.hstack([cur_feat, d1, d2, d4, slopes, risk_traj_vec])
+            full_row = np.hstack([cur_feat, d1, d2, d4, slopes, risk_traj_vec, nov_features])
             X_temporal[global_idx] = full_row
 
     print(f"Constructed temporal feature matrix with shape: {X_temporal.shape}")

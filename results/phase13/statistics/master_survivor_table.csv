@@ -1,0 +1,11 @@
+branch,confirmatory_test,horizon,cv_delta,cv_p,cv_ci_low,cv_ci_high,test_delta,test_p,status
+A_recency_p90,recency_P90 minus plain_P90,delivery(0m),0.0104,0.391,,,-0.0143,0.801,CLOSED
+A_recency_p90,recency_P90 minus plain_P90,>=30m,-0.0007,0.585,,,0.0018,0.731,CLOSED
+B_stride,P6(1.0min) minus P6(2.5min),delivery(0m),-0.0165,0.081,-0.0366,0.0025,,,CLOSED
+B_stride,P6(1.0min) minus P6(2.5min),>=30m,0.0095,0.346,-0.0112,0.0296,,,CLOSED
+C_huber_fusion,P6+Huber minus P6,delivery(0m),0.0000,0.981,-0.0048,0.0050,-0.0053,0.547,CLOSED
+C_huber_fusion,P6+Huber minus P6,>=30m,-0.0168,0.558,-0.0767,0.0444,0.0009,1.000,CLOSED
+D_parity_fusion,P6+Parity minus P6,delivery(0m),0.0223,0.172,-0.0089,0.0516,0.0651,0.025,PROMISING (test-significant; CV CI crosses zero)
+D_parity_fusion,P6+Parity minus P6,>=30m,0.0494,0.078,,,0.0784,0.166,PROMISING (borderline CV; not test-significant)
+E_p90_pooling,plain_P90 minus P6(single-window) [PRE-REGISTERED, docs/phase13_protocol.md Sec 13],delivery(0m),0.0382,0.121,-0.0092,0.0875,0.0419,0.352,PROMISING (positive on CV and test both, CI crosses zero both)
+E_p90_pooling,plain_P90 minus P6(single-window) [PRE-REGISTERED, docs/phase13_protocol.md Sec 13],>=30m,0.0288,0.181,-0.0142,0.0730,0.0936,0.162,PROMISING (positive on CV and test both, CI crosses zero both)

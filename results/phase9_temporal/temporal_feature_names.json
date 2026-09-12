@@ -102,5 +102,8 @@
   "risk_min_recent",
   "risk_std_recent",
   "risk_consecutive_increases",
-  "risk_cumulative_burden"
+  "risk_cumulative_burden",
+  "novelty_raw",
+  "novelty_smoothed",
+  "elapsed_monitoring_min"
 ]

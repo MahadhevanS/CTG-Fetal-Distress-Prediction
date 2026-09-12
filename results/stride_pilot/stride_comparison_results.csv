@@ -1,0 +1,9 @@
+arm,horizon_min,auroc,auprc,mean_horizon_slop_min,n_windows,windows_per_patient_median
+2.5min_baseline,0,0.6843,0.3972,0.0,8517,17.0
+2.5min_baseline,10,0.5681,0.2794,27.344,8517,17.0
+2.5min_baseline,20,0.5733,0.2851,17.804,8517,17.0
+2.5min_baseline,30,0.5678,0.2914,8.984,8517,17.0
+1.0min_pilot,0,0.6678,0.3943,0.0,20586,41.0
+1.0min_pilot,10,0.5699,0.2785,27.541,20586,41.0
+1.0min_pilot,20,0.5732,0.2836,17.991,20586,41.0
+1.0min_pilot,30,0.5729,0.297,9.096,20586,41.0

@@ -1,0 +1,118 @@
+{
+  "results": [
+    {
+      "arm": "2.5min_baseline",
+      "horizon_min": 0,
+      "auroc": 0.6843,
+      "auprc": 0.3972,
+      "mean_horizon_slop_min": 0.0,
+      "n_windows": 8517,
+      "windows_per_patient_median": 17.0
+    },
+    {
+      "arm": "2.5min_baseline",
+      "horizon_min": 10,
+      "auroc": 0.5681,
+      "auprc": 0.2794,
+      "mean_horizon_slop_min": 27.344,
+      "n_windows": 8517,
+      "windows_per_patient_median": 17.0
+    },
+    {
+      "arm": "2.5min_baseline",
+      "horizon_min": 20,
+      "auroc": 0.5733,
+      "auprc": 0.2851,
+      "mean_horizon_slop_min": 17.804,
+      "n_windows": 8517,
+      "windows_per_patient_median": 17.0
+    },
+    {
+      "arm": "2.5min_baseline",
+      "horizon_min": 30,
+      "auroc": 0.5678,
+      "auprc": 0.2914,
+      "mean_horizon_slop_min": 8.984,
+      "n_windows": 8517,
+      "windows_per_patient_median": 17.0
+    },
+    {
+      "arm": "1.0min_pilot",
+      "horizon_min": 0,
+      "auroc": 0.6678,
+      "auprc": 0.3943,
+      "mean_horizon_slop_min": 0.0,
+      "n_windows": 20586,
+      "windows_per_patient_median": 41.0
+    },
+    {
+      "arm": "1.0min_pilot",
+      "horizon_min": 10,
+      "auroc": 0.5699,
+      "auprc": 0.2785,
+      "mean_horizon_slop_min": 27.541,
+      "n_windows": 20586,
+      "windows_per_patient_median": 41.0
+    },
+    {
+      "arm": "1.0min_pilot",
+      "horizon_min": 20,
+      "auroc": 0.5732,
+      "auprc": 0.2836,
+      "mean_horizon_slop_min": 17.991,
+      "n_windows": 20586,
+      "windows_per_patient_median": 41.0
+    },
+    {
+      "arm": "1.0min_pilot",
+      "horizon_min": 30,
+      "auroc": 0.5729,
+      "auprc": 0.297,
+      "mean_horizon_slop_min": 9.096,
+      "n_windows": 20586,
+      "windows_per_patient_median": 41.0
+    }
+  ],
+  "statistics": [
+    {
+      "horizon_min": 0,
+      "auroc_baseline_2p5min": 0.6843,
+      "auroc_pilot_1p0min": 0.6678,
+      "delta_auroc": -0.0165,
+      "boot_p_value": 0.081,
+      "boot_ci_low": -0.0366,
+      "boot_ci_high": 0.0025,
+      "delong_p_value": 0.1015
+    },
+    {
+      "horizon_min": 10,
+      "auroc_baseline_2p5min": 0.5681,
+      "auroc_pilot_1p0min": 0.5699,
+      "delta_auroc": 0.0018,
+      "boot_p_value": 0.744,
+      "boot_ci_low": -0.0112,
+      "boot_ci_high": 0.0144,
+      "delong_p_value": 0.7779
+    },
+    {
+      "horizon_min": 20,
+      "auroc_baseline_2p5min": 0.5733,
+      "auroc_pilot_1p0min": 0.5732,
+      "delta_auroc": -0.0001,
+      "boot_p_value": 0.967,
+      "boot_ci_low": -0.0135,
+      "boot_ci_high": 0.0129,
+      "delong_p_value": 0.9848
+    },
+    {
+      "horizon_min": 30,
+      "auroc_baseline_2p5min": 0.5678,
+      "auroc_pilot_1p0min": 0.5729,
+      "delta_auroc": 0.0051,
+      "boot_p_value": 0.494,
+      "boot_ci_low": -0.0107,
+      "boot_ci_high": 0.0209,
+      "delong_p_value": 0.5221
+    }
+  ]
+}

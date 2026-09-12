@@ -1,0 +1,6 @@
+fold_source,p6_auroc,fused_auroc,delta
+canonical,0.6872,0.7094,0.0223
+resplit_seed_11,0.6872,0.6992,0.012
+resplit_seed_22,0.6872,0.7006,0.0135
+resplit_seed_33,0.6872,0.6989,0.0117
+resplit_seed_44,0.6872,0.7076,0.0204
