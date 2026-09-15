@@ -1,0 +1,122 @@
+{
+  "shuffle_seeds": [
+    777,
+    888,
+    999
+  ],
+  "primary_seed": 777,
+  "ablation_ladder": [
+    {
+      "horizon_min": 0,
+      "auroc_model2_cv": 0.7006,
+      "auroc_shuffled_model3_cv": 0.7003,
+      "auroc_real_model3_cv": 0.7216,
+      "auroc_model2_test": 0.6506,
+      "auroc_shuffled_model3_test": 0.6506,
+      "auroc_real_model3_test": 0.6729,
+      "shuffled_vs_real_cv_delta": -0.0213,
+      "shuffled_vs_real_cv_p": 0.217,
+      "shuffled_vs_real_cv_ci_low": -0.0554,
+      "shuffled_vs_real_cv_ci_high": 0.0128,
+      "shuffled_vs_real_test_delta": -0.0223,
+      "shuffled_vs_real_test_p": 0.708,
+      "shuffled_vs_model2_cv_delta": -0.0003,
+      "shuffled_vs_model2_cv_p": 0.876,
+      "shuffled_vs_model2_cv_ci_low": -0.0035,
+      "shuffled_vs_model2_cv_ci_high": 0.0032,
+      "shuffled_vs_model2_test_delta": 0.0,
+      "shuffled_vs_model2_test_p": 1.0
+    },
+    {
+      "horizon_min": 10,
+      "auroc_model2_cv": 0.6344,
+      "auroc_shuffled_model3_cv": 0.6345,
+      "auroc_real_model3_cv": 0.6683,
+      "auroc_model2_test": 0.6078,
+      "auroc_shuffled_model3_test": 0.6061,
+      "auroc_real_model3_test": 0.5642,
+      "shuffled_vs_real_cv_delta": -0.0338,
+      "shuffled_vs_real_cv_p": 0.009,
+      "shuffled_vs_real_cv_ci_low": -0.0606,
+      "shuffled_vs_real_cv_ci_high": -0.0073,
+      "shuffled_vs_real_test_delta": 0.0419,
+      "shuffled_vs_real_test_p": 0.278,
+      "shuffled_vs_model2_cv_delta": 0.0001,
+      "shuffled_vs_model2_cv_p": 0.906,
+      "shuffled_vs_model2_cv_ci_low": -0.0023,
+      "shuffled_vs_model2_cv_ci_high": 0.0029,
+      "shuffled_vs_model2_test_delta": -0.0018,
+      "shuffled_vs_model2_test_p": 0.853
+    },
+    {
+      "horizon_min": 20,
+      "auroc_model2_cv": 0.5993,
+      "auroc_shuffled_model3_cv": 0.5997,
+      "auroc_real_model3_cv": 0.6015,
+      "auroc_model2_test": 0.6399,
+      "auroc_shuffled_model3_test": 0.6346,
+      "auroc_real_model3_test": 0.6203,
+      "shuffled_vs_real_cv_delta": -0.0017,
+      "shuffled_vs_real_cv_p": 0.854,
+      "shuffled_vs_real_cv_ci_low": -0.0222,
+      "shuffled_vs_real_cv_ci_high": 0.0179,
+      "shuffled_vs_real_test_delta": 0.0143,
+      "shuffled_vs_real_test_p": 0.726,
+      "shuffled_vs_model2_cv_delta": 0.0005,
+      "shuffled_vs_model2_cv_p": 0.775,
+      "shuffled_vs_model2_cv_ci_low": -0.0024,
+      "shuffled_vs_model2_cv_ci_high": 0.0032,
+      "shuffled_vs_model2_test_delta": -0.0053,
+      "shuffled_vs_model2_test_p": 0.265
+    },
+    {
+      "horizon_min": 30,
+      "auroc_model2_cv": 0.5976,
+      "auroc_shuffled_model3_cv": 0.5962,
+      "auroc_real_model3_cv": 0.5976,
+      "auroc_model2_test": 0.6658,
+      "auroc_shuffled_model3_test": 0.6604,
+      "auroc_real_model3_test": 0.6658,
+      "shuffled_vs_real_cv_delta": -0.0015,
+      "shuffled_vs_real_cv_p": 0.781,
+      "shuffled_vs_real_cv_ci_low": -0.0146,
+      "shuffled_vs_real_cv_ci_high": 0.0112,
+      "shuffled_vs_real_test_delta": -0.0053,
+      "shuffled_vs_real_test_p": 0.828,
+      "shuffled_vs_model2_cv_delta": -0.0014,
+      "shuffled_vs_model2_cv_p": 0.264,
+      "shuffled_vs_model2_cv_ci_low": -0.0039,
+      "shuffled_vs_model2_cv_ci_high": 0.0011,
+      "shuffled_vs_model2_test_delta": -0.0053,
+      "shuffled_vs_model2_test_p": 0.336
+    }
+  ],
+  "seed_sensitivity": [
+    {
+      "shuffle_seed": 777,
+      "cv_auroc": 0.7003,
+      "cv_delta_vs_sw": 0.0131,
+      "cv_boot_p": 0.61,
+      "test_auroc": 0.6506,
+      "test_delta_vs_sw": 0.0009
+    },
+    {
+      "shuffle_seed": 888,
+      "cv_auroc": 0.6979,
+      "cv_delta_vs_sw": 0.0107,
+      "cv_boot_p": 0.693,
+      "test_auroc": 0.6462,
+      "test_delta_vs_sw": -0.0036
+    },
+    {
+      "shuffle_seed": 999,
+      "cv_auroc": 0.7007,
+      "cv_delta_vs_sw": 0.0136,
+      "cv_boot_p": 0.604,
+      "test_auroc": 0.6488,
+      "test_delta_vs_sw": -0.0009
+    }
+  ],
+  "verdict_delivery": "CAPACITY ARTIFACT: shuffled-time Model 3 performs comparably to real-time Model 3 at delivery (not significantly different, CI includes zero). The extra input dimension appears to have bought noise-driven flexibility rather than genuine temporal-order exploitation. This meaningfully undercuts Model 3's current interpretation, though not necessarily its raw predictive value against the P6 baseline.",
+  "seeds_agree_direction": true
+}

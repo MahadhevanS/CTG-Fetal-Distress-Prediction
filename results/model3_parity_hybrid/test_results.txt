@@ -1,0 +1,32 @@
+Total assertions: 27
+Passed: 27
+Failed: 0
+
+PASSED TESTS:
+  [PASS] No duplicate patient IDs in patient-level table
+  [PASS] Exactly 547 patient predictions
+  [PASS] No patient appears in both train and test partitions
+  [PASS] Held-out internal test partition count is 83
+  [PASS] Every window maps to exactly one valid patient
+  [PASS] Every patient has at least one window
+  [PASS] No missing primary endpoint after cohort construction
+  [PASS] Primary endpoint binary 0/1 encoding
+  [PASS] Parity missingness is 0
+  [PASS] Parity raw values match clinical metadata exactly
+  [PASS] Window timestamps strictly increasing per patient
+  [PASS] No window uses post-delivery CTG data (t_del >= 0)
+  [PASS] All windows satisfy 4800-sample (20-min) length
+  [PASS] Fusion coefficients fitted for each of 5 folds plus test model
+  [PASS] Positive coefficient for Model 3 across all folds
+  [PASS] Non-zero coefficient for Parity across all folds
+  [PASS] Leakage audit status is PASSED
+  [PASS] Primary hybrid features strictly limited to Model 3 and Parity
+  [PASS] No duration or window count in primary hybrid features
+  [PASS] Hybrid scores strictly in range [0, 1]
+  [PASS] Identical patient inclusion across all models at Delivery (N=547)
+  [PASS] Identical positive count across all models at Delivery (Pos=110)
+  [PASS] Identical patient inclusion across all models at >=10m
+  [PASS] Identical patient inclusion across all models at >=20m
+  [PASS] Identical patient inclusion across all models at >=30m
+  [PASS] Operational evaluation evaluated for target sensitivity = 0.80
+  [PASS] Operational false alert rates strictly in [0, 1]

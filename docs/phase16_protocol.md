@@ -27,6 +27,17 @@ gap-aware elapsed monitoring time already established in Phase 13
 given access to the 40-D feature vector. This is a capacity decision, not a
 simplification of convenience — see (c).
 
+> **Precise definition (added post-hoc, 2026-09-13, per Tier-1 hardening
+> item 4 — no change in behavior, only in how it is written down).**
+> `elapsed_t` = minutes since **that patient's own first retained window**
+> (`start_sample / (fs·60)`, offset so the patient's first window reads 0),
+> divided by 60 before being passed to the scorer MLP. This is **not**
+> time-before-delivery (that would be non-causal — it requires knowing
+> when delivery will occur), and **not** absolute wall-clock or gestational
+> time. It is gap-aware: it correctly reflects the ~6.9% of patients with
+> quality-gate-dropped windows, using each window's actual sample offset
+> rather than its position index in the sequence.
+
 **(b) Strategy B (end-to-end fine-tuning) is out of scope for Phase 16.**
 P6's construction — descriptor formulas, FIGO state rules, trajectory
 arithmetic, the frozen `HuberRegressor`, EWMA smoothing — contains no
@@ -126,13 +137,13 @@ ones here.
 - Optimizer: Adam, lr=0.01, weight_decay=1e-4 — fixed.
 - Early stopping: patience 10 epochs, monitored on an **inner validation
   split carved from that fold's training patients only** (never the outer
-  held-out fold, never the test partition) — same "no model selection on
-  the reported fold" rule `src/training/protocol.py` already establishes
-  project-wide.
+  held-out fold, never the held-out internal test partition) — same "no
+  model selection on the reported fold" rule `src/training/protocol.py`
+  already establishes project-wide.
 - Patient-grouped 5-fold CV on the canonical `folds.json` assignment,
-  identical to every prior phase. Held-out test: trained once on all 464
-  train+val patients (inner validation carved from them), evaluated once
-  on the 83 test patients.
+  identical to every prior phase. Held-out internal test partition: trained
+  once on all 464 train+val patients (inner validation carved from them),
+  evaluated once on the 83 held-out internal test patients.
 - No hyperparameter grid, no post-hoc architecture search. If Model 2/3
   shows a signal worth pursuing, a *separately scoped* robustness pass
   (seed sensitivity, architecture sensitivity) is the appropriate next
@@ -145,7 +156,8 @@ primary, consistent with Phase 15); ≥10m/≥20m computed for completeness,
 exploratory only. At each horizon, the trained model is queried on the
 causally-truncated eligible prefix for that horizon (§4.2) — not on a
 separately retrained model. AUROC, AUPRC, patient-level bootstrap
-(B=2000) paired against Model 1, DeLong, on both CV and held-out test.
+(B=2000) paired against Model 1, DeLong, on both CV and the held-out
+internal test partition.
 Operational metrics (sensitivity/specificity, FAR, median lead time, %
 detected ≥20/30min) computed identically to Phase 15 §8.
 
@@ -157,8 +169,8 @@ worth carrying forward. A model is assessed holistically on:
 
 1. **Direction and magnitude** — CV point estimate vs. Model 1, with
    bootstrap CI reported (not thresholded).
-2. **CV/test agreement** — does the held-out test point estimate agree in
-   direction with CV, at both delivery and ≥30m.
+2. **CV/test agreement** — does the held-out internal test partition's
+   point estimate agree in direction with CV, at both delivery and ≥30m.
 3. **Mechanistic interpretability** — do learned attention weights `α_t`
    concentrate near the same window(s) that Max/P90 pooling would select
    (Phase 15's finding that magnitude, not trajectory, carries the

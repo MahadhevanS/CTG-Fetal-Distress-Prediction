@@ -1,77 +1,88 @@
-# Knowledge-Infused Multi-Task Temporal Deep Learning for CTG Fetal Distress Prediction
+# Knowledge-Infused Physiological Trajectory Model for CTG Fetal Distress Prediction
 
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
-[![PyTorch 2.0+](https://img.shields.io/badge/PyTorch-2.0+-ee4c2c.svg)](https://pytorch.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-
----
-
-## ⚡ Quick Start — clone and run
-
-The delivered model and the data needed to run it are committed to this repo
-(~179 MB), so a fresh clone is immediately runnable with no retraining and no
-separate dataset download.
-
-```bash
-git clone https://github.com/MahadhevanS/CTG-Fetal-Distress-Prediction.git
-cd CTG-Fetal-Distress-Prediction
-pip install -r requirements.txt
-
-# full clinical review of one recording -- risk timeline, patient report,
-# FIGO explanations. Runs on CPU; ~160 ms per 20-minute window.
-python scripts/run_clinical_review.py --record 2045 --minutes 50
-```
-
-Other entry points, all runnable on a fresh clone:
-
-```bash
-python scripts/eval_crp_metrics.py     # delivered model, test-set metrics
-python scripts/eval_all_models.py      # metrics for every archived ensemble
-python scripts/calibrate_crp.py        # refit the calibrator, derive operating point
-python scripts/demo_explainability.py  # explanation faithfulness (rho = +0.405)
-```
-
-**What ships:** the delivered 5-fold CRP ensemble
-(`checkpoints/ctg_crossformer_crp/`, seed 42), its calibrator, the
-preprocessing scalers, the held-out val/test tensors, and the raw CTU-UHB
-recordings. **What does not:** the 203 MB training tensor and ~2.5 GB of
-exploratory/archived checkpoints. Archived runs keep their `MANIFEST.json`
-(SHA256 of every weight, git commit, exact command) so any of them can be
-reproduced — see [docs/reproduce_crp.md](docs/reproduce_crp.md).
-
-> The delivered model is a **5-model ensemble**: predictions are the mean of
-> five fold checkpoints' probabilities. It scores **AUROC 0.8124 / AUPRC
-> 0.1958** on the held-out test set (1103 windows, 82 patients, 4.6%
-> prevalence). Note that accuracy is misleading at this prevalence — a
-> majority-class baseline scores 95.4%. See
-> [docs/calibration_test_plan.md](docs/calibration_test_plan.md) for the
-> operating-point analysis.
 
 ---
 
 ## 📌 Abstract & Clinical Motivation
 
-Intrapartum fetal distress due to hypoxia and fetal acidemia ($\text{pH} \le 7.15$) is a leading cause of preventable neonatal morbidity and mortality. Cardiotocography (CTG), which records continuous Fetal Heart Rate (FHR) and Uterine Contractions (UC), is the global clinical standard for intrapartum monitoring. However, conventional visual CTG interpretation suffers from high inter-observer variability and high false-alarm rates ($>60\%$), driving unnecessary emergency cesarean deliveries.
+Intrapartum fetal distress due to hypoxia and fetal acidemia (umbilical arterial $\text{pH} \le 7.15$) is a leading cause of preventable neonatal morbidity and mortality. Cardiotocography (CTG), which records continuous Fetal Heart Rate (FHR) and Uterine Contractions (UC), is the global clinical standard for intrapartum monitoring, but conventional visual interpretation suffers from high inter-observer variability and high false-alarm rates.
 
-This project introduces a **Knowledge-Infused Multi-Task Deep Learning Framework** that combines state-of-the-art temporal encoders (1D CNN, BiLSTM, GRU, TCN, Multi-Scale LSTM, PatchCTG, and PatchTST) with clinical domain knowledge. By unifying continuous waveform modeling, FIGO diagnostic rule engines, and physiological feature extraction (STV, LTV, accelerations/decelerations), the system delivers transparent, highly sensitive fetal distress predictions while maintaining strict GE Patent US12094611B2 non-infringement boundary conditions (end-to-end signal representation without bounding boxes or shape-matching correlation loops).
+This project's **locked, production model (Phase 12.1, internally referred to as "P6")** predicts fetal acidemia risk from 20-minute causal CTG observation windows using an interpretable, knowledge-infused pipeline: multidomain physiological severity scoring (6 domains derived from FIGO-consistent clinical descriptors) → a 5-state physiological deterioration engine → temporal trajectory dynamics (velocity, persistence, reversals) → a single logistic-regression risk classifier over a 40-dimensional state-trajectory feature vector. It is **not** an end-to-end deep temporal encoder — that direction was explored extensively in earlier project phases and set aside; see [§ Superseded exploratory work](#-superseded-exploratory-work-not-locked-not-delivered) below for why.
 
 ---
 
-## 🔬 Benchmark Results Summary (Phase 3)
+## 🔒 What is locked, and what "locked" means
 
-All 7 temporal encoders were evaluated under Stratified 5-Fold Patient-Level Cross-Validation (6,917 total windows across 546 unique patients) with dynamic class weighting ($N_{\text{neg}} / N_{\text{pos}} \approx 5.08 - 5.29$) to strictly eliminate patient data leakage and address severe class imbalance.
+**Phase 12.1 is the sole authoritative production model.** It is frozen: not retrained, not modified, regardless of any later exploratory result. Promotion of any newer candidate requires a successful external-validation study (see [`docs/external_validation_handoff.md`](docs/external_validation_handoff.md)) — internal re-evaluation alone, however promising, is never sufficient.
 
-| Model | Architecture Type | Params | 5-Fold CV AUROC | 5-Fold CV AUPRC | 5-Fold CV F1 | Recall / Sens (%) | Specificity (%) | Sens @ 90% Spec (%) | Key Clinical Trait |
-| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| **CNN1D** | 1D Residual CNN | 135K | 0.6860 ± 0.0503 | 0.2560 ± 0.0544 | 0.3304 ± 0.0511 | 42.09 ± 11.19 | 78.68 ± 7.85 | 21.09 ± 10.76 | Ultra-fast local convolution stem |
-| **BiLSTM** | Bidirectional LSTM | 159K | 0.6544 ± 0.0409 | 0.2697 ± 0.0426 | 0.3435 ± 0.0338 | 61.55 ± 7.10 | 61.87 ± 7.70 | 24.19 ± 6.92 | Global sequential tracking (High Recall) |
-| **GRU** | Gated Recurrent Unit | 179K | 0.6881 ± 0.0627 | 0.2812 ± 0.0839 | 0.3027 ± 0.1080 | 34.00 ± 19.05 | 85.44 ± 9.22 | 25.05 ± 9.96 | Gated recurrence + high specificity |
-| **TCN** | Temporal Conv Network | 363K | 0.7154 ± 0.0797 | 0.2846 ± 0.0840 | 0.2413 ± 0.1079 | 21.28 ± 11.05 | **90.57 ± 3.90** | 25.65 ± 13.36 | Causal dilated conv (Peak fold AUROC 0.843) |
-| **MS-LSTM** | Multi-Scale BiLSTM | 584K | 0.7263 ± 0.1103 | 0.3140 ± 0.0962 | 0.3668 ± 0.0666 | **69.68 ± 24.77** | 61.61 ± 12.62 | 29.94 ± 12.13 | Multi-resolution temporal receptive fields |
-| **PatchCTG** | Joint-Channel Patch Trans. | 479K | 0.6668 ± 0.0161 | 0.2872 ± 0.0334 | 0.3322 ± 0.0418 | 43.19 ± 11.69 | 77.85 ± 8.34 | 28.63 ± 5.06 | Joint-channel patch transformer baseline |
-| **PatchTST** 🏆 | Channel-Ind. Patch Trans. | 685K | **0.7504 ± 0.0378** | **0.3820 ± 0.0800** | **0.4102 ± 0.0446** | 63.74 ± 12.12 | 71.54 ± 9.69 | **35.09 ± 6.65** | **SOTA Winner**: Highest AUROC, AUPRC & Sens@90%Spec |
+| | |
+|---|---|
+| **Cohort** | 547 cleaned CTU-UHB intrapartum recordings (PhysioNet, patient-grouped 5-fold CV + an 83-patient held-out internal test partition) |
+| **Primary endpoint** | Umbilical arterial pH ≤ 7.15 (110 positive, 20.1% prevalence) |
+| **Architecture** | `LogisticRegression(C=0.05)` on a 40-D state-trajectory feature vector — domain severities, FIGO state, trajectory operators (velocity/persistence/reversal), occupancy proportions, a frozen Huber-ensemble risk feature, and EWMA risk. **No raw-signal deep learning; fully interpretable, linear in its final layer.** |
+| **Input window** | 20-minute causal window (4800 samples @ 4 Hz), 2.5-minute stride, strictly historical (no post-delivery data) |
+| **Preprocessing** | Spike removal → cubic-spline gap interpolation → lowpass filter → iterative baseline estimation (`src/preprocessing/pipeline_clinical.py`) |
+| **Locked CV AUROC (delivery)** | **0.6872** |
+| **Locked held-out test AUROC (delivery)** | **0.6497** |
+| **Locked CV AUROC (≥30 min before delivery)** | **0.5828** |
 
-*Note: PatchTST achieved the highest 5-Fold Patient-Level CV AUROC (0.7504 ± 0.0378), AUPRC (0.3820 ± 0.0800), F1 Score (0.4102 ± 0.0446), and Sensitivity at 90% Specificity (35.09% ± 6.65%), establishing it as the official temporal encoder backbone for the Phase 4 Knowledge-Infused Multi-Task Framework.*
+Every number above is reproducible from committed artifacts — see `results/phase13/audit/p6_predictions.npz` (frozen window-level scores this whole project's downstream evaluation is built on) and `models/external_validation_handoff/` (portable frozen artifacts: `p6_final_classifier.joblib` + `p6_final_scaler.joblib`, fit once on all 547 patients for external deployment, plus a `manifest.json` with exact application instructions and provenance). The full raw-signal-to-prediction pipeline is documented step by step in [`docs/external_validation_handoff.md`](docs/external_validation_handoff.md) § 3.
+
+Accuracy is not a meaningful metric at this prevalence (a majority-class baseline scores ~80%) — AUROC/AUPRC and patient-level bootstrap confidence intervals are used throughout instead.
+
+---
+
+## 🔬 Post-lock investigation: candidates under evaluation, none promoted
+
+After Phase 12.1 was locked, a further, strictly non-destructive investigation (Phases 13–17, all committed on the `final_synthesis_models` branch) asked whether *aggregating* P6's own frozen window-level scores differently — never retraining P6 itself — could add information. Four candidates emerged, each tested with patient-level bootstrap significance, leakage audits, and (where relevant) permutation/shuffled-time controls:
+
+| Candidate | Mechanism | Status |
+|---|---|---|
+| **Model 3** | Trainable causal-attention pooling over P6's window scores (magnitude + temporal position) | CV-significant vs. P6 at delivery, but not shown to beat cheap fixed aggregators or resolved as using genuine temporal information — see below |
+| **Parity Fusion** | Logit-fusion of P6 with a univariate maternal-parity model (admission-time, independent covariate) | Significant on the held-out internal test partition at every horizon; the most robustness-checked candidate |
+| **P90 pooling** | Fixed 90th-percentile pooling of P6's window scores (no training) | Directionally positive, not confirmed at a pre-registered bar |
+| **Model 3 + Parity Hybrid** | Logistic fusion of Model 3 and Parity Fusion | Promising but inconclusive after an independent reconciliation audit corrected a patient-inclusion bug in its first report |
+
+**None of these is promoted, deployed, or clinically usable.** All four remain "worth external validation" — the full current status, exact numbers, and every robustness check is in [`reports/candidate_models_metrics_reference.md`](reports/candidate_models_metrics_reference.md), with the pre-registered hardening protocol in [`docs/pre_external_validation_hardening_plan.md`](docs/pre_external_validation_hardening_plan.md) and the external-validation study design in [`docs/external_validation_handoff.md`](docs/external_validation_handoff.md).
+
+**Model 3 specifically is not yet confirmed to work via genuine temporal-position learning** — three independent hardening checks (`reports/candidate_models_metrics_reference.md` §1.2a–§1.2c) found it statistically indistinguishable from cheap fixed aggregators, sharing their recording-duration confound, and not clearing its shuffled-time control at the pre-registered bar. Its original result against the P6 baseline stands unretracted; the mechanism claim above it does not yet.
+
+---
+
+## 🗂 Superseded exploratory work (not locked, not delivered)
+
+Early project phases (roughly Phase 1–4) benchmarked seven raw-signal temporal deep-learning encoders (1D CNN, BiLSTM, GRU, TCN, Multi-Scale LSTM, PatchCTG, PatchTST) and, later, a CNN-transformer cross-attention architecture ("CrossFormer" / "Model 8", multi-task with FIGO-consistency losses). Checkpoints, run logs, and technical documentation for this track are kept for reproducibility (`checkpoints/ctg_crossformer_crp/`, `docs/model8_crossformer_run_history.md`, `docs/model8_technical_documentation.md`) but **this track is not what is locked or delivered**:
+
+- A patient-outcome-conditioned window-stride leak was found in the data substrate this track was originally benchmarked on (window count alone predicted the label at AUROC 0.9947) — see `docs/model8_crossformer_run_history.md` Part C.
+- The track's own headline number (CV 0.8565 / test 0.8653) never reproduced across 10 independent reruns (mean ≈0.78) and the underlying published paper's number also failed independent reproduction.
+- Evaluated honestly at the patient level (the level the clinical outcome is actually defined at) on leak-free data, this architecture family scored **below** the interpretable clinical-feature baseline in a strict, leakage-controlled head-to-head (`reports/cwt/prior_art_reconciliation.md`, Table B: CTG-CrossFormer 0.6167 vs. clinical logistic regression 0.7268) — a data-scarcity / model-capacity mismatch on this cohort's size (547 patients, ~110 positives), not a tuning failure.
+
+Entry points from this earlier track (`scripts/run_clinical_review.py`, `scripts/demo_inference.py`, `scripts/eval_crp_metrics.py`, `scripts/calibrate_crp.py`) still run against `checkpoints/ctg_crossformer_crp/` and are kept for archival reproducibility of that historical benchmark — **they do not reflect the locked production model** described above.
+
+---
+
+## 🚀 Getting started
+
+```bash
+git clone https://github.com/MahadhevanS/CTG-Fetal-Distress-Prediction.git
+cd CTG-Fetal-Distress-Prediction
+python -m venv venv
+# Windows:  .\venv\Scripts\Activate
+# Linux/macOS: source venv/bin/activate
+pip install -r requirements.txt
+```
+
+**Reproduce the locked model's preprocessing pipeline:**
+```bash
+python src/preprocessing/run_all.py            # end-to-end signal processing, patient-stratified windowing
+python src/preprocessing/consistency_audit.py  # 10-point mathematical consistency audit on generated tensors
+```
+
+**Apply the frozen, portable Phase 12.1 artifacts** (fit once on all 547 patients, for external-cohort deployment): load `models/external_validation_handoff/p6_final_scaler.joblib` + `p6_final_classifier.joblib` on a 40-D state-trajectory feature vector built per `docs/external_validation_handoff.md` § 3 — exact application instructions and provenance (SHA of training data, exact feature construction scripts) are in `models/external_validation_handoff/manifest.json`.
+
+**Reproduce the post-lock candidate investigation** (Model 3 / Parity Fusion / P90 / Hybrid): scripts under `scripts/phase13_*.py`, `scripts/phase14_*.py`, `scripts/phase15_*.py`, `scripts/phase16_*.py`, and `scripts/model3_parity_hybrid/`; see [`docs/phase16_protocol.md`](docs/phase16_protocol.md) for the frozen pre-registration each was run against.
 
 ---
 
@@ -83,73 +94,8 @@ All 7 temporal encoders were evaluated under Stratified 5-Fold Patient-Level Cro
    - **Citation**: Chudáček V. et al., *Open access intrapartum CTG database*, BMC Pregnancy and Childbirth, 2014.
 
 2. **UCI Machine Learning Repository — Cardiotocography Dataset**:
-   - 2,126 pre-extracted 21-feature SisPorto 2.0 records used for classical baseline comparisons.
+   - 2,126 pre-extracted 21-feature SisPorto 2.0 records — evaluated as a candidate external-validation source and found unusable (no umbilical pH or acid-base outcome field); see `docs/external_validation_handoff.md` § 4.
    - **Link**: [UCI Cardiotocography Repository](https://archive.ics.uci.edu/dataset/193/cardiotocography)
-
----
-
-## 🚀 Getting Started
-
-### 1. Clone the Repository
-```bash
-git clone https://github.com/MahadhevanS/CTG-Fetal-Distress-Prediction.git
-cd CTG-Fetal-Distress-Prediction
-```
-
-### 2. Set Up Virtual Environment & Dependencies
-```bash
-# Windows (PowerShell / Command Prompt)
-python -m venv venv
-.\venv\Scripts\Activate
-pip install -r requirements.txt
-
-# Linux / macOS / Google Colab
-python3 -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
-```
-
-### 3. Automated Preprocessing Pipeline (v1.0 Frozen)
-To execute the automated end-to-end signal processing, baseline estimation, spike removal, and patient-stratified window extraction:
-```bash
-python src/preprocessing/run_all.py
-```
-To run the 10-point mathematical consistency audit on generated tensors:
-```bash
-python src/preprocessing/consistency_audit.py
-```
-
----
-
-## 💻 Training & Evaluation Protocol
-
-### Local / CLI Execution
-Run patient-stratified 5-fold cross-validation for any encoder using `src/training/train.py`:
-
-```bash
-# Dry-run shape & gradient contract validation for all models
-python src/training/train.py --model all --dry_run
-
-# 5-Fold Stratified Patient CV for PatchTST
-python src/training/train.py --model patchtst --epochs 15 --batch_size 32
-
-# 5-Fold Stratified Patient CV for CNN1D
-python src/training/train.py --model cnn1d --epochs 15 --batch_size 32
-
-# 5-Fold Stratified Patient CV for BiLSTM
-python src/training/train.py --model bilstm --epochs 15 --batch_size 32
-```
-
-### ☁️ Google Colab GPU Execution (Accelerated)
-Run the commands directly in Google Colab (T4 / V100 GPU):
-```bash
-!git clone https://github.com/MahadhevanS/CTG-Fetal-Distress-Prediction.git
-%cd CTG-Fetal-Distress-Prediction
-!pip install -r requirements.txt
-
-!python src/training/train.py --model cnn1d --epochs 15
-!python src/training/train.py --model bilstm --epochs 15
-```
 
 ---
 
@@ -158,27 +104,30 @@ Run the commands directly in Google Colab (T4 / V100 GPU):
 ```text
 CTG-Fetal-Distress-Prediction/
 │
-├── configs/                  # YAML environment configs (local.yaml vs colab.yaml)
-├── checkpoints/              # Saved model weights per fold (best AUROC epoch)
+├── configs/          # YAML configs, including configs/model3_parity_hybrid.yaml
+├── checkpoints/       # Saved weights, incl. the archival CrossFormer/CRP track
+├── models/
+│   ├── continuous_clinical_huber/       # Frozen 5-fold Huber risk ensemble (one P6 input feature)
+│   └── external_validation_handoff/     # Frozen, portable P6/Model3/Parity artifacts + manifest
 ├── data/
-│   ├── raw/                  # Raw PhysioNet CTU-CHB & UCI SisPorto zips
-│   └── processed/            # PyTorch dataset tensors (v1.0 Frozen)
-├── docs/                     # 17 technical documentation files
-│   ├── dataset_summary.md    # Tensor shapes, preprocessed stride specifications
-│   ├── model_evaluation_plan.md # Clinical safety metrics protocol
-│   └── model_inferences_log.md # Centralized single source of truth for benchmark metrics
-├── notebooks/                # Jupyter EDA notebooks
+│   ├── raw/                  # Raw PhysioNet CTU-CHB & UCI SisPorto data
+│   └── processed_clinical/   # Locked patient folds (folds.json) & tensors for the clinical pipeline
+├── docs/              # Protocols, pre-registrations, handoff/hardening plans (51 files)
+├── reports/            # Phase-by-phase findings, closure summaries, candidate metrics reference (53 files)
+├── results/            # Per-phase result CSVs/JSONs (regenerable from committed scripts)
+├── scripts/            # phase1–phase17 pipeline scripts, incl. scripts/model3_parity_hybrid/
 ├── src/
-│   ├── models/               # Standardized temporal encoders (CNN1D, BiLSTM, GRU, TCN, MS-LSTM, PatchCTG, PatchTST)
-│   ├── preprocessing/        # Filtering, baseline extraction, SQA, splitting
-│   ├── knowledge/            # FIGO rule engine & clinical feature target generators
-│   └── training/             # Universal 5-fold patient-stratified cross-validation loop (train.py)
-├── AI_AGENT_RULES.md         # Mandatory contributor guidelines & patent boundaries
-└── SANITY_CHECK_REVIEW.md    # Comprehensive expert audit & resolution roadmap
+│   ├── preprocessing/   # Filtering, baseline extraction, SQA, splitting
+│   ├── knowledge/       # FIGO rule engine & clinical feature/descriptor extraction
+│   ├── evaluation/       # Shared horizon-selection & fusion primitives (src/evaluation/phase13_common.py)
+│   ├── models/           # Phase 16 causal-attention aggregator + checkpoint utilities
+│   └── training/         # Cross-validation protocol
+├── AI_AGENT_RULES.md   # Contributor guidelines & patent boundaries
+└── SANITY_CHECK_REVIEW.md
 ```
 
 ---
 
 ## 📜 License & Patent Boundaries
 
-This repository is licensed under the MIT License. All model implementations maintain strict adherence to non-infringement boundary conditions for **GE Patent US12094611B2** by projecting continuous multi-channel signals directly to latent space $\mathbb{R}^{128}$ without bounding boxes or shape-matching correlation loops.
+This repository is licensed under the MIT License. Signal-processing and feature-extraction implementations maintain non-infringement boundary conditions relative to GE Patent US12094611B2 — see `AI_AGENT_RULES.md` for the specific constraints this project designs under.

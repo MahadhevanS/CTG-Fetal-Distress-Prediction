@@ -1,0 +1,52 @@
+[
+  {
+    "model": "p6",
+    "locked_cv_auroc": 0.6872,
+    "reproduced_cv_auroc": 0.6872,
+    "cv_diff": -4e-05,
+    "locked_test_auroc": 0.6497,
+    "reproduced_test_auroc": 0.6497,
+    "test_diff": 3e-05,
+    "status": "EXACT_MATCH"
+  },
+  {
+    "model": "max",
+    "locked_cv_auroc": 0.721,
+    "reproduced_cv_auroc": 0.721,
+    "cv_diff": -1e-05,
+    "locked_test_auroc": 0.713,
+    "reproduced_test_auroc": 0.713,
+    "test_diff": 1e-05,
+    "status": "EXACT_MATCH"
+  },
+  {
+    "model": "p90",
+    "locked_cv_auroc": 0.7178,
+    "reproduced_cv_auroc": 0.7178,
+    "cv_diff": 3e-05,
+    "locked_test_auroc": 0.6622,
+    "reproduced_test_auroc": 0.6622,
+    "test_diff": 1e-05,
+    "status": "EXACT_MATCH"
+  },
+  {
+    "model": "model3",
+    "locked_cv_auroc": 0.7216,
+    "reproduced_cv_auroc": 0.7216,
+    "cv_diff": -1e-05,
+    "locked_test_auroc": 0.6729,
+    "reproduced_test_auroc": 0.6729,
+    "test_diff": 1e-05,
+    "status": "EXACT_MATCH"
+  },
+  {
+    "model": "parity_fusion",
+    "locked_cv_auroc": 0.7094,
+    "reproduced_cv_auroc": 0.7094,
+    "cv_diff": 4e-05,
+    "locked_test_auroc": 0.7148,
+    "reproduced_test_auroc": 0.7148,
+    "test_diff": -0.0,
+    "status": "EXACT_MATCH"
+  }
+]

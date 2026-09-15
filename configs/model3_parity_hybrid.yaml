@@ -1,0 +1,36 @@
+experiment_name: model3_parity_hybrid
+primary_endpoint: primary_label_715
+secondary_endpoint: severe_label_705
+patient_id_field: patient_id
+parity_field: parity
+parity_encoding: standard_scaled_univariate_logistic_logit
+missing_parity_policy: assert_zero_missing
+ctg_sampling_rate_hz: 4.0
+window_length_samples: 4800
+window_stride_samples: 600
+causal_policy: strictly_historical_windows_t_del_ge_h
+outer_cv_splitter: canonical_folds_json_5fold_grouped
+outer_cv_seed: 0
+bootstrap_method: paired_patient_bootstrap
+bootstrap_replicates: 2000
+bootstrap_seed: 42
+model3_checkpoint_policy: reuse_committed_phase16_checkpoints
+p6_checkpoint_policy: reuse_committed_phase13_audit_p6_predictions
+fusion_model: regularized_logistic_regression
+fusion_regularization: 0.1
+fusion_regularization_candidates: [0.01, 0.1, 1.0]
+fusion_features:
+  - model3_logit
+  - parity_logit
+calibration_policy: training_fitted_platt_or_raw_logistic
+horizon_definitions:
+  delivery: 0
+  ge10m: 10
+  ge20m: 20
+  ge30m: 30
+operational_metric_definition: ever_alerted_in_prefix_target_sens_80
+random_seeds:
+  primary: 42
+  robustness_bootstrap: [42, 1, 7, 123, 2024]
+  robustness_resplit: [11, 22, 33, 44, 55]
+artifact_output_directory: results/model3_parity_hybrid

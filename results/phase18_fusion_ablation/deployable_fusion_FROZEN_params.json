@@ -1,0 +1,52 @@
+{
+  "alpha_stability": {
+    "n_fold_fits": 30,
+    "mean": 0.3333333333333333,
+    "std": 0.033044727612563336,
+    "median": 0.35,
+    "min": 0.3,
+    "max": 0.4,
+    "all_values": [
+      0.35,
+      0.3,
+      0.35,
+      0.35,
+      0.3,
+      0.35,
+      0.3,
+      0.3,
+      0.3,
+      0.4,
+      0.3,
+      0.35,
+      0.3,
+      0.35,
+      0.35,
+      0.3,
+      0.3,
+      0.4,
+      0.3,
+      0.4,
+      0.35,
+      0.35,
+      0.35,
+      0.35,
+      0.3,
+      0.35,
+      0.35,
+      0.3,
+      0.35,
+      0.3
+    ]
+  },
+  "final_frozen_fit_all_547_patients": {
+    "alpha_selected": 0.35000000000000003,
+    "F2_coef_m3": 0.41701152809150493,
+    "F2_coef_parity": 0.36595851637701415,
+    "F2_intercept": -1.4802625133644518,
+    "A4_g1": 0.35000000000000003,
+    "A4_g0": 1.1960472091417795,
+    "A4_scale": 1.8623007387998003
+  },
+  "mechanism": "p_fused = alpha * p_M3(t) + (1-alpha) * p_parity, alpha selected once via sample-weighted pooled training AUROC across every causal truncation"
+}

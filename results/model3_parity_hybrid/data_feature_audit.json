@@ -1,0 +1,81 @@
+{
+  "status": "PASSED",
+  "cohort": {
+    "n_patients": 547,
+    "n_train_val": 464,
+    "n_internal_test": 83,
+    "test_fraction": 0.1517
+  },
+  "endpoints": {
+    "primary_pH_715": {
+      "positive": 110,
+      "negative": 437,
+      "prevalence": 0.2011
+    },
+    "secondary_severe_pH_705": {
+      "positive": 41,
+      "negative": 506,
+      "prevalence": 0.075
+    }
+  },
+  "parity": {
+    "missing_values": 0,
+    "min": 0,
+    "max": 7,
+    "value_distribution": {
+      "0": 373,
+      "1": 138,
+      "2": 29,
+      "3": 4,
+      "4": 1,
+      "5": 1,
+      "7": 1
+    },
+    "nulliparous_count": 373,
+    "nulliparous_fraction": 0.6819
+  },
+  "windows": {
+    "n_total_windows": 8517,
+    "min_per_patient": 3,
+    "max_per_patient": 17,
+    "mean_per_patient": 15.57,
+    "median_per_patient": 17.0,
+    "sampling_rate_hz": 4.0,
+    "window_length_samples": 4800,
+    "window_stride_samples": 600
+  },
+  "invariants": {
+    "duplicate_patient_ids": false,
+    "duplicate_window_ids": false,
+    "post_delivery_windows": 0,
+    "ordering_violations": 0,
+    "causal_window_violations": 0,
+    "disjoint_cv_test_split": true
+  },
+  "horizon_eligibility": {
+    "h_0m": {
+      "eligible_patients": 547,
+      "eligible_positives": 110,
+      "eligible_negatives": 437,
+      "pct_eligible": 100.0
+    },
+    "h_10m": {
+      "eligible_patients": 545,
+      "eligible_positives": 108,
+      "eligible_negatives": 437,
+      "pct_eligible": 99.63
+    },
+    "h_20m": {
+      "eligible_patients": 534,
+      "eligible_positives": 103,
+      "eligible_negatives": 431,
+      "pct_eligible": 97.62
+    },
+    "h_30m": {
+      "eligible_patients": 492,
+      "eligible_positives": 91,
+      "eligible_negatives": 401,
+      "pct_eligible": 89.95
+    }
+  }
+}

@@ -53,7 +53,7 @@ not substitutable — removing it from a joint 9-covariate model costs 0.089
 AUROC. The best-supported single addition in the whole investigation.
 
 **Hybrid 1 — P90 + Parity**, tested since two branches reached 🟡: raw
-held-out test numbers looked dramatic (delivery 0.6497→0.7549, +0.1052,
+held-out internal test partition numbers looked dramatic (delivery 0.6497→0.7549, +0.1052,
 p=.031) but two verification checks intervened before this was reported as
 real. The fusion lambda repeatedly saturated its pre-registered grid
 boundary (2.0–3.0, vs. parity-alone's 1.3–1.5) — a textbook overfitting
@@ -174,8 +174,8 @@ failed for the identical structural reason each time.
 
 **The one instability pattern that recurred and was caught both times.**
 The P90+Parity hybrid (Phase 13) and Model 3's raw training run (Phase 16)
-both initially produced strikingly large numbers on the small held-out test
-partition, and both times a concrete diagnostic — a saturated hyperparameter
+both initially produced strikingly large numbers on the small held-out
+internal test partition, and both times a concrete diagnostic — a saturated hyperparameter
 grid in one case, a saturated epoch budget in the other — flagged the
 result as needing verification before being trusted. One (the hybrid) did
 not survive that verification; the other (Model 3) did. The discipline of

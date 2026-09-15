@@ -1,0 +1,5 @@
+horizon,convention,cv_auroc_p6,cv_auroc_fused,cv_delta,cv_boot_p,cv_delong_p,cv_ci_low,cv_ci_high,test_auroc_p6,test_auroc_fused,test_delta,test_boot_p,test_delong_p,test_ci_low,test_ci_high
+>=10m,corrected,0.6859,0.7008,0.0149,0.356,0.3531,-0.0164,0.0467,0.5802,0.6266,0.0463,0.006,0.0089,0.0143,0.0862
+>=20m,corrected,0.6238,0.6435,0.0197,0.472,0.4763,-0.033,0.0746,0.6123,0.7389,0.1266,0.0,0.0007,0.0569,0.2055
+>=30m,corrected,0.5828,0.6368,0.0539,0.057,0.0536,-0.0014,0.1075,0.6078,0.7264,0.1185,0.019,0.0145,0.0178,0.2118
+>=30m,"original (uncorrected, first-eligible-chronological-window)",0.5857,0.6351,0.0494,0.078,0.0736,-0.0069,0.1026,0.6845,0.7629,0.0784,0.166,0.1444,-0.0345,0.1778

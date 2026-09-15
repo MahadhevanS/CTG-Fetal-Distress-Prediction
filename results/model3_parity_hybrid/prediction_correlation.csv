@@ -1,0 +1,6 @@
+model_1,model_2,pearson_r,pearson_p,spearman_rho,spearman_p
+Model 3,Parity Fusion,0.8177,0.0,0.7807,0.0
+Model 3,P6,0.9148,0.0,0.9094,0.0
+Parity Fusion,P6,0.8887,0.0,0.824,0.0
+Hybrid,Model 3,0.9651,0.0,0.942,0.0
+Hybrid,Parity Fusion,0.8845,0.0,0.9034,0.0
