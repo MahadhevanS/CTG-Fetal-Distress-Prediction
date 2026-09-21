@@ -1,0 +1,7 @@
+model,threshold_90spec,sensitivity_overall_pct,median_warning_min,iqr_warning_min,mean_warning_min,detected_ge_60m_pct,detected_ge_45m_pct,detected_ge_30m_pct,detected_ge_20m_pct,detected_ge_10m_pct
+Phase 8 Baseline,0.2474,79.09,12.5,17.5,15.6,0.0,0.0,14.55,27.27,50.0
+Model 1: Temporal LR,0.3059,73.64,15.0,25.0,17.9,0.0,0.0,21.82,32.73,49.09
+Model 2: Temporal GBM,0.6108,75.45,15.0,25.0,17.5,0.0,0.0,20.91,29.09,48.18
+Model 3: Trajectory EWMA,0.2191,70.0,12.5,20.0,15.4,0.0,0.0,14.55,24.55,39.09
+Model 4: Sequential GRU,0.5952,60.0,18.8,21.9,19.5,0.0,0.0,15.45,30.0,42.73
+Model 5: Multi-Horizon,0.3385,74.55,20.0,22.5,22.6,0.0,0.0,31.82,41.82,60.0

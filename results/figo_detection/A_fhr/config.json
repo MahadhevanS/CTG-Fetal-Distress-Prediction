@@ -1,0 +1,13 @@
+{
+  "arm": "A_fhr",
+  "label": "A  FHR only",
+  "arch": "fhr",
+  "shuffle": null,
+  "repeat": 0,
+  "seed": 0,
+  "epochs": 40,
+  "batch": 48,
+  "lr": 0.0003,
+  "n_params": 221378,
+  "runtime_s": 62.1
+}

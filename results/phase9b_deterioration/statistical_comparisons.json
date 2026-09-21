@@ -1,0 +1,344 @@
+{
+  ">=60m": {
+    "Model A (Snapshot Baseline)": {
+      "auroc_715": 0.5976,
+      "auprc_715": 0.2967,
+      "auroc_705": 0.5589,
+      "delta_vs_baseline": 0.0,
+      "ci_95": [
+        0.0,
+        0.0
+      ],
+      "p_value": 2.0
+    },
+    "Model B (Generic Temporal Baseline)": {
+      "auroc_715": 0.6766,
+      "auprc_715": 0.3563,
+      "auroc_705": 0.6945,
+      "delta_vs_baseline": 0.0792,
+      "ci_95": [
+        0.0269,
+        0.1342
+      ],
+      "p_value": 0.005
+    },
+    "Model C (Physiological Deterioration)": {
+      "auroc_715": 0.7046,
+      "auprc_715": 0.3591,
+      "auroc_705": 0.6961,
+      "delta_vs_baseline": 0.1067,
+      "ci_95": [
+        0.0423,
+        0.172
+      ],
+      "p_value": 0.003
+    },
+    "Model D (Snapshot + Deterioration)": {
+      "auroc_715": 0.6769,
+      "auprc_715": 0.3837,
+      "auroc_705": 0.6666,
+      "delta_vs_baseline": 0.0789,
+      "ci_95": [
+        0.0275,
+        0.1322
+      ],
+      "p_value": 0.004
+    },
+    "Model E (Full Trajectory + Domain)": {
+      "auroc_715": 0.6856,
+      "auprc_715": 0.3925,
+      "auroc_705": 0.6997,
+      "delta_vs_baseline": 0.0886,
+      "ci_95": [
+        0.0262,
+        0.1506
+      ],
+      "p_value": 0.002
+    }
+  },
+  ">=45m": {
+    "Model A (Snapshot Baseline)": {
+      "auroc_715": 0.5976,
+      "auprc_715": 0.2967,
+      "auroc_705": 0.5589,
+      "delta_vs_baseline": 0.0,
+      "ci_95": [
+        0.0,
+        0.0
+      ],
+      "p_value": 2.0
+    },
+    "Model B (Generic Temporal Baseline)": {
+      "auroc_715": 0.6766,
+      "auprc_715": 0.3563,
+      "auroc_705": 0.6945,
+      "delta_vs_baseline": 0.0792,
+      "ci_95": [
+        0.0269,
+        0.1342
+      ],
+      "p_value": 0.005
+    },
+    "Model C (Physiological Deterioration)": {
+      "auroc_715": 0.7046,
+      "auprc_715": 0.3591,
+      "auroc_705": 0.6961,
+      "delta_vs_baseline": 0.1067,
+      "ci_95": [
+        0.0423,
+        0.172
+      ],
+      "p_value": 0.003
+    },
+    "Model D (Snapshot + Deterioration)": {
+      "auroc_715": 0.6769,
+      "auprc_715": 0.3837,
+      "auroc_705": 0.6666,
+      "delta_vs_baseline": 0.0789,
+      "ci_95": [
+        0.0275,
+        0.1322
+      ],
+      "p_value": 0.004
+    },
+    "Model E (Full Trajectory + Domain)": {
+      "auroc_715": 0.6856,
+      "auprc_715": 0.3925,
+      "auroc_705": 0.6997,
+      "delta_vs_baseline": 0.0886,
+      "ci_95": [
+        0.0262,
+        0.1506
+      ],
+      "p_value": 0.002
+    }
+  },
+  ">=30m": {
+    "Model A (Snapshot Baseline)": {
+      "auroc_715": 0.5461,
+      "auprc_715": 0.2892,
+      "auroc_705": 0.6005,
+      "delta_vs_baseline": 0.0,
+      "ci_95": [
+        0.0,
+        0.0
+      ],
+      "p_value": 2.0
+    },
+    "Model B (Generic Temporal Baseline)": {
+      "auroc_715": 0.6046,
+      "auprc_715": 0.3102,
+      "auroc_705": 0.647,
+      "delta_vs_baseline": 0.0588,
+      "ci_95": [
+        0.0131,
+        0.1022
+      ],
+      "p_value": 0.011
+    },
+    "Model C (Physiological Deterioration)": {
+      "auroc_715": 0.5981,
+      "auprc_715": 0.2841,
+      "auroc_705": 0.6582,
+      "delta_vs_baseline": 0.0524,
+      "ci_95": [
+        -0.0086,
+        0.1164
+      ],
+      "p_value": 0.092
+    },
+    "Model D (Snapshot + Deterioration)": {
+      "auroc_715": 0.5873,
+      "auprc_715": 0.2948,
+      "auroc_705": 0.6041,
+      "delta_vs_baseline": 0.0413,
+      "ci_95": [
+        -0.0168,
+        0.0965
+      ],
+      "p_value": 0.14
+    },
+    "Model E (Full Trajectory + Domain)": {
+      "auroc_715": 0.5987,
+      "auprc_715": 0.2969,
+      "auroc_705": 0.6377,
+      "delta_vs_baseline": 0.0537,
+      "ci_95": [
+        0.0001,
+        0.1079
+      ],
+      "p_value": 0.049
+    }
+  },
+  ">=20m": {
+    "Model A (Snapshot Baseline)": {
+      "auroc_715": 0.55,
+      "auprc_715": 0.2869,
+      "auroc_705": 0.6118,
+      "delta_vs_baseline": 0.0,
+      "ci_95": [
+        0.0,
+        0.0
+      ],
+      "p_value": 2.0
+    },
+    "Model B (Generic Temporal Baseline)": {
+      "auroc_715": 0.5881,
+      "auprc_715": 0.3002,
+      "auroc_705": 0.6179,
+      "delta_vs_baseline": 0.0383,
+      "ci_95": [
+        -0.0102,
+        0.0856
+      ],
+      "p_value": 0.109
+    },
+    "Model C (Physiological Deterioration)": {
+      "auroc_715": 0.6006,
+      "auprc_715": 0.2804,
+      "auroc_705": 0.6726,
+      "delta_vs_baseline": 0.051,
+      "ci_95": [
+        -0.0091,
+        0.1137
+      ],
+      "p_value": 0.102
+    },
+    "Model D (Snapshot + Deterioration)": {
+      "auroc_715": 0.5916,
+      "auprc_715": 0.2946,
+      "auroc_705": 0.6432,
+      "delta_vs_baseline": 0.0417,
+      "ci_95": [
+        -0.0112,
+        0.0942
+      ],
+      "p_value": 0.119
+    },
+    "Model E (Full Trajectory + Domain)": {
+      "auroc_715": 0.5885,
+      "auprc_715": 0.292,
+      "auroc_705": 0.6335,
+      "delta_vs_baseline": 0.0393,
+      "ci_95": [
+        -0.0167,
+        0.0971
+      ],
+      "p_value": 0.155
+    }
+  },
+  ">=10m": {
+    "Model A (Snapshot Baseline)": {
+      "auroc_715": 0.536,
+      "auprc_715": 0.26,
+      "auroc_705": 0.5882,
+      "delta_vs_baseline": 0.0,
+      "ci_95": [
+        0.0,
+        0.0
+      ],
+      "p_value": 2.0
+    },
+    "Model B (Generic Temporal Baseline)": {
+      "auroc_715": 0.5785,
+      "auprc_715": 0.2868,
+      "auroc_705": 0.6021,
+      "delta_vs_baseline": 0.0425,
+      "ci_95": [
+        -0.0055,
+        0.0892
+      ],
+      "p_value": 0.079
+    },
+    "Model C (Physiological Deterioration)": {
+      "auroc_715": 0.5895,
+      "auprc_715": 0.2735,
+      "auroc_705": 0.6501,
+      "delta_vs_baseline": 0.0541,
+      "ci_95": [
+        -0.0088,
+        0.1159
+      ],
+      "p_value": 0.096
+    },
+    "Model D (Snapshot + Deterioration)": {
+      "auroc_715": 0.5888,
+      "auprc_715": 0.2874,
+      "auroc_705": 0.6403,
+      "delta_vs_baseline": 0.0527,
+      "ci_95": [
+        0.0036,
+        0.1013
+      ],
+      "p_value": 0.037
+    },
+    "Model E (Full Trajectory + Domain)": {
+      "auroc_715": 0.5855,
+      "auprc_715": 0.2839,
+      "auroc_705": 0.6291,
+      "delta_vs_baseline": 0.05,
+      "ci_95": [
+        -0.0014,
+        0.1035
+      ],
+      "p_value": 0.059
+    }
+  },
+  "Delivery (0m)": {
+    "Model A (Snapshot Baseline)": {
+      "auroc_715": 0.5976,
+      "auprc_715": 0.2967,
+      "auroc_705": 0.5589,
+      "delta_vs_baseline": 0.0,
+      "ci_95": [
+        0.0,
+        0.0
+      ],
+      "p_value": 2.0
+    },
+    "Model B (Generic Temporal Baseline)": {
+      "auroc_715": 0.6766,
+      "auprc_715": 0.3563,
+      "auroc_705": 0.6945,
+      "delta_vs_baseline": 0.0792,
+      "ci_95": [
+        0.0269,
+        0.1342
+      ],
+      "p_value": 0.005
+    },
+    "Model C (Physiological Deterioration)": {
+      "auroc_715": 0.7046,
+      "auprc_715": 0.3591,
+      "auroc_705": 0.6961,
+      "delta_vs_baseline": 0.1067,
+      "ci_95": [
+        0.0423,
+        0.172
+      ],
+      "p_value": 0.003
+    },
+    "Model D (Snapshot + Deterioration)": {
+      "auroc_715": 0.6769,
+      "auprc_715": 0.3837,
+      "auroc_705": 0.6666,
+      "delta_vs_baseline": 0.0789,
+      "ci_95": [
+        0.0275,
+        0.1322
+      ],
+      "p_value": 0.004
+    },
+    "Model E (Full Trajectory + Domain)": {
+      "auroc_715": 0.6856,
+      "auprc_715": 0.3925,
+      "auroc_705": 0.6997,
+      "delta_vs_baseline": 0.0886,
+      "ci_95": [
+        0.0262,
+        0.1506
+      ],
+      "p_value": 0.002
+    }
+  }
+}

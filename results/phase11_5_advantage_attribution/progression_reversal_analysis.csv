@@ -1,0 +1,7 @@
+state_id,state_name,n_windows_progressing,n_windows_reversing,n_windows_stationary,n_patients_progressing,n_patients_reversing,risk_proxy_mean_prog,risk_proxy_mean_rev,prevalence_715_prog,prevalence_715_rev,delta_prevalence_715,prevalence_705_prog,prevalence_705_rev,ci_95_low_diff,ci_95_high_diff,p_value_diff,odds_ratio_715,odds_ratio_ci_low,odds_ratio_ci_high,scientific_interpretation
+0,State 0: Stable Autonomic,0,0,0,0,0,,,,,,,,,,,,,,Insufficient Patient Sample Size
+1,State 1: Emerging Stress,0,0,547,0,0,,,,,,,,,,,,,,Insufficient Patient Sample Size
+2,State 2: Persistent Decelerative,59,657,1124,59,427,0.1248,0.1714,0.1695,0.2037,-0.0343,0.0678,0.0726,-0.1233,0.0673,0.463,0.8514,0.3936,1.4799,Directional Difference Indistinguishable (CI overlaps 0)
+3,State 3: Progressive Multidomain,397,25,42,292,22,0.1743,0.2219,0.2021,0.2273,-0.0252,0.0822,0.0909,-0.2198,0.1457,0.804,1.0362,0.3299,2.8503,Directional Difference Indistinguishable (CI overlaps 0)
+4,State 4: Severe Decompensation,975,0,4691,547,0,0.1429,,0.2011,,,0.075,,,,,,,,Insufficient Patient Sample Size
+-1,Pooled All States,1431,682,6404,547,430,0.1509,0.1733,0.2011,0.2023,-0.0012,0.075,0.0721,-0.018,0.0171,0.879,0.9947,0.8954,1.1157,Indistinguishable

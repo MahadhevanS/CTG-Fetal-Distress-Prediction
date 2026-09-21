@@ -1,0 +1,36 @@
+{
+  "phase": "Phase 12.1 \u2014 Final Audit & Submission Lock",
+  "audit_timestamp": "2026-09-06T18:55:00Z",
+  "cohort_invariants": {
+    "n_patients": 547,
+    "n_positives_primary_715": 110,
+    "n_positives_severe_705": 41,
+    "n_rolling_windows": 8517,
+    "sampling_rate_hz": 4.0
+  },
+  "discrepancy_resolution": {
+    "phase2_authoritative_auroc": 0.6593,
+    "phase3_authoritative_auroc": 0.6701,
+    "phase4_authoritative_auroc": 0.7361,
+    "phase6_authoritative_auroc": 0.7426,
+    "resolution_status": "RESOLVED (Transcription error corrected)"
+  },
+  "pass_fail_gates": {
+    "Gate_1_Cohort_Verification": "PASS (547 / 110 / 41 verified)",
+    "Gate_2_Endpoint_Verification": "PASS (pH <= 7.15 primary, pH <= 7.05 severe)",
+    "Gate_3_Discrepancy_Resolution": "PASS (0.6593 / 0.6701 reconciled)",
+    "Gate_4_Phase7_Correction": "PASS (Discarded +0.0881 absent)",
+    "Gate_5_Statistical_Integrity": "PASS (All claims supported by B=2,000 bootstrap CIs)",
+    "Gate_6_Causal_Integrity": "PASS (Zero lookahead verified)",
+    "Gate_7_Prior_Art_Integrity": "PASS (Bounded superiority over P1 & P3; comparable to P2)",
+    "Gate_8_Attribution_Integrity": "PASS (78% multidomain gain labeled path-dependent)",
+    "Gate_9_Horizon_Integrity": "PASS (Near-delivery distinct from >=30m early warning)",
+    "Gate_10_Clinical_Integrity": "PASS (Research operating points, not clinical trial efficacy)",
+    "Gate_11_Artifact_Consistency": "PASS (15/15 cross-artifact items match)",
+    "Gate_12_Reproducibility": "PASS (100% result provenance traceable)",
+    "Gate_13_Exploratory_Isolation": "PASS (Primary performance tables clean)",
+    "Gate_14_Repository_Integrity": "PASS (Commit & branch aligned)",
+    "Gate_15_Claim_Matrix": "PASS (Language governance enforced)"
+  },
+  "overall_audit_status": "ALL 15 GATES PASSED \u2014 SUBMISSION LOCKED"
+}

@@ -1,0 +1,410 @@
+{
+  ">=60m": {
+    "Phase 8 Baseline": {
+      "auroc_715": 0.5358,
+      "auprc_715": 0.2581,
+      "auroc_705": 0.5884,
+      "delta_vs_p8": 0.0,
+      "ci_95": [
+        0.0,
+        0.0
+      ],
+      "p_value": 2.0
+    },
+    "Model 1: Temporal LR": {
+      "auroc_715": 0.6109,
+      "auprc_715": 0.311,
+      "auroc_705": 0.6273,
+      "delta_vs_p8": 0.0755,
+      "ci_95": [
+        0.0106,
+        0.1382
+      ],
+      "p_value": 0.03
+    },
+    "Model 2: Temporal GBM": {
+      "auroc_715": 0.6235,
+      "auprc_715": 0.2941,
+      "auroc_705": 0.6419,
+      "delta_vs_p8": 0.0876,
+      "ci_95": [
+        0.0181,
+        0.1619
+      ],
+      "p_value": 0.014
+    },
+    "Model 3: Trajectory EWMA": {
+      "auroc_715": 0.5358,
+      "auprc_715": 0.2581,
+      "auroc_705": 0.5884,
+      "delta_vs_p8": 0.0,
+      "ci_95": [
+        0.0,
+        0.0
+      ],
+      "p_value": 2.0
+    },
+    "Model 4: Sequential GRU": {
+      "auroc_715": 0.5518,
+      "auprc_715": 0.2723,
+      "auroc_705": 0.5955,
+      "delta_vs_p8": 0.017,
+      "ci_95": [
+        -0.0694,
+        0.1014
+      ],
+      "p_value": 0.704
+    },
+    "Model 5: Multi-Horizon": {
+      "auroc_715": 0.6084,
+      "auprc_715": 0.3028,
+      "auroc_705": 0.6205,
+      "delta_vs_p8": 0.0724,
+      "ci_95": [
+        -0.0024,
+        0.1522
+      ],
+      "p_value": 0.071
+    }
+  },
+  ">=45m": {
+    "Phase 8 Baseline": {
+      "auroc_715": 0.5358,
+      "auprc_715": 0.2581,
+      "auroc_705": 0.5884,
+      "delta_vs_p8": 0.0,
+      "ci_95": [
+        0.0,
+        0.0
+      ],
+      "p_value": 2.0
+    },
+    "Model 1: Temporal LR": {
+      "auroc_715": 0.6109,
+      "auprc_715": 0.311,
+      "auroc_705": 0.6273,
+      "delta_vs_p8": 0.0755,
+      "ci_95": [
+        0.0106,
+        0.1382
+      ],
+      "p_value": 0.03
+    },
+    "Model 2: Temporal GBM": {
+      "auroc_715": 0.6235,
+      "auprc_715": 0.2941,
+      "auroc_705": 0.6419,
+      "delta_vs_p8": 0.0876,
+      "ci_95": [
+        0.0181,
+        0.1619
+      ],
+      "p_value": 0.014
+    },
+    "Model 3: Trajectory EWMA": {
+      "auroc_715": 0.5358,
+      "auprc_715": 0.2581,
+      "auroc_705": 0.5884,
+      "delta_vs_p8": 0.0,
+      "ci_95": [
+        0.0,
+        0.0
+      ],
+      "p_value": 2.0
+    },
+    "Model 4: Sequential GRU": {
+      "auroc_715": 0.5518,
+      "auprc_715": 0.2723,
+      "auroc_705": 0.5955,
+      "delta_vs_p8": 0.017,
+      "ci_95": [
+        -0.0694,
+        0.1014
+      ],
+      "p_value": 0.704
+    },
+    "Model 5: Multi-Horizon": {
+      "auroc_715": 0.6084,
+      "auprc_715": 0.3028,
+      "auroc_705": 0.6205,
+      "delta_vs_p8": 0.0724,
+      "ci_95": [
+        -0.0024,
+        0.1522
+      ],
+      "p_value": 0.071
+    }
+  },
+  ">=30m": {
+    "Phase 8 Baseline": {
+      "auroc_715": 0.5699,
+      "auprc_715": 0.2776,
+      "auroc_705": 0.6388,
+      "delta_vs_p8": 0.0,
+      "ci_95": [
+        0.0,
+        0.0
+      ],
+      "p_value": 2.0
+    },
+    "Model 1: Temporal LR": {
+      "auroc_715": 0.6066,
+      "auprc_715": 0.3096,
+      "auroc_705": 0.654,
+      "delta_vs_p8": 0.0369,
+      "ci_95": [
+        -0.0263,
+        0.0954
+      ],
+      "p_value": 0.223
+    },
+    "Model 2: Temporal GBM": {
+      "auroc_715": 0.6122,
+      "auprc_715": 0.2963,
+      "auroc_705": 0.62,
+      "delta_vs_p8": 0.0408,
+      "ci_95": [
+        -0.0253,
+        0.1055
+      ],
+      "p_value": 0.236
+    },
+    "Model 3: Trajectory EWMA": {
+      "auroc_715": 0.5607,
+      "auprc_715": 0.2769,
+      "auroc_705": 0.6351,
+      "delta_vs_p8": -0.009,
+      "ci_95": [
+        -0.0357,
+        0.0177
+      ],
+      "p_value": 0.52
+    },
+    "Model 4: Sequential GRU": {
+      "auroc_715": 0.5368,
+      "auprc_715": 0.256,
+      "auroc_705": 0.5756,
+      "delta_vs_p8": -0.0329,
+      "ci_95": [
+        -0.1127,
+        0.0478
+      ],
+      "p_value": 0.443
+    },
+    "Model 5: Multi-Horizon": {
+      "auroc_715": 0.608,
+      "auprc_715": 0.3041,
+      "auroc_705": 0.6526,
+      "delta_vs_p8": 0.038,
+      "ci_95": [
+        -0.0408,
+        0.1155
+      ],
+      "p_value": 0.334
+    }
+  },
+  ">=20m": {
+    "Phase 8 Baseline": {
+      "auroc_715": 0.6289,
+      "auprc_715": 0.3078,
+      "auroc_705": 0.6493,
+      "delta_vs_p8": 0.0,
+      "ci_95": [
+        0.0,
+        0.0
+      ],
+      "p_value": 2.0
+    },
+    "Model 1: Temporal LR": {
+      "auroc_715": 0.5919,
+      "auprc_715": 0.307,
+      "auroc_705": 0.6115,
+      "delta_vs_p8": -0.0382,
+      "ci_95": [
+        -0.0922,
+        0.0134
+      ],
+      "p_value": 0.161
+    },
+    "Model 2: Temporal GBM": {
+      "auroc_715": 0.6166,
+      "auprc_715": 0.2958,
+      "auroc_705": 0.6258,
+      "delta_vs_p8": -0.0121,
+      "ci_95": [
+        -0.0669,
+        0.044
+      ],
+      "p_value": 0.677
+    },
+    "Model 3: Trajectory EWMA": {
+      "auroc_715": 0.6186,
+      "auprc_715": 0.3337,
+      "auroc_705": 0.663,
+      "delta_vs_p8": -0.0101,
+      "ci_95": [
+        -0.0331,
+        0.0142
+      ],
+      "p_value": 0.395
+    },
+    "Model 4: Sequential GRU": {
+      "auroc_715": 0.5047,
+      "auprc_715": 0.2376,
+      "auroc_705": 0.5541,
+      "delta_vs_p8": -0.1243,
+      "ci_95": [
+        -0.2008,
+        -0.0456
+      ],
+      "p_value": 0.005
+    },
+    "Model 5: Multi-Horizon": {
+      "auroc_715": 0.5218,
+      "auprc_715": 0.2509,
+      "auroc_705": 0.541,
+      "delta_vs_p8": -0.1067,
+      "ci_95": [
+        -0.1743,
+        -0.04
+      ],
+      "p_value": 0.0
+    }
+  },
+  ">=10m": {
+    "Phase 8 Baseline": {
+      "auroc_715": 0.6941,
+      "auprc_715": 0.4004,
+      "auroc_705": 0.6924,
+      "delta_vs_p8": 0.0,
+      "ci_95": [
+        0.0,
+        0.0
+      ],
+      "p_value": 2.0
+    },
+    "Model 1: Temporal LR": {
+      "auroc_715": 0.675,
+      "auprc_715": 0.4151,
+      "auroc_705": 0.6659,
+      "delta_vs_p8": -0.0194,
+      "ci_95": [
+        -0.0728,
+        0.0315
+      ],
+      "p_value": 0.449
+    },
+    "Model 2: Temporal GBM": {
+      "auroc_715": 0.6868,
+      "auprc_715": 0.411,
+      "auroc_705": 0.6506,
+      "delta_vs_p8": -0.0075,
+      "ci_95": [
+        -0.0534,
+        0.0378
+      ],
+      "p_value": 0.75
+    },
+    "Model 3: Trajectory EWMA": {
+      "auroc_715": 0.6891,
+      "auprc_715": 0.4219,
+      "auroc_705": 0.6796,
+      "delta_vs_p8": -0.0053,
+      "ci_95": [
+        -0.0323,
+        0.0216
+      ],
+      "p_value": 0.697
+    },
+    "Model 4: Sequential GRU": {
+      "auroc_715": 0.5998,
+      "auprc_715": 0.2932,
+      "auroc_705": 0.6021,
+      "delta_vs_p8": -0.0944,
+      "ci_95": [
+        -0.1579,
+        -0.0283
+      ],
+      "p_value": 0.002
+    },
+    "Model 5: Multi-Horizon": {
+      "auroc_715": 0.6224,
+      "auprc_715": 0.3573,
+      "auroc_705": 0.609,
+      "delta_vs_p8": -0.0712,
+      "ci_95": [
+        -0.1402,
+        -0.0076
+      ],
+      "p_value": 0.028
+    }
+  },
+  "Delivery (0m)": {
+    "Phase 8 Baseline": {
+      "auroc_715": 0.5976,
+      "auprc_715": 0.2967,
+      "auroc_705": 0.5589,
+      "delta_vs_p8": 0.0,
+      "ci_95": [
+        0.0,
+        0.0
+      ],
+      "p_value": 2.0
+    },
+    "Model 1: Temporal LR": {
+      "auroc_715": 0.6704,
+      "auprc_715": 0.371,
+      "auroc_705": 0.6893,
+      "delta_vs_p8": 0.073,
+      "ci_95": [
+        0.0082,
+        0.1382
+      ],
+      "p_value": 0.028
+    },
+    "Model 2: Temporal GBM": {
+      "auroc_715": 0.655,
+      "auprc_715": 0.3684,
+      "auroc_705": 0.6598,
+      "delta_vs_p8": 0.0577,
+      "ci_95": [
+        -0.0019,
+        0.1186
+      ],
+      "p_value": 0.056
+    },
+    "Model 3: Trajectory EWMA": {
+      "auroc_715": 0.6993,
+      "auprc_715": 0.3682,
+      "auroc_705": 0.6876,
+      "delta_vs_p8": 0.1011,
+      "ci_95": [
+        0.0626,
+        0.1395
+      ],
+      "p_value": 0.0
+    },
+    "Model 4: Sequential GRU": {
+      "auroc_715": 0.5837,
+      "auprc_715": 0.2852,
+      "auroc_705": 0.637,
+      "delta_vs_p8": -0.0133,
+      "ci_95": [
+        -0.0842,
+        0.0567
+      ],
+      "p_value": 0.706
+    },
+    "Model 5: Multi-Horizon": {
+      "auroc_715": 0.6566,
+      "auprc_715": 0.386,
+      "auroc_705": 0.7136,
+      "delta_vs_p8": 0.0586,
+      "ci_95": [
+        -0.0121,
+        0.1342
+      ],
+      "p_value": 0.114
+    }
+  }
+}

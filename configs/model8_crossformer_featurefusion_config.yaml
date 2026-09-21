@@ -1,0 +1,75 @@
+# Model 8 Configuration: Knowledge-Infused Multi-Task Framework
+# Backbone: CTG-CrossFormer (standard) -- FEATURE-FUSION PROTOTYPE (2026-08-16)
+# ==========================================================================
+# Identical to configs/model8_crossformer_config.yaml (the validated baseline,
+# now on the fixed fold split: full, fixed weighting, EMA off -> AUROC 0.7908
+# +/- 0.0312) in every setting except heads.feature_fusion, so this run
+# isolates the feature-fusion mechanism alone -- deliberately on the STANDARD
+# architecture, not combined with wide-distress, so results aren't confounded
+# with that separate change. See
+# src/models/knowledge_infused_framework_feature_fusion.py for the full
+# rationale (motivated by a standalone GBM-on-features-alone check that got
+# AUROC 0.7297 +/- 0.0347 from the 8 hand-crafted features alone, with LTV
+# dominating feature importance at 34%).
+#
+# heads.feature_fusion: true concatenates the 8 (normalized) clinical
+# features directly into DistressHead's input alongside the shared 128-dim
+# latent z. FIGOHead/ClinicalFeatureHead/FIGOCriteriaHead are unaffected,
+# still z-only (see the model file's docstring for why fusing into those
+# specifically would trivialize their auxiliary tasks).
+
+backbone:
+  model: ctg_crossformer
+  in_channels: 2
+  seq_len: 4800
+  cnn_channels: 128
+  n_heads_cross: 4
+  n_heads_tf: 8
+  n_tf_layers: 4
+  d_ff: 512
+  dropout: 0.1
+  latent_dim: 128
+
+heads:
+  hidden_dim: 128
+  dropout: 0.3
+  feature_fusion: true   # the only change from the validated baseline config
+
+training:
+  epochs: 50
+  batch_size: 32
+  lr: 0.0003
+  weight_decay: 0.00001
+  k_folds: 5
+  gradient_clip: 1.0
+  optimizer: adamw
+
+scheduler:
+  type: onecycle
+  onecycle_max_lr: 0.0003
+  onecycle_pct_start: 0.1
+
+loss:
+  lambda_figo: 0.3
+  lambda_features: 0.2
+  lambda_knowledge: 0.1
+  lambda_consistency: 0.5
+  lambda_criteria: 0.3
+
+loss_weighting:
+  method: fixed
+
+sampling:
+  method: balanced
+
+ema:
+  enabled: false
+  decay: 0.9995
+  use_for_validation: true
+
+paths:
+  data_dir: data/processed/
+  feature_scaler_path: data/processed/feature_scaler.npz
+  checkpoint_dir: checkpoints/model8_crossformer_featurefusion/
+  results_dir: checkpoints/model8_crossformer_featurefusion/results/
+  horizon_analysis_dir: checkpoints/model8_crossformer_featurefusion/results/horizon_analysis/

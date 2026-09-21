@@ -15,6 +15,7 @@ import sys
 from typing import Dict, Any, List
 
 import yaml
+import numpy as np
 import torch
 
 # Ensure project root is in sys.path
@@ -221,8 +222,18 @@ def main():
     parser.add_argument("--epochs", type=int, default=10, help="Number of training epochs per trial")
     parser.add_argument("--k-folds", type=int, default=5, help="Number of cross-validation folds per trial")
     parser.add_argument("--dry-run", action="store_true", help="Run quick dry-run test without training")
+    parser.add_argument("--seed", type=int, default=42,
+                        help="Random seed for trial sampling and training (reproducibility fix, 2026-08-10: "
+                             "this script previously had no seeding anywhere, so re-running it -- even with "
+                             "identical arguments -- produced different 'winning' configs every time)")
 
     args = parser.parse_args()
+
+    random.seed(args.seed)
+    np.random.seed(args.seed)
+    torch.manual_seed(args.seed)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed_all(args.seed)
 
     models_to_tune = (
         ["cnn1d", "bilstm", "gru", "tcn", "multiscale_lstm", "patchctg", "patchtst"]

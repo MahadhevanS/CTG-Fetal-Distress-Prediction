@@ -1,0 +1,85 @@
+{
+  "name": "standalone_crossformer_nested_honest",
+  "archived_utc": "2026-08-18T22:11:16.185472Z",
+  "command": "python src/models/train_ctg_crossformer.py --data_dir data/processed_mil/ --checkpoint_dir checkpoints/ctg_crossformer_mil_nested/ --fold_mode patient_level --early_stop_mode nested --patience 15",
+  "config": "configs/ctg_crossformer_config.yaml",
+  "metrics": {
+    "unbiased_cv_auroc": 0.8014,
+    "unbiased_cv_auroc_std": 0.0738,
+    "unbiased_auprc": 0.1928,
+    "unbiased_recall": 0.3945,
+    "unbiased_specificity": 0.9259,
+    "protocol_matched_cv_auroc": 0.828,
+    "protocol_matched_std": 0.0472,
+    "protocol_matched_auprc": 0.2534,
+    "selection_inflation": 0.0266,
+    "per_fold_unbiased": [
+      0.8344,
+      0.8715,
+      0.8754,
+      0.7065,
+      0.7191
+    ]
+  },
+  "notes": "HONEST BASELINE. Nested patient-level inner split for epoch selection + early stopping (patience 15), fold-matched to train_knowledge_infused.py. Reports both unbiased (0.8014) and protocol-matched (0.8280) AUROC. Early stopping fired at epochs 16-22, avoiding the memorisation seen in 50-epoch runs. NOTE: the printed Test AUROC 0.6482 is NOT valid -- train_ctg_crossformer.py evaluates the test set using whatever model is left in memory after the fold loop (fold 5's end state), not a checkpoint or ensemble.",
+  "git": {
+    "commit": "f1d2dfac2f40a2bec18d89b964445056db794998",
+    "branch": "crossformer_test",
+    "dirty_files": [
+      "?? archive/standalone_crossformer_nested_honest/"
+    ]
+  },
+  "data": {
+    "dir": "data/processed_mil/",
+    "files": {
+      "ctu_signal_scaler.npz": {
+        "sha256": "b9b0cef1eda3986455f955662c784b8f0fd57a4e71f6235da816e3c59b2ce519",
+        "bytes": 516
+      },
+      "feature_scaler.npz": {
+        "sha256": "e185d77a415b0e50ecbf3d584769296e14e6e8ae9fa65f44e0415ce20435ef9e",
+        "bytes": 600
+      },
+      "test_dataset.pt": {
+        "sha256": "dda9b796d99f1da2161bd3722bcb5d36dd6c7429192767af73bfd101a8c77043",
+        "bytes": 42447504
+      },
+      "train_dataset.pt": {
+        "sha256": "f1c140a0077903672623421f71e20ee1653670fdebec864ad0121fbdc9153230",
+        "bytes": 203417499
+      },
+      "val_dataset.pt": {
+        "sha256": "ebd6e0b395480141d1bc2b621d11c8ba5cb6ee52bfe8be4d0c33dba6fca6fb73",
+        "bytes": 44718085
+      }
+    }
+  },
+  "checkpoints": {
+    "ctg_crossformer_fold_1_best.pth": {
+      "sha256": "177b8c492d328410a6bcecb8519f524ca353c552b14a5ab1f8c4c00bd54c61a9",
+      "bytes": 10071609
+    },
+    "ctg_crossformer_fold_2_best.pth": {
+      "sha256": "ba7a7eac35c051091c54db6d184d173346b7c598f1b468c2ce8f45aede762da1",
+      "bytes": 10071609
+    },
+    "ctg_crossformer_fold_3_best.pth": {
+      "sha256": "4818a922303638a1a0b22d9491cce67355359758cacd111cca94233c47d48b05",
+      "bytes": 10071609
+    },
+    "ctg_crossformer_fold_4_best.pth": {
+      "sha256": "62470e9e9f29cbaf927f9f876e12494037c5ed354118358e5a83b535581a8808",
+      "bytes": 10071609
+    },
+    "ctg_crossformer_fold_5_best.pth": {
+      "sha256": "c448dd98828f5547fd874a9112734aeab56956ddb6ee020c56340965bb7a8e48",
+      "bytes": 10071609
+    }
+  },
+  "env": {
+    "python": "3.10.11",
+    "torch": "2.11.0+cu128",
+    "cuda": "12.8",
+    "platform": "Windows-10-10.0.26200-SP0"
+  }
+}

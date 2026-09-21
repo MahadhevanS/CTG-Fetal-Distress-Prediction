@@ -1,0 +1,13 @@
+{
+  "arm": "C_cross",
+  "label": "C  FHR+UC, cross-attention",
+  "arch": "cross",
+  "shuffle": null,
+  "repeat": 0,
+  "seed": 0,
+  "epochs": 40,
+  "batch": 48,
+  "lr": 0.0003,
+  "n_params": 452066,
+  "runtime_s": 124.1
+}

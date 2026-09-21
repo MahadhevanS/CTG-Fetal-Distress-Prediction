@@ -1,0 +1,7 @@
+metric,historical_phase4,phase7_locked,status
+total_patients,547,547,MATCH
+positive_patients,110,110,MATCH
+patient_ids_match,True,True,MATCH
+labels_match,True,True,MATCH
+folds_match,True,True,MATCH
+window_count,8517,8517,MATCH

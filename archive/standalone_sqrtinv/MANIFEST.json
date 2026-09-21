@@ -1,0 +1,76 @@
+{
+  "name": "standalone_sqrtinv",
+  "archived_utc": "2026-08-18T23:03:21.372598Z",
+  "command": "python src/models/train_ctg_crossformer.py --data_dir data/processed_mil/ --checkpoint_dir checkpoints/ctg_crossformer_sqrtinv/ --fold_mode patient_level --early_stop_mode nested --patience 15 --class_weight sqrt_inverse_freq",
+  "config": "configs/ctg_crossformer_config.yaml",
+  "metrics": {
+    "unbiased_cv_auroc": 0.798,
+    "cv_recall_at_0.5": 0.5536,
+    "cv_spec_at_90sens": 0.4558,
+    "test_auroc_ensemble": 0.7731,
+    "test_recall_at_0.5": 0.3725,
+    "test_spec_at_90sens": 0.4163
+  },
+  "notes": "Middle-ground class weighting (pos_weight=4.85). Slightly better CV AUROC than inverse_freq but worse on the held-out test set; kept for the ablation record.",
+  "git": {
+    "commit": "c72ec5b9e7633d82588f4e9633e18792aacd4d05",
+    "branch": "crossformer_test",
+    "dirty_files": [
+      "?? archive/standalone_invfreq_clinical/",
+      "?? archive/standalone_sqrtinv/"
+    ]
+  },
+  "data": {
+    "dir": "data/processed_mil/",
+    "files": {
+      "ctu_signal_scaler.npz": {
+        "sha256": "b9b0cef1eda3986455f955662c784b8f0fd57a4e71f6235da816e3c59b2ce519",
+        "bytes": 516
+      },
+      "feature_scaler.npz": {
+        "sha256": "e185d77a415b0e50ecbf3d584769296e14e6e8ae9fa65f44e0415ce20435ef9e",
+        "bytes": 600
+      },
+      "test_dataset.pt": {
+        "sha256": "dda9b796d99f1da2161bd3722bcb5d36dd6c7429192767af73bfd101a8c77043",
+        "bytes": 42447504
+      },
+      "train_dataset.pt": {
+        "sha256": "f1c140a0077903672623421f71e20ee1653670fdebec864ad0121fbdc9153230",
+        "bytes": 203417499
+      },
+      "val_dataset.pt": {
+        "sha256": "ebd6e0b395480141d1bc2b621d11c8ba5cb6ee52bfe8be4d0c33dba6fca6fb73",
+        "bytes": 44718085
+      }
+    }
+  },
+  "checkpoints": {
+    "ctg_crossformer_fold_1_best.pth": {
+      "sha256": "913f1063050a6f5f16e8172c493c30cd00723349e86b6a8bc69c01eef08d56aa",
+      "bytes": 10071609
+    },
+    "ctg_crossformer_fold_2_best.pth": {
+      "sha256": "5a3f471213d59759b2b2690fab6f5b0ff5db7f1cf009b5f143ff97009e0aaf29",
+      "bytes": 10071609
+    },
+    "ctg_crossformer_fold_3_best.pth": {
+      "sha256": "4c4d0eb14481530997e4ca525abbe35e7f969b99d131967f9803d09111e6447d",
+      "bytes": 10071609
+    },
+    "ctg_crossformer_fold_4_best.pth": {
+      "sha256": "c78701707c9ab3b7c297746c925551b482e8fa96fa4821fb0a174e5ac9b4386d",
+      "bytes": 10071609
+    },
+    "ctg_crossformer_fold_5_best.pth": {
+      "sha256": "c8a8a2f7f31e18e8e47994100b089115906f11a850330333cf29bff6ed50ba97",
+      "bytes": 10071609
+    }
+  },
+  "env": {
+    "python": "3.10.11",
+    "torch": "2.11.0+cu128",
+    "cuda": "12.8",
+    "platform": "Windows-10-10.0.26200-SP0"
+  }
+}

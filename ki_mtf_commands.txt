@@ -1,0 +1,5 @@
+python src/training/train_knowledge_infused.py --config configs/model8_crossformer_config.yaml --ablation all
+
+python src/training/train_knowledge_infused.py --config configs/model8_mslstm_config.yaml --ablation all
+
+python src/training/train_knowledge_infused.py --config configs/model8_cnn1d_config.yaml --ablation all

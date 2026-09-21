@@ -1,0 +1,43 @@
+experiment,horizon,horizon_min,auroc_715,auprc_715,auroc_705
+Exp 1: Current State Only,>=60m,60,0.6248,0.3163,0.5855
+Exp 1: Current State Only,>=45m,45,0.6248,0.3163,0.5855
+Exp 1: Current State Only,>=30m,30,0.5833,0.3051,0.6043
+Exp 1: Current State Only,>=20m,20,0.5802,0.3065,0.6204
+Exp 1: Current State Only,>=10m,10,0.5683,0.2907,0.6012
+Exp 1: Current State Only,Delivery (0m),0,0.6248,0.3163,0.5855
+Exp 2: State + Change,>=60m,60,0.6511,0.3422,0.6532
+Exp 2: State + Change,>=45m,45,0.6511,0.3422,0.6532
+Exp 2: State + Change,>=30m,30,0.5927,0.3152,0.6309
+Exp 2: State + Change,>=20m,20,0.5805,0.3088,0.6217
+Exp 2: State + Change,>=10m,10,0.5704,0.2901,0.6012
+Exp 2: State + Change,Delivery (0m),0,0.6511,0.3422,0.6532
+Exp 3: State + Persistence,>=60m,60,0.6611,0.3454,0.6372
+Exp 3: State + Persistence,>=45m,45,0.6611,0.3454,0.6372
+Exp 3: State + Persistence,>=30m,30,0.5868,0.2938,0.5995
+Exp 3: State + Persistence,>=20m,20,0.5802,0.2907,0.6254
+Exp 3: State + Persistence,>=10m,10,0.5696,0.2836,0.604
+Exp 3: State + Persistence,Delivery (0m),0,0.6611,0.3454,0.6372
+Exp 4: State + Progression,>=60m,60,0.6761,0.3541,0.6895
+Exp 4: State + Progression,>=45m,45,0.6761,0.3541,0.6895
+Exp 4: State + Progression,>=30m,30,0.603,0.3084,0.6451
+Exp 4: State + Progression,>=20m,20,0.588,0.3009,0.6187
+Exp 4: State + Progression,>=10m,10,0.5783,0.2873,0.6027
+Exp 4: State + Progression,Delivery (0m),0,0.6761,0.3541,0.6895
+Exp 5: Full Deterioration Signature,>=60m,60,0.6766,0.3563,0.6945
+Exp 5: Full Deterioration Signature,>=45m,45,0.6766,0.3563,0.6945
+Exp 5: Full Deterioration Signature,>=30m,30,0.6046,0.3102,0.647
+Exp 5: Full Deterioration Signature,>=20m,20,0.5881,0.3002,0.6179
+Exp 5: Full Deterioration Signature,>=10m,10,0.5785,0.2868,0.6021
+Exp 5: Full Deterioration Signature,Delivery (0m),0,0.6766,0.3563,0.6945
+Exp 6: Domain-Level Deterioration,>=60m,60,0.6769,0.3837,0.6666
+Exp 6: Domain-Level Deterioration,>=45m,45,0.6769,0.3837,0.6666
+Exp 6: Domain-Level Deterioration,>=30m,30,0.5873,0.2948,0.6041
+Exp 6: Domain-Level Deterioration,>=20m,20,0.5916,0.2946,0.6432
+Exp 6: Domain-Level Deterioration,>=10m,10,0.5888,0.2874,0.6403
+Exp 6: Domain-Level Deterioration,Delivery (0m),0,0.6769,0.3837,0.6666
+Exp 7: Full Trajectory + Multidomain,>=60m,60,0.6856,0.3925,0.6997
+Exp 7: Full Trajectory + Multidomain,>=45m,45,0.6856,0.3925,0.6997
+Exp 7: Full Trajectory + Multidomain,>=30m,30,0.5987,0.2969,0.6377
+Exp 7: Full Trajectory + Multidomain,>=20m,20,0.5885,0.292,0.6335
+Exp 7: Full Trajectory + Multidomain,>=10m,10,0.5855,0.2839,0.6291
+Exp 7: Full Trajectory + Multidomain,Delivery (0m),0,0.6856,0.3925,0.6997

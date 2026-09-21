@@ -1,0 +1,20 @@
+feature_index,name,category,input_interval,look_ahead_detected,unit_test_status,notes
+1,baseline,Morphology,"[t-20m, t]",False,PASS,Iterative localized baseline fit solely within the 20-min window.
+2,stv,Variability,"[t-20m, t]",False,PASS,Mean absolute adjacent sample differences (diff) within window.
+3,ltv,Variability,"[t-20m, t]",False,PASS,"1-minute epoch percentile ranges within window, excluding decelerations."
+4,acc_count,Accelerations,"[t-20m, t]",False,PASS,Count of accelerations (>=15 bpm for >=15s) starting within window.
+5,early_dec_count,Decelerations,"[t-20m, t]",False,PASS,Decelerations synchronous with contraction peaks in window.
+6,late_dec_count,Decelerations,"[t-20m, t]",False,PASS,Decelerations with nadir lagging contraction peak in window.
+7,var_dec_count,Decelerations,"[t-20m, t]",False,PASS,Variable decelerations with steep descent (<30s) in window.
+8,prolonged_dec_count,Decelerations,"[t-20m, t]",False,PASS,Decelerations lasting between 2 and 5 minutes in window.
+9,dec_max_depth,Decelerations,"[t-20m, t]",False,PASS,Maximum amplitude drop below baseline across window decelerations.
+10,dec_area,Decelerations,"[t-20m, t]",False,PASS,Integrated bpm*seconds area for all decelerations in window.
+11,dec_burden,Decelerations,"[t-20m, t]",False,PASS,Proportion of window duration occupied by active decelerations.
+12,longest_dec,Decelerations,"[t-20m, t]",False,PASS,Duration in seconds of the single longest deceleration in window.
+13,baseline_slope,Trends,"[t-20m, t]",False,PASS,Linear slope of baseline within the 20-min window (bpm/hour).
+14,variability_slope,Trends,"[t-20m, t]",False,PASS,Linear slope of 1-min epoch STV/LTV across the window.
+15,uc_count,Uterine Activity,"[t-20m, t]",False,PASS,Count of qualifying uterine contraction peaks within window.
+16,tachysystole,Uterine Activity,"[t-20m, t]",False,PASS,Binary flag for contraction frequency > 5 per 10 minutes in window.
+17,mean_uc_amp,Uterine Activity,"[t-20m, t]",False,PASS,Average peak amplitude of uterine contractions in window.
+18,fhr_uc_lag,FHR-UC Coupling,"[t-20m, t]",False,PASS,Average time lag from contraction peak to nearest FHR nadir in window.
+19,fhr_uc_coupling,FHR-UC Coupling,"[t-20m, t]",False,PASS,Normalized cross-correlation between FHR and UC in window.

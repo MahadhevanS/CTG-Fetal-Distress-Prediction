@@ -6,6 +6,49 @@
 
 ---
 
+## ⚡ Quick Start — clone and run
+
+The delivered model and the data needed to run it are committed to this repo
+(~179 MB), so a fresh clone is immediately runnable with no retraining and no
+separate dataset download.
+
+```bash
+git clone https://github.com/MahadhevanS/CTG-Fetal-Distress-Prediction.git
+cd CTG-Fetal-Distress-Prediction
+pip install -r requirements.txt
+
+# full clinical review of one recording -- risk timeline, patient report,
+# FIGO explanations. Runs on CPU; ~160 ms per 20-minute window.
+python scripts/run_clinical_review.py --record 2045 --minutes 50
+```
+
+Other entry points, all runnable on a fresh clone:
+
+```bash
+python scripts/eval_crp_metrics.py     # delivered model, test-set metrics
+python scripts/eval_all_models.py      # metrics for every archived ensemble
+python scripts/calibrate_crp.py        # refit the calibrator, derive operating point
+python scripts/demo_explainability.py  # explanation faithfulness (rho = +0.405)
+```
+
+**What ships:** the delivered 5-fold CRP ensemble
+(`checkpoints/ctg_crossformer_crp/`, seed 42), its calibrator, the
+preprocessing scalers, the held-out val/test tensors, and the raw CTU-UHB
+recordings. **What does not:** the 203 MB training tensor and ~2.5 GB of
+exploratory/archived checkpoints. Archived runs keep their `MANIFEST.json`
+(SHA256 of every weight, git commit, exact command) so any of them can be
+reproduced — see [docs/reproduce_crp.md](docs/reproduce_crp.md).
+
+> The delivered model is a **5-model ensemble**: predictions are the mean of
+> five fold checkpoints' probabilities. It scores **AUROC 0.8124 / AUPRC
+> 0.1958** on the held-out test set (1103 windows, 82 patients, 4.6%
+> prevalence). Note that accuracy is misleading at this prevalence — a
+> majority-class baseline scores 95.4%. See
+> [docs/calibration_test_plan.md](docs/calibration_test_plan.md) for the
+> operating-point analysis.
+
+---
+
 ## 📌 Abstract & Clinical Motivation
 
 Intrapartum fetal distress due to hypoxia and fetal acidemia ($\text{pH} \le 7.15$) is a leading cause of preventable neonatal morbidity and mortality. Cardiotocography (CTG), which records continuous Fetal Heart Rate (FHR) and Uterine Contractions (UC), is the global clinical standard for intrapartum monitoring. However, conventional visual CTG interpretation suffers from high inter-observer variability and high false-alarm rates ($>60\%$), driving unnecessary emergency cesarean deliveries.

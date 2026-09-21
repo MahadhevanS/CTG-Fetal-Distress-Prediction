@@ -1,0 +1,7 @@
+model_code,model_name,threshold_tau,tp,fp,tn,fn,sensitivity_pct,specificity_pct,ppv_pct,npv_pct,fpr_pct,false_alerts_per_hour,alerts_per_patient,median_lead_time_min
+P1,P1 (Compact CTG Baseline),0.2668,67,156,281,43,60.91,64.3,30.04,86.73,35.7,0.6789,0.408,15.0
+P2,P2 (Sequential / Event Baseline),0.3024,69,125,312,41,62.73,71.4,35.57,88.39,28.6,0.4864,0.355,12.5
+P3,P3 (Locked Snapshot Baseline),0.273,79,185,252,31,71.82,57.67,29.92,89.05,42.33,0.8434,0.483,10.0
+P4,P4 (Snapshot + State),0.2743,79,183,254,31,71.82,58.12,30.15,89.12,41.88,0.8329,0.479,10.0
+P5,P5 (Snapshot + Trajectory),0.2779,81,187,250,29,73.64,57.21,30.22,89.61,42.79,0.8504,0.49,12.5
+P6,P6 (Full Proposed Framework),0.3395,76,144,293,34,69.09,67.05,34.55,89.6,32.95,0.6544,0.402,17.5

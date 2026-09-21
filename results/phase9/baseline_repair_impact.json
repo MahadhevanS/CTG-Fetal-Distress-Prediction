@@ -1,0 +1,35 @@
+{
+ "constant": {
+  "name": "19 descriptors, CONSTANT baseline (as shipped)",
+  "agg": "max",
+  "auroc": 0.727147909298939,
+  "auprc": 0.40949004798660565,
+  "ci_lo": 0.6702176567767054,
+  "ci_hi": 0.7790735617826943,
+  "n_patients": 547.0,
+  "n_positive": 110.0,
+  "window_auroc": 0.6179290000845533
+ },
+ "rolling": {
+  "name": "19 descriptors, ROLLING 5-min baseline (repaired)",
+  "agg": "max",
+  "auroc": 0.6299771167048055,
+  "auprc": 0.31164877713035827,
+  "ci_lo": 0.5709822798239643,
+  "ci_hi": 0.6909731561924995,
+  "n_patients": 547.0,
+  "n_positive": 110.0,
+  "window_auroc": 0.5956821325604342
+ },
+ "concat": {
+  "name": "both baselines' descriptors concatenated (38)",
+  "agg": "max",
+  "auroc": 0.717162471395881,
+  "auprc": 0.4173039557836457,
+  "ci_lo": 0.6590541363223562,
+  "ci_hi": 0.7697745566206518,
+  "n_patients": 547.0,
+  "n_positive": 110.0,
+  "window_auroc": 0.6194771539633496
+ }
+}

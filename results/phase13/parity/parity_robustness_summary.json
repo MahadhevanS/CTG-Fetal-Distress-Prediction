@@ -1,0 +1,85 @@
+{
+  "bootstrap_seed_sensitivity": [
+    {
+      "bootstrap_seed": 42,
+      "delta": 0.022,
+      "ci_low": -0.0089,
+      "ci_high": 0.0516,
+      "p_value": 0.172
+    },
+    {
+      "bootstrap_seed": 1,
+      "delta": 0.0222,
+      "ci_low": -0.0098,
+      "ci_high": 0.0527,
+      "p_value": 0.17
+    },
+    {
+      "bootstrap_seed": 7,
+      "delta": 0.0221,
+      "ci_low": -0.0101,
+      "ci_high": 0.0522,
+      "p_value": 0.168
+    },
+    {
+      "bootstrap_seed": 123,
+      "delta": 0.0223,
+      "ci_low": -0.0095,
+      "ci_high": 0.0515,
+      "p_value": 0.156
+    },
+    {
+      "bootstrap_seed": 2024,
+      "delta": 0.022,
+      "ci_low": -0.0091,
+      "ci_high": 0.0521,
+      "p_value": 0.171
+    }
+  ],
+  "fold_assignment_sensitivity": [
+    {
+      "fold_source": "canonical",
+      "p6_auroc": 0.6872,
+      "fused_auroc": 0.7094,
+      "delta": 0.0223
+    },
+    {
+      "fold_source": "resplit_seed_11",
+      "p6_auroc": 0.6872,
+      "fused_auroc": 0.6992,
+      "delta": 0.012
+    },
+    {
+      "fold_source": "resplit_seed_22",
+      "p6_auroc": 0.6872,
+      "fused_auroc": 0.7006,
+      "delta": 0.0135
+    },
+    {
+      "fold_source": "resplit_seed_33",
+      "p6_auroc": 0.6872,
+      "fused_auroc": 0.6989,
+      "delta": 0.0117
+    },
+    {
+      "fold_source": "resplit_seed_44",
+      "p6_auroc": 0.6872,
+      "fused_auroc": 0.7076,
+      "delta": 0.0204
+    }
+  ],
+  "recording_duration_proxy": {
+    "pearson_r": -0.0493,
+    "pearson_p": 0.25,
+    "spearman_r": -0.0396,
+    "spearman_p": 0.3548,
+    "interpretation": "weak/no correlation -> parity effect not explained by recording length"
+  },
+  "conditional_analysis": {
+    "parity_coef_in_joint_model": -0.4293,
+    "joint_9cov_auroc": 0.5132,
+    "joint_8cov_no_parity_auroc": 0.4245,
+    "delta_from_dropping_parity": 0.0887
+  },
+  "permutation_control_summary": "0/30 shuffled permutations exceeded true delta (+0.0223); mean shuffled delta -0.0467"
+}

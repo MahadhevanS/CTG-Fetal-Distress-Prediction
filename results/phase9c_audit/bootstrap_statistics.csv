@@ -1,0 +1,37 @@
+Model,Horizon,AUROC_715,Delta_vs_Baseline,CI95_Low,CI95_High,P_Value,Severe_AUROC_705
+Phase 8 Snapshot Baseline,>=60m,0.5976,0.0,0.0,0.0,2.0,0.5589
+Model 1 (Current State Only),>=60m,0.4558,-0.1412,-0.2298,-0.0568,0.002,0.4555
+Model 2 (Current State + Trajectory),>=60m,0.5102,-0.0867,-0.176,-0.0025,0.043,0.5298
+Model 3 (Current Features + Trajectory),>=60m,0.6847,0.0875,0.0358,0.1437,0.002,0.6688
+Model 4 (Prediction Trajectory Only),>=60m,0.6897,0.0923,0.0589,0.1286,0.0,0.6777
+Model 5 (Combined Prediction + State Trajectory),>=60m,0.6872,0.09,0.0351,0.1492,0.002,0.6771
+Phase 8 Snapshot Baseline,>=45m,0.5976,0.0,0.0,0.0,2.0,0.5589
+Model 1 (Current State Only),>=45m,0.4558,-0.1412,-0.2298,-0.0568,0.002,0.4555
+Model 2 (Current State + Trajectory),>=45m,0.5102,-0.0867,-0.176,-0.0025,0.043,0.5298
+Model 3 (Current Features + Trajectory),>=45m,0.6847,0.0875,0.0358,0.1437,0.002,0.6688
+Model 4 (Prediction Trajectory Only),>=45m,0.6897,0.0923,0.0589,0.1286,0.0,0.6777
+Model 5 (Combined Prediction + State Trajectory),>=45m,0.6872,0.09,0.0351,0.1492,0.002,0.6771
+Phase 8 Snapshot Baseline,>=30m,0.5461,0.0,0.0,0.0,2.0,0.6005
+Model 1 (Current State Only),>=30m,0.473,-0.0734,-0.169,0.0236,0.127,0.3223
+Model 2 (Current State + Trajectory),>=30m,0.4615,-0.0847,-0.1861,0.0146,0.097,0.3234
+Model 3 (Current Features + Trajectory),>=30m,0.5933,0.0468,-0.0101,0.1013,0.098,0.5973
+Model 4 (Prediction Trajectory Only),>=30m,0.548,0.0017,-0.0111,0.0149,0.845,0.624
+Model 5 (Combined Prediction + State Trajectory),>=30m,0.5857,0.0392,-0.0133,0.091,0.135,0.5939
+Phase 8 Snapshot Baseline,>=20m,0.55,0.0,0.0,0.0,2.0,0.6118
+Model 1 (Current State Only),>=20m,0.4824,-0.0674,-0.1592,0.0228,0.148,0.3644
+Model 2 (Current State + Trajectory),>=20m,0.4798,-0.0697,-0.1681,0.0247,0.142,0.3619
+Model 3 (Current Features + Trajectory),>=20m,0.595,0.0449,-0.0065,0.0968,0.086,0.6492
+Model 4 (Prediction Trajectory Only),>=20m,0.5464,-0.0037,-0.0121,0.0042,0.388,0.6158
+Model 5 (Combined Prediction + State Trajectory),>=20m,0.5869,0.0368,-0.0122,0.0845,0.127,0.639
+Phase 8 Snapshot Baseline,>=10m,0.536,0.0,0.0,0.0,2.0,0.5882
+Model 1 (Current State Only),>=10m,0.4923,-0.0433,-0.1276,0.043,0.331,0.391
+Model 2 (Current State + Trajectory),>=10m,0.4877,-0.0478,-0.1381,0.04,0.309,0.3805
+Model 3 (Current Features + Trajectory),>=10m,0.5884,0.0519,0.0029,0.0998,0.039,0.636
+Model 4 (Prediction Trajectory Only),>=10m,0.5343,-0.0018,-0.0094,0.0054,0.622,0.5951
+Model 5 (Combined Prediction + State Trajectory),>=10m,0.5814,0.0448,-0.001,0.0879,0.058,0.6292
+Phase 8 Snapshot Baseline,Delivery (0m),0.5976,0.0,0.0,0.0,2.0,0.5589
+Model 1 (Current State Only),Delivery (0m),0.4558,-0.1412,-0.2298,-0.0568,0.002,0.4555
+Model 2 (Current State + Trajectory),Delivery (0m),0.5102,-0.0867,-0.176,-0.0025,0.043,0.5298
+Model 3 (Current Features + Trajectory),Delivery (0m),0.6847,0.0875,0.0358,0.1437,0.002,0.6688
+Model 4 (Prediction Trajectory Only),Delivery (0m),0.6897,0.0923,0.0589,0.1286,0.0,0.6777
+Model 5 (Combined Prediction + State Trajectory),Delivery (0m),0.6872,0.09,0.0351,0.1492,0.002,0.6771

@@ -1,0 +1,29 @@
+{
+  "feature_count": 19,
+  "feature_names": [
+    "baseline",
+    "stv",
+    "ltv",
+    "acc_count",
+    "early_dec_count",
+    "late_dec_count",
+    "var_dec_count",
+    "prolonged_dec_count",
+    "dec_max_depth",
+    "dec_area",
+    "dec_burden",
+    "longest_dec",
+    "baseline_slope",
+    "variability_slope",
+    "uc_count",
+    "tachysystole",
+    "mean_uc_amp",
+    "fhr_uc_lag",
+    "fhr_uc_coupling"
+  ],
+  "phase4_sha256": "986069cc6ffd563fb8e9074969cd147abf4e2d085369ffe627d2e3ac79e3207f",
+  "phase6_sha256": "986069cc6ffd563fb8e9074969cd147abf4e2d085369ffe627d2e3ac79e3207f",
+  "phase7_sha256": "986069cc6ffd563fb8e9074969cd147abf4e2d085369ffe627d2e3ac79e3207f",
+  "matrices_identical": true,
+  "normalization_verified": true
+}

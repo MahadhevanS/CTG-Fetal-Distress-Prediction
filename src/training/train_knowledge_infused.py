@@ -47,6 +47,7 @@ Usage:
 import argparse
 import json
 import os
+import random
 import sys
 from typing import Dict, List, Optional, Tuple
 
@@ -62,8 +63,22 @@ if BASE_DIR not in sys.path:
     sys.path.insert(0, BASE_DIR)
 
 from src.models.patchtst import PatchTSTEncoder
+from src.models.ctg_crossformer import CTGCrossformerEncoder
+from src.models.multiscale_lstm import MultiScaleLSTMEncoder
+from src.models.cnn1d_encoder import CNN1DEncoder
 from src.models.knowledge_infused_framework import KnowledgeInfusedFramework
-from src.knowledge.figo import figo_rule_loss_normalized
+from src.models.knowledge_infused_framework_wide_distress import (
+    CTGCrossformerDualLatentEncoder,
+    KnowledgeInfusedFrameworkWideDistress,
+)
+from src.models.knowledge_infused_framework_feature_fusion import (
+    KnowledgeInfusedFrameworkFeatureFusion,
+)
+from src.knowledge.figo import (
+    figo_rule_loss_normalized,
+    derive_figo_criteria_flags_torch,
+    FIGO_CRITERIA_NAMES,
+)
 from src.training.multi_task_dataset import (
     MultiTaskCTGDataset,
     load_all_multitask_splits,
@@ -80,7 +95,8 @@ from src.training.augmentation import PhysiologicalAugmentor
 from src.training.calibration import ThresholdOptimizer, TemperatureScaler
 from src.training.error_analysis import ErrorAnalyzer
 
-# Valid ablation variant names (extended from 4 to 6)
+# Valid ablation variant names (extended from 4 to 6, then to 8 with the
+# FIGOCriteriaHead prototype, 2026-08-15)
 ABLATION_VARIANTS = [
     "distress_only",
     "plus_figo",
@@ -88,6 +104,15 @@ ABLATION_VARIANTS = [
     "plus_features",
     "distress_figo_only",
     "full",
+    # FIGOCriteriaHead variants: decompose the collapsed 3-class FIGO label into
+    # 8 intermediate binary clinical judgments (see FIGOCriteriaHead's own
+    # docstring for the full rationale). plus_figo/distress_figo_only/full have
+    # never won a single ablation comparison across 4 runs and 2 backbones --
+    # these test whether the decomposed version fares better, using the exact
+    # same comparison structure already trusted for the old FIGO head.
+    "plus_criteria",        # distress + criteria           (mirrors plus_figo)
+    "features_criteria",    # distress + features + criteria (proven + new candidate,
+                             #   deliberately drops the old figo_head/knowledge-loss path)
 ]
 
 
@@ -157,16 +182,40 @@ def compute_multitask_loss(
     use_focal_loss: bool = False,
     focal_gamma: float = 2.0,
     aux_warmup_factor: float = 1.0,
+    figo_class_weights: Optional[torch.Tensor] = None,
+    knowledge_warmup_factor: Optional[float] = None,
+    criteria_logits: Optional[torch.Tensor] = None,
+    criteria_pos_weights: Optional[torch.Tensor] = None,
 ) -> Tuple[Dict[str, torch.Tensor], Dict[str, float]]:
     """
     Computes individual loss components for the selected ablation variant.
     Returns raw component tensors (before weighting) for dynamic loss weighters.
+
+    Args (head-optimization fixes, 2026-08-14):
+        figo_class_weights: Optional (3,) tensor of per-class weights for the FIGO
+            cross-entropy loss. y_figo is heavily imbalanced on this dataset
+            (~10% Normal / ~75% Suspicious / ~15% Pathological on the corrected
+            train split) -- unweighted CE lets the FIGO head get most of its loss
+            down just by leaning toward predicting the majority class, which
+            provides little useful gradient signal to the shared encoder. Pass
+            inverse-frequency weights (computed per-fold from the training split)
+            to correct for this, the same way pos_weight already corrects for the
+            primary task's imbalance.
+        knowledge_warmup_factor: If given, used instead of aux_warmup_factor for
+            the knowledge-consistency loss specifically. The rule loss penalizes
+            based on the ClinicalFeatureHead's own predicted baseline/STV/LTV/decel
+            counts -- early in training those predictions are close to random, so
+            applying the same fast 10-epoch warmup as the other auxiliary losses
+            means the rule loss spends its early ramp-in penalizing noise rather
+            than anything meaningful. Falls back to aux_warmup_factor if not given.
 
     Returns:
         Tuple of:
           - component_tensors: Dict[str, Tensor] — unweighted scalar loss tensors
           - component_floats:  Dict[str, float]  — detached float values for logging
     """
+    if knowledge_warmup_factor is None:
+        knowledge_warmup_factor = aux_warmup_factor
     device = distress_logit.device
 
     # Primary Task: Binary Distress (Focal Loss or BCEWithLogits)
@@ -190,13 +239,33 @@ def compute_multitask_loss(
 
     # Auxiliary Task 1: FIGO 3-class Classification (with curriculum warmup)
     if ablation in ("plus_figo", "plus_features", "distress_figo_only", "full"):
-        l_figo = nn.functional.cross_entropy(figo_logits, y_figo) * aux_warmup_factor
+        l_figo = nn.functional.cross_entropy(
+            figo_logits, y_figo,
+            weight=figo_class_weights.to(device) if figo_class_weights is not None else None,
+        ) * aux_warmup_factor
         component_tensors["figo"] = l_figo
         component_floats["l_figo"] = l_figo.item()
 
     # Auxiliary Task 2: Physiological Feature Regression (with curriculum warmup)
-    if ablation in ("distress_features_only", "plus_features", "full"):
-        l_features = nn.functional.mse_loss(feature_preds_norm, y_features) * aux_warmup_factor
+    # BUG FIX (2026-08-15): y_features arrives in RAW clinical units (baseline
+    # ~110-160 bpm, LTV ~5-100+ bpm, etc. -- confirmed by direct inspection of
+    # *_dataset.pt, which stores pipeline.py's un-normalized features_target
+    # directly). feature_preds_norm is a small-scale (~O(1)) linear head output,
+    # named/intended as Z-normalized per figo_rule_loss_normalized()'s own
+    # un-normalization step further down. Comparing them directly via MSE
+    # without normalizing y_features first produces a massively mis-scaled loss
+    # (verified against real data: MSE ~2719 vs ~1.3 on synthetic N(0,1) targets,
+    # i.e. what every dry-run smoke test used, which is why this went unnoticed).
+    # At lambda_features=0.2 that dominates l_distress/l_figo by ~2 orders of
+    # magnitude, AND drives the feature head to output raw-scale values that then
+    # get double-transformed by figo_rule_loss_normalized's own un-normalization
+    # step below (pred*std+mean applied to an already-raw-scale prediction),
+    # producing physiologically nonsensical values fed into the FIGO threshold
+    # checks. Normalizing y_features here fixes both problems at once.
+    if ablation in ("distress_features_only", "plus_features", "full", "features_criteria"):
+        safe_stds_feat = feature_stds.to(device).clamp(min=1e-6)
+        y_features_norm = (y_features - feature_means.to(device)) / safe_stds_feat
+        l_features = nn.functional.mse_loss(feature_preds_norm, y_features_norm) * aux_warmup_factor
         component_tensors["features"] = l_features
         component_floats["l_features"] = l_features.item()
 
@@ -209,9 +278,22 @@ def compute_multitask_loss(
             feature_stds=feature_stds.to(device),
             target_figo=None,
             lambda_consistency=lambda_consistency,
-        ) * aux_warmup_factor
+        ) * knowledge_warmup_factor
         component_tensors["knowledge"] = l_knowledge
         component_floats["l_knowledge"] = l_knowledge.item()
+
+    # Auxiliary Task 4: FIGOCriteriaHead -- decomposed binary clinical judgments
+    # (prototype, 2026-08-15). y_features is raw clinical units here (see the
+    # normalization bug-fix note above) -- derive_figo_criteria_flags_torch
+    # expects exactly that, so no un-normalization needed for this target.
+    if ablation in ("plus_criteria", "features_criteria"):
+        criteria_targets = derive_figo_criteria_flags_torch(y_features)
+        l_criteria = nn.functional.binary_cross_entropy_with_logits(
+            criteria_logits, criteria_targets,
+            pos_weight=criteria_pos_weights.to(device) if criteria_pos_weights is not None else None,
+        ) * aux_warmup_factor
+        component_tensors["criteria"] = l_criteria
+        component_floats["l_criteria"] = l_criteria.item()
 
     return component_tensors, component_floats
 
@@ -225,6 +307,25 @@ def _get_curriculum_ablation(epoch: int, schedule: List) -> str:
     return active
 
 
+def _forward_model(model: KnowledgeInfusedFramework, x: torch.Tensor, y_features: torch.Tensor = None):
+    """Uniformly unpacks model(x) as a 4-tuple regardless of whether
+    include_criteria_head is active, so call sites don't need to branch on it.
+    criteria_logits is None when the head isn't present.
+
+    Feature-fusion variant (2026-08-16): KnowledgeInfusedFrameworkFeatureFusion
+    marks itself with requires_features_input=True and expects forward(x,
+    y_features) instead of forward(x). Checked here (not at call sites) so
+    every training/validation/SWA loop stays untouched except for threading
+    y_features through -- they already have it in scope from the DataLoader."""
+    if getattr(model, "requires_features_input", False):
+        out = model(x, y_features)
+    else:
+        out = model(x)
+    if len(out) == 4:
+        return out
+    return out[0], out[1], out[2], None
+
+
 # =============================================================================
 # Training & Evaluation (Single Fold)
 # =============================================================================
@@ -233,6 +334,8 @@ def train_single_fold_multitask(
     model: KnowledgeInfusedFramework,
     train_loader: DataLoader,
     val_loader: DataLoader,
+    inner_val_loader: Optional[DataLoader],
+    patience: int,
     train_indices: np.ndarray,
     val_dataset: Subset,
     epochs: int,
@@ -261,9 +364,31 @@ def train_single_fold_multitask(
     error_analysis_cfg: Optional[Dict] = None,
     fold_idx: int = 1,
     results_dir: str = "checkpoints/model8/results/",
+    figo_class_weights: Optional[torch.Tensor] = None,
+    knowledge_warmup_epochs: int = 20,
+    lambda_criteria: float = 0.3,
+    criteria_pos_weights: Optional[torch.Tensor] = None,
 ) -> Dict[str, float]:
     """
     Trains Model 8 on one fold with all Phase 4+ improvements and returns best metrics.
+
+    Args (head-optimization fixes, 2026-08-14):
+        figo_class_weights: Optional (3,) per-class weight tensor for the FIGO
+            cross-entropy loss, correcting for y_figo's class imbalance. See
+            compute_multitask_loss() for the full rationale.
+        knowledge_warmup_epochs: The knowledge-consistency loss stays at weight 0
+            until this epoch, then ramps up over the following aux_warmup_epochs
+            (10) epochs, reaching full weight by knowledge_warmup_epochs + 10.
+            Distinct from (and later than) the other auxiliary losses' 10-epoch
+            warmup, since the rule loss depends on the ClinicalFeatureHead's own
+            predictions, which need time to become meaningful first.
+        lambda_criteria: Weight for the FIGOCriteriaHead loss (ablation="plus_criteria"
+            or "features_criteria" only). Defaults to lambda_figo's magnitude since
+            it's replacing that head's role in those variants.
+        criteria_pos_weights: Optional (7,) per-flag pos_weight tensor for the
+            criteria head's BCE loss, correcting for per-flag imbalance (e.g.
+            variability_increased is ~82% prevalent, has_late_decel ~15% --
+            same lesson as figo_class_weights, applied per-flag here).
     """
     scheduler_cfg = scheduler_cfg or {}
     ema_cfg = ema_cfg or {}
@@ -337,6 +462,14 @@ def train_single_fold_multitask(
     scaler_amp = torch.amp.GradScaler("cuda", enabled=use_amp)
 
     best_val_auroc = -1.0
+    # Nested selection (added 2026-08-19): when inner_val_loader is supplied the
+    # epoch is chosen on an inner split carved out of the TRAINING fold, so the
+    # reported fold is never consulted during selection. best_val_* below then
+    # remain the protocol-matched (biased) figures for literature comparison,
+    # while unbiased_metrics holds the outer score at the inner-selected epoch.
+    best_inner_auroc = -1.0
+    unbiased_metrics = None
+    patience_ctr = 0
     best_metrics: Dict[str, float] = {}
     best_val_probs: Optional[np.ndarray] = None
     best_val_targets: Optional[np.ndarray] = None
@@ -376,6 +509,14 @@ def train_single_fold_multitask(
         aux_warmup_epochs = 10
         aux_warmup_factor = min(1.0, epoch / float(aux_warmup_epochs)) if epoch <= aux_warmup_epochs else 1.0
 
+        # --- Knowledge-loss warmup: starts later (knowledge_warmup_epochs), ramps
+        # over the following aux_warmup_epochs, since it depends on the feature
+        # head's predictions already being somewhat accurate ---
+        if epoch <= knowledge_warmup_epochs:
+            knowledge_warmup_factor = 0.0
+        else:
+            knowledge_warmup_factor = min(1.0, (epoch - knowledge_warmup_epochs) / float(aux_warmup_epochs))
+
         for batch in train_loader:
             X_batch, yp_batch, yf_batch, yfeat_batch = batch
             X_batch = X_batch.to(device)
@@ -390,7 +531,7 @@ def train_single_fold_multitask(
             optimizer.zero_grad()
 
             with torch.amp.autocast("cuda", enabled=use_amp):
-                distress_logit, figo_logits, feature_preds = model(X_batch)
+                distress_logit, figo_logits, feature_preds, criteria_logits = _forward_model(model, X_batch, yfeat_batch)
                 component_tensors, component_floats = compute_multitask_loss(
                     distress_logit=distress_logit,
                     figo_logits=figo_logits,
@@ -409,6 +550,10 @@ def train_single_fold_multitask(
                     use_focal_loss=True,
                     focal_gamma=2.0,
                     aux_warmup_factor=aux_warmup_factor,
+                    figo_class_weights=figo_class_weights,
+                    knowledge_warmup_factor=knowledge_warmup_factor,
+                    criteria_logits=criteria_logits,
+                    criteria_pos_weights=criteria_pos_weights,
                 )
 
             # Apply loss weighting
@@ -423,6 +568,8 @@ def train_single_fold_multitask(
                     total_loss = total_loss + lambda_features * component_tensors["features"]
                 if "knowledge" in component_tensors:
                     total_loss = total_loss + lambda_knowledge * component_tensors["knowledge"]
+                if "criteria" in component_tensors:
+                    total_loss = total_loss + lambda_criteria * component_tensors["criteria"]
 
             scaler_amp.scale(total_loss).backward()
             scaler_amp.unscale_(optimizer)
@@ -474,8 +621,9 @@ def train_single_fold_multitask(
             with torch.no_grad():
                 for X_batch, yp_batch, yf_batch, yfeat_batch in val_loader:
                     X_batch = X_batch.to(device)
+                    yfeat_batch = yfeat_batch.to(device)
                     with torch.amp.autocast("cuda", enabled=use_amp):
-                        distress_logit, figo_logits, feature_preds = model(X_batch)
+                        distress_logit, figo_logits, feature_preds, _ = _forward_model(model, X_batch, yfeat_batch)
                         probs = torch.sigmoid(distress_logit.squeeze(-1))
                     val_targets_list.extend(yp_batch.cpu().numpy())
                     val_probs_list.extend(probs.cpu().numpy())
@@ -497,8 +645,34 @@ def train_single_fold_multitask(
             best_val_logits = val_logits.copy()
             best_val_figo_preds = np.array(val_figo_preds_list)
             best_val_feature_preds = np.array(val_feature_preds_list)
-            if save_path:
+            if save_path and inner_val_loader is None:
                 torch.save(model.state_dict(), save_path)
+
+        if inner_val_loader is not None:
+            inner_targets_list, inner_probs_list = [], []
+            with eval_context:
+                with torch.no_grad():
+                    for X_b, yp_b, _, yfeat_b in inner_val_loader:
+                        X_b = X_b.to(device)
+                        yfeat_b = yfeat_b.to(device)
+                        with torch.amp.autocast("cuda", enabled=use_amp):
+                            d_logit, _, _, _ = _forward_model(model, X_b, yfeat_b)
+                            p = torch.sigmoid(d_logit.squeeze(-1))
+                        inner_targets_list.extend(yp_b.cpu().numpy())
+                        inner_probs_list.extend(p.cpu().numpy())
+            inner_metrics = calculate_metrics(np.array(inner_targets_list), np.array(inner_probs_list))
+            if inner_metrics["auroc"] > best_inner_auroc:
+                best_inner_auroc = inner_metrics["auroc"]
+                unbiased_metrics = metrics.copy()
+                patience_ctr = 0
+                if save_path:
+                    torch.save(model.state_dict(), save_path)
+            else:
+                patience_ctr += 1
+                if patience_ctr >= patience:
+                    print(f"   [nested] early stop at epoch {epoch} "
+                          f"(no inner improvement for {patience} epochs)")
+                    break
 
     # --- Post-fold: SWA evaluation ---
     if swa is not None and swa.n_checkpoints > 0:
@@ -508,10 +682,11 @@ def train_single_fold_multitask(
             model.eval()
             swa_targets, swa_probs = [], []
             with torch.no_grad():
-                for X_batch, yp_batch, _, _ in val_loader:
+                for X_batch, yp_batch, _, yfeat_batch in val_loader:
                     X_batch = X_batch.to(device)
+                    yfeat_batch = yfeat_batch.to(device)
                     with torch.amp.autocast("cuda", enabled=use_amp):
-                        distress_logit, _, _ = model(X_batch)
+                        distress_logit, _, _, _ = _forward_model(model, X_batch, yfeat_batch)
                         probs = torch.sigmoid(distress_logit.squeeze(-1))
                     swa_targets.extend(yp_batch.cpu().numpy())
                     swa_probs.extend(probs.cpu().numpy())
@@ -575,6 +750,14 @@ def train_single_fold_multitask(
         except Exception as e:
             print(f"   [ErrorAnalysis] Warning: {e}")
 
+    if unbiased_metrics is not None:
+        # Carry the protocol-matched figures alongside, so a single run reports
+        # both the honest estimate and the literature-comparable one.
+        unbiased_metrics = unbiased_metrics.copy()
+        for k, v in best_metrics.items():
+            unbiased_metrics[f"biased_{k}"] = v
+        return unbiased_metrics
+
     return best_metrics
 
 
@@ -598,7 +781,8 @@ def run_dry_run(device: torch.device, ablation: str = "full") -> None:
         in_channels=2, seq_len=4800, patch_len=16, stride=16,
         d_model=128, n_heads=4, n_layers=4, dropout=0.2, latent_dim=128,
     )
-    model = KnowledgeInfusedFramework(encoder=encoder).to(device)
+    include_criteria_head = ablation in ("plus_criteria", "features_criteria")
+    model = KnowledgeInfusedFramework(encoder=encoder, include_criteria_head=include_criteria_head).to(device)
     print(f"Total trainable parameters: {model.param_count:,}")
 
     B = 8
@@ -609,16 +793,21 @@ def run_dry_run(device: torch.device, ablation: str = "full") -> None:
     pos_weight = torch.tensor([5.0]).to(device)
     feat_means = torch.zeros(8).to(device)
     feat_stds = torch.ones(8).to(device)
+    criteria_pos_weights = torch.ones(len(FIGO_CRITERIA_NAMES)).to(device) if include_criteria_head else None
 
-    distress_logit, figo_logits, feature_preds = model(X)
+    distress_logit, figo_logits, feature_preds, criteria_logits = _forward_model(model, X, yfeat)
     print(f"distress_logit shape: {tuple(distress_logit.shape)}")
     print(f"figo_logits shape:    {tuple(figo_logits.shape)}")
     print(f"feature_preds shape:  {tuple(feature_preds.shape)}")
+    if criteria_logits is not None:
+        print(f"criteria_logits shape: {tuple(criteria_logits.shape)}")
 
     component_tensors, component_floats = compute_multitask_loss(
         distress_logit, figo_logits, feature_preds,
         yp, yf, yfeat, pos_weight, feat_means, feat_stds,
         ablation=ablation,
+        criteria_logits=criteria_logits,
+        criteria_pos_weights=criteria_pos_weights,
     )
     total_loss = sum(component_tensors.values())
     total_loss.backward()
@@ -633,6 +822,65 @@ def run_dry_run(device: torch.device, ablation: str = "full") -> None:
 
     print("[OK] Dry run PASSED.")
     print(f"{'='*65}\n")
+
+
+def _maybe_load_pretrained_encoder(
+    encoder: nn.Module, backbone_cfg: Optional[Dict], device: torch.device
+) -> nn.Module:
+    """Optionally initializes `encoder` from a self-supervised pretraining
+    checkpoint (scripts/pretrain_ctg_crossformer_ssl.py) instead of random
+    init, via `backbone.pretrained_path` in the config. No-op if unset."""
+    backbone_cfg = backbone_cfg or {}
+    path = backbone_cfg.get("pretrained_path")
+    if path:
+        encoder.load_state_dict(
+            torch.load(path, map_location=device, weights_only=True), strict=True
+        )
+    return encoder
+
+
+def build_encoder(backbone_cfg: Optional[Dict] = None) -> nn.Module:
+    backbone_cfg = backbone_cfg or {}
+    model_name = backbone_cfg.get("model", "patchtst")
+    if model_name == "ctg_crossformer":
+        return CTGCrossformerEncoder(
+            in_channels=backbone_cfg.get("in_channels", 2),
+            seq_len=backbone_cfg.get("seq_len", 4800),
+            cnn_channels=backbone_cfg.get("cnn_channels", 128),
+            n_heads_cross=backbone_cfg.get("n_heads_cross", 4),
+            n_heads_tf=backbone_cfg.get("n_heads_tf", 8),
+            n_tf_layers=backbone_cfg.get("n_tf_layers", 4),
+            d_ff=backbone_cfg.get("d_ff", 512),
+            dropout=backbone_cfg.get("dropout", 0.1),
+            latent_dim=backbone_cfg.get("latent_dim", 128),
+        )
+    elif model_name == "multiscale_lstm":
+        return MultiScaleLSTMEncoder(
+            in_channels=backbone_cfg.get("in_channels", 2),
+            seq_len=backbone_cfg.get("seq_len", 4800),
+            hidden_size=backbone_cfg.get("hidden_size", 64),
+            num_layers=backbone_cfg.get("num_layers", 2),
+            dropout=backbone_cfg.get("dropout", 0.2),
+            latent_dim=backbone_cfg.get("latent_dim", 128),
+        )
+    elif model_name == "cnn1d":
+        return CNN1DEncoder(
+            in_channels=backbone_cfg.get("in_channels", 2),
+            seq_len=backbone_cfg.get("seq_len", 4800),
+            latent_dim=backbone_cfg.get("latent_dim", 128),
+        )
+    else:
+        return PatchTSTEncoder(
+            in_channels=backbone_cfg.get("in_channels", 2),
+            seq_len=backbone_cfg.get("seq_len", 4800),
+            patch_len=backbone_cfg.get("patch_len", 16),
+            stride=backbone_cfg.get("stride", 16),
+            d_model=backbone_cfg.get("d_model", 128),
+            n_heads=backbone_cfg.get("n_heads", 4),
+            n_layers=backbone_cfg.get("n_layers", 4),
+            dropout=backbone_cfg.get("dropout", 0.2),
+            latent_dim=backbone_cfg.get("latent_dim", 128),
+        )
 
 
 # =============================================================================
@@ -656,7 +904,10 @@ def train_and_evaluate_model8(
     lambda_knowledge: float,
     lambda_consistency: float,
     dry_run: bool,
+    lambda_criteria: float = 0.3,
     # Phase 4+ config dicts
+    backbone_cfg: Optional[Dict] = None,
+    heads_cfg: Optional[Dict] = None,
     loss_weighting_cfg: Optional[Dict] = None,
     scheduler_cfg: Optional[Dict] = None,
     ema_cfg: Optional[Dict] = None,
@@ -666,8 +917,21 @@ def train_and_evaluate_model8(
     calibration_cfg: Optional[Dict] = None,
     curriculum_cfg: Optional[Dict] = None,
     error_analysis_cfg: Optional[Dict] = None,
+    early_stop_mode: str = "outer_best",
+    patience: int = 15,
+    inner_val_frac: float = 0.2,
 ) -> Dict[str, Tuple[float, float]]:
     """Runs full 5-fold patient-level CV for a given ablation variant."""
+    backbone_cfg = backbone_cfg or {}
+    # BUG FIX (2026-08-13, framework architecture review): the `heads:` section
+    # of every model8_*.yaml config was parsed but never threaded through to
+    # KnowledgeInfusedFramework's construction below -- every run, including
+    # the original PatchTST config, silently used the class defaults
+    # (hidden_dim=64, dropout=0.2) regardless of what the YAML specified.
+    # Harmless for configs that happened to already want 64/0.2, but silently
+    # made the CrossFormer config's widened heads (128/0.3, added to close
+    # part of the gap to its standalone benchmark) a no-op until this fix.
+    heads_cfg = heads_cfg or {}
     loss_weighting_cfg = loss_weighting_cfg or {}
     scheduler_cfg = scheduler_cfg or {}
     ema_cfg = ema_cfg or {}
@@ -691,7 +955,17 @@ def train_and_evaluate_model8(
     loss_method = loss_weighting_cfg.get("method", "fixed")
     print(f" Loss Weighting: {loss_method} | Scheduler: {scheduler_cfg.get('type', 'cosine')}")
     print(f" EMA: {ema_cfg.get('enabled', False)} | SWA: {swa_cfg.get('enabled', False)}")
-    print(f" Augmentation: {augmentation_cfg.get('enabled', False)} | Sampling: {sampling_cfg.get('method', 'default')}")
+    # BUG FIX (2026-08-16): this print previously defaulted to False while the
+    # actual augmentor-building code below defaults to True (augmentation_cfg.get
+    # ("enabled", True)) -- since none of the CrossFormer configs have ever had
+    # an `augmentation:` section, every CrossFormer run this session actually
+    # had PhysiologicalAugmentor active (p=0.5, default noise/drift/scale/jitter
+    # params) despite every printed log claiming "Augmentation: False". Numbers
+    # from those runs aren't wrong, just mislabeled -- augmentation was silently
+    # on the whole time. To get a genuinely augmentation-off run going forward,
+    # either add `augmentation: {enabled: false}` to the config or pass
+    # --no_augmentation explicitly.
+    print(f" Augmentation: {augmentation_cfg.get('enabled', True)} | Sampling: {sampling_cfg.get('method', 'default')}")
     print(f"{'='*65}\n")
 
     # Load dataset
@@ -708,7 +982,12 @@ def train_and_evaluate_model8(
     feature_stds = torch.tensor(feat_stds_np, dtype=torch.float32)
 
     y_all = dataset.y_primary
-    folds = create_patient_level_folds(patient_ids, y_all, k_folds=k_folds)
+    # Joint (distress, FIGO class) stratification (2026-08-16) -- see
+    # create_patient_level_folds()'s docstring for why: fold 2 was
+    # consistently the weakest fold across every experiment this session
+    # regardless of what changed about the model, and turned out to have a
+    # real FIGO-class composition skew under distress-only stratification.
+    folds = create_patient_level_folds(patient_ids, y_all, k_folds=k_folds, secondary_labels=dataset.y_figo)
 
     os.makedirs(save_dir, exist_ok=True)
     os.makedirs(results_dir, exist_ok=True)
@@ -730,6 +1009,7 @@ def train_and_evaluate_model8(
             missing_block_max=augmentation_cfg.get("missing_block_max", 48),
         )
 
+    biased_fold_results = {}
     fold_results = {
         m: [] for m in [
             "accuracy", "auroc", "auprc", "f1", "precision",
@@ -753,6 +1033,33 @@ def train_and_evaluate_model8(
             n_neg = float(len(train_idx)) - n_pos
             pos_weight = torch.tensor([n_neg / max(n_pos, 1.0)])
             print(f" pos_weight: {pos_weight.item():.2f} (n_pos={int(n_pos)}, n_neg={int(n_neg)})")
+
+        # --- FIGO class weights (head-optimization fix, 2026-08-14) ---
+        # y_figo is heavily imbalanced (~10% Normal / ~75% Suspicious / ~15%
+        # Pathological on the corrected data) -- inverse-frequency weights stop
+        # the FIGO head from getting away with a near-majority-class predictor.
+        figo_train = dataset.y_figo[train_idx]
+        figo_counts = torch.bincount(figo_train, minlength=3).float()
+        figo_class_weights = torch.where(
+            figo_counts > 0,
+            len(figo_train) / (3.0 * figo_counts.clamp(min=1.0)),
+            torch.zeros_like(figo_counts),
+        )
+        print(f" figo_class_weights: {[round(w, 2) for w in figo_class_weights.tolist()]} "
+              f"(counts={figo_counts.tolist()})")
+
+        # --- FIGOCriteriaHead per-flag pos_weights (prototype, 2026-08-15) ---
+        # Same imbalance lesson as figo_class_weights, applied per-flag: e.g.
+        # variability_increased is ~82% prevalent, has_late_decel ~15% -- an
+        # unweighted BCE would let the head coast on the majority answer per flag.
+        criteria_pos_weights = None
+        if ablation in ("plus_criteria", "features_criteria"):
+            criteria_targets_train = derive_figo_criteria_flags_torch(dataset.y_features[train_idx])
+            crit_n_pos = criteria_targets_train.sum(dim=0)
+            crit_n_neg = len(train_idx) - crit_n_pos
+            criteria_pos_weights = crit_n_neg / crit_n_pos.clamp(min=1.0)
+            print(f" criteria_pos_weights: "
+                  f"{dict(zip(FIGO_CRITERIA_NAMES, [round(w, 2) for w in criteria_pos_weights.tolist()]))}")
 
         train_sub = Subset(dataset, train_idx)
         val_sub = Subset(dataset, val_idx)
@@ -780,18 +1087,97 @@ def train_and_evaluate_model8(
             task_names=["distress", "figo", "features", "knowledge"],
         )
 
+        # --- Nested selection: inner patient-level split out of the training fold ---
+        inner_val_loader = None
+        if early_stop_mode == "nested":
+            from sklearn.model_selection import train_test_split as _tts
+            pid_arr = np.array(patient_ids)
+            tr_pids = pid_arr[train_idx]
+            uniq_tr = np.array(sorted(set(tr_pids)))
+            p_lab = np.array([int(y_all[train_idx][tr_pids == p].max()) for p in uniq_tr])
+            strat = p_lab if (len(np.unique(p_lab)) > 1 and np.bincount(p_lab).min() >= 2) else None
+            _, inner_va_p = _tts(uniq_tr, test_size=inner_val_frac, stratify=strat, random_state=42)
+            va_set = set(inner_va_p.tolist())
+            is_inner_va = np.array([pid in va_set for pid in tr_pids])
+            inner_val_idx = train_idx[is_inner_va]
+            fit_idx = train_idx[~is_inner_va]
+            inner_val_loader = DataLoader(
+                Subset(dataset, inner_val_idx), batch_size=batch_size, shuffle=False, num_workers=0
+            )
+            # Refit the training loader on the reduced (inner-train) portion only
+            train_sub = Subset(dataset, fit_idx)
+            if sampling_method == "balanced":
+                train_loader = DataLoader(
+                    train_sub,
+                    batch_sampler=BalancedBatchSampler(y_all[fit_idx].numpy(), batch_size=batch_size),
+                    num_workers=0,
+                )
+            else:
+                train_loader = DataLoader(train_sub, batch_size=batch_size, shuffle=True, num_workers=0)
+            print(f" [nested] fit {len(fit_idx)} | inner-val {len(inner_val_idx)} "
+                  f"({len(set(pid_arr[inner_val_idx]))} patients) | outer-val {len(val_idx)}")
+
         # --- Build fresh model for each fold ---
-        encoder = PatchTSTEncoder(
-            in_channels=2, seq_len=4800, patch_len=16, stride=16,
-            d_model=128, n_heads=4, n_layers=4, dropout=0.2, latent_dim=128,
-        )
-        model = KnowledgeInfusedFramework(encoder=encoder).to(device)
+        # Wide-distress prototype (2026-08-16): CrossFormer-only variant giving
+        # DistressHead a private path to the 256-dim pre-adapter pooled
+        # representation instead of the shared 128-dim latent -- see
+        # src/models/knowledge_infused_framework_wide_distress.py for the full
+        # rationale. Opt-in via backbone.model: ctg_crossformer_wide_distress;
+        # every other backbone value is completely unaffected by this branch.
+        if backbone_cfg.get("model") == "ctg_crossformer_wide_distress":
+            encoder = CTGCrossformerDualLatentEncoder(
+                in_channels=backbone_cfg.get("in_channels", 2),
+                seq_len=backbone_cfg.get("seq_len", 4800),
+                cnn_channels=backbone_cfg.get("cnn_channels", 128),
+                n_heads_cross=backbone_cfg.get("n_heads_cross", 4),
+                n_heads_tf=backbone_cfg.get("n_heads_tf", 8),
+                n_tf_layers=backbone_cfg.get("n_tf_layers", 4),
+                d_ff=backbone_cfg.get("d_ff", 512),
+                dropout=backbone_cfg.get("dropout", 0.1),
+                latent_dim=backbone_cfg.get("latent_dim", 128),
+            )
+            encoder = _maybe_load_pretrained_encoder(encoder, backbone_cfg, device)
+            model = KnowledgeInfusedFrameworkWideDistress(
+                encoder=encoder,
+                head_hidden_dim=heads_cfg.get("hidden_dim", 64),
+                head_dropout=heads_cfg.get("dropout", 0.2),
+                include_criteria_head=ablation in ("plus_criteria", "features_criteria"),
+            ).to(device)
+        elif heads_cfg.get("feature_fusion", False):
+            # Feature-fusion prototype (2026-08-16): DistressHead gets the 8
+            # hand-crafted clinical features concatenated with z as direct
+            # input, instead of only via auxiliary loss -- see
+            # src/models/knowledge_infused_framework_feature_fusion.py for the
+            # full rationale. Backbone-agnostic (works with any encoder), so
+            # this is opt-in via heads.feature_fusion: true rather than
+            # backbone.model, unlike the wide-distress variant.
+            encoder = build_encoder(backbone_cfg)
+            encoder = _maybe_load_pretrained_encoder(encoder, backbone_cfg, device)
+            model = KnowledgeInfusedFrameworkFeatureFusion(
+                encoder=encoder,
+                feature_means=feature_means,
+                feature_stds=feature_stds,
+                head_hidden_dim=heads_cfg.get("hidden_dim", 64),
+                head_dropout=heads_cfg.get("dropout", 0.2),
+                include_criteria_head=ablation in ("plus_criteria", "features_criteria"),
+            ).to(device)
+        else:
+            encoder = build_encoder(backbone_cfg)
+            encoder = _maybe_load_pretrained_encoder(encoder, backbone_cfg, device)
+            model = KnowledgeInfusedFramework(
+                encoder=encoder,
+                head_hidden_dim=heads_cfg.get("hidden_dim", 64),
+                head_dropout=heads_cfg.get("dropout", 0.2),
+                include_criteria_head=ablation in ("plus_criteria", "features_criteria"),
+            ).to(device)
         fold_save = os.path.join(save_dir, f"model8_{ablation}_fold{fold_idx}_best.pth")
 
         metrics = train_single_fold_multitask(
             model=model,
             train_loader=train_loader,
             val_loader=val_loader,
+            inner_val_loader=inner_val_loader,
+            patience=patience,
             train_indices=train_idx,
             val_dataset=val_sub,
             epochs=epochs,
@@ -819,11 +1205,16 @@ def train_and_evaluate_model8(
             error_analysis_cfg=error_analysis_cfg,
             fold_idx=fold_idx,
             results_dir=results_dir,
+            figo_class_weights=figo_class_weights,
+            lambda_criteria=lambda_criteria,
+            criteria_pos_weights=criteria_pos_weights,
         )
 
         for m_key in fold_results:
             if m_key in metrics:
                 fold_results[m_key].append(metrics[m_key])
+            if f"biased_{m_key}" in metrics:
+                biased_fold_results.setdefault(m_key, []).append(metrics[f"biased_{m_key}"])
 
         print(
             f" Fold {fold_idx} → AUROC: {metrics.get('auroc', 0):.4f} | "
@@ -845,7 +1236,23 @@ def train_and_evaluate_model8(
         summary[m_key] = (mean_val, std_val)
         unit = "%" if m_key in ["accuracy", "precision", "recall", "specificity", "sens_at_90spec"] else ""
         print(f" {m_key:<25}: {mean_val:.4f}{unit} ± {std_val:.4f}{unit}")
-    print(f"{'='*65}\n")
+    print(f"{'='*65}")
+
+    if biased_fold_results:
+        print("")
+        print(" PROTOCOL-MATCHED (best-epoch-on-reported-fold, as literature)")
+        print(f"{'='*65}")
+        for m_key, vals in biased_fold_results.items():
+            if not vals:
+                continue
+            unit = "%" if m_key in ["accuracy", "precision", "recall", "specificity", "sens_at_90spec"] else ""
+            print(f" {m_key:<25}: {float(np.mean(vals)):.4f}{unit} +/- {float(np.std(vals)):.4f}{unit}")
+        ub = float(np.mean(fold_results['auroc'])) if fold_results.get('auroc') else float('nan')
+        bi = float(np.mean(biased_fold_results['auroc'])) if biased_fold_results.get('auroc') else float('nan')
+        print("")
+        print(f" >>> selection inflation on AUROC: {bi - ub:+.4f} (protocol-matched {bi:.4f} vs unbiased {ub:.4f})")
+        print(f"{'='*65}")
+
 
     # Save results JSON
     results_path = os.path.join(results_dir, f"model8_{ablation}_cv_results.json")
@@ -885,7 +1292,34 @@ def main():
     parser.add_argument("--no_ema", action="store_true", help="Disable EMA")
     parser.add_argument("--no_swa", action="store_true", help="Disable SWA")
     parser.add_argument("--dry_run", action="store_true")
+    parser.add_argument("--pretrained_encoder", type=str, default=None,
+                        help="Path to a CTGCrossformerEncoder state_dict (e.g. from "
+                             "scripts/pretrain_ctg_crossformer_ssl.py) to initialize each "
+                             "fold's encoder from. Overrides backbone.pretrained_path if set.")
+    parser.add_argument("--early_stop_mode", type=str, default="outer_best",
+                        choices=["outer_best", "nested"],
+                        help="outer_best (default, ORIGINAL): choose the epoch by AUROC on the "
+                             "reported validation fold -- selection-on-test, measured to inflate "
+                             "AUROC by ~0.077. Kept default so prior results reproduce and to match "
+                             "the convention used by the literature we benchmark against. nested: "
+                             "select on an inner patient-level split of the training fold, leaving "
+                             "the reported fold untouched; BOTH numbers are printed.")
+    parser.add_argument("--patience", type=int, default=15,
+                        help="Early-stopping patience on the inner split (nested mode only).")
+    parser.add_argument("--inner_val_frac", type=float, default=0.2,
+                        help="Fraction of training-fold PATIENTS held out for inner selection.")
+    parser.add_argument("--seed", type=int, default=42,
+                        help="Random seed (reproducibility fix, 2026-08-13: this script previously had "
+                             "no seeding anywhere -- weight init, data shuffling, dropout, augmentation "
+                             "draws were all fully random every run, making cross-run ablation comparisons "
+                             "unreliable. Same run twice with --seed set should now land much closer together.")
     args = parser.parse_args()
+
+    random.seed(args.seed)
+    np.random.seed(args.seed)
+    torch.manual_seed(args.seed)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed_all(args.seed)
 
     # Load config
     cfg = {}
@@ -893,6 +1327,10 @@ def main():
         with open(args.config, "r") as f:
             cfg = yaml.safe_load(f) or {}
 
+    backbone_cfg = cfg.get("backbone", {})
+    if args.pretrained_encoder:
+        backbone_cfg["pretrained_path"] = args.pretrained_encoder
+    heads_cfg = cfg.get("heads", {})
     train_cfg = cfg.get("training", {})
     loss_cfg = cfg.get("loss", {})
     path_cfg = cfg.get("paths", {})
@@ -918,6 +1356,7 @@ def main():
     lambda_features = args.lambda_features or loss_cfg.get("lambda_features", 0.2)
     lambda_knowledge = args.lambda_knowledge or loss_cfg.get("lambda_knowledge", 0.1)
     lambda_consistency = loss_cfg.get("lambda_consistency", 0.5)
+    lambda_criteria = loss_cfg.get("lambda_criteria", 0.3)
     scaler_path = path_cfg.get("feature_scaler_path", "data/processed/feature_scaler.npz")
     save_dir = path_cfg.get("checkpoint_dir", "checkpoints/model8/")
     results_dir = path_cfg.get("results_dir", "checkpoints/model8/results/")
@@ -963,6 +1402,9 @@ def main():
             lambda_knowledge=lambda_knowledge,
             lambda_consistency=lambda_consistency,
             dry_run=args.dry_run,
+            lambda_criteria=lambda_criteria,
+            backbone_cfg=backbone_cfg,
+            heads_cfg=heads_cfg,
             loss_weighting_cfg=loss_weighting_cfg,
             scheduler_cfg=scheduler_cfg,
             ema_cfg=ema_cfg,
@@ -972,6 +1414,9 @@ def main():
             calibration_cfg=calibration_cfg,
             curriculum_cfg=curriculum_cfg,
             error_analysis_cfg=error_analysis_cfg,
+            early_stop_mode=args.early_stop_mode,
+            patience=args.patience,
+            inner_val_frac=args.inner_val_frac,
         )
         all_results[variant] = results
 

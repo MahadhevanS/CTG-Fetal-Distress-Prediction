@@ -98,9 +98,130 @@ def vectorized_classify_figo(
     return labels
 
 
+# Ordered names for derive_figo_criteria_flags()'s 7 output columns. Kept as a
+# module-level constant so callers (dataset prep, FIGOCriteriaHead consumers,
+# error analysis) can label columns without hardcoding the order twice.
+FIGO_CRITERIA_NAMES = [
+    "baseline_low",          # baseline < 100 bpm
+    "baseline_normal",       # 110 <= baseline <= 160 bpm
+    "baseline_high",         # baseline > 160 bpm
+    "variability_normal",    # 5 <= LTV <= 25 bpm
+    "has_late_decel",
+    "has_variable_decel",
+    "has_prolonged_decel",
+]
+
+
+def derive_figo_criteria_flags(y_features: np.ndarray) -> np.ndarray:
+    """
+    Derives 7 intermediate binary clinical judgments that classify_figo()
+    computes internally on the way to its single collapsed 3-class label --
+    e.g. "is baseline in the normal band", "are late decelerations present" --
+    exposing them as separate targets instead of only the final aggregate class.
+
+    Purely a re-derivation from the existing 8-feature vector already computed
+    by the preprocessing pipeline (baseline, STV, LTV, accel/decel counts) --
+    requires no raw-signal access, so it can be computed directly from an
+    existing y_features tensor/array (e.g. from a *_dataset.pt file) without
+    rerunning preprocessing.
+
+    NOTE -- both variability_reduced (LTV < 5 bpm) and variability_increased
+    (LTV > 25 bpm) are deliberately NOT included as flags here; only
+    variability_normal (5-25 bpm) is kept. History:
+      - variability_reduced was dropped first (2026-08-14): 0 of 6266 windows
+        had LTV < 5 vs. 81.7% with LTV > 25 -- a flag with zero positive
+        examples can't be learned or evaluated.
+      - variability_increased was dropped later (2026-08-15) for a different,
+        more fundamental reason, found via literature check (user-requested
+        prior-art validation) rather than a prevalence artifact: the FIGO 2015
+        guideline defines "increased/saltatory" variability as >25 bpm
+        SUSTAINED FOR MORE THAN 30 MINUTES, and "reduced" as <5 bpm sustained
+        for MORE THAN 50 MINUTES (in baseline segments) -- both longer than
+        this pipeline's entire 20-minute assessment window
+        (WINDOW_MINUTES in preprocessing/pipeline.py). Even after three
+        LTV-computation fixes (percentile range, detrending, accel/decel
+        exclusion -- see calculate_variability()'s docstring) that took the
+        real Colab-regenerated >25bpm prevalence from 81.7% -> 53.4%, a
+        20-minute window structurally cannot observe the guideline's required
+        30-minute persistence, so a per-window LTV>25 flag was never a
+        faithful implementation of "saltatory" to begin with -- no amount of
+        further threshold/computation tuning within this window length closes
+        that gap. variability_normal is kept because FIGO's 5-25bpm band has
+        no minimum-duration qualifier attached in the guideline, so it doesn't
+        have this problem. LTV itself remains a normal (unaffected) regression
+        target for ClinicalFeatureHead -- only the two binary saltatory/reduced
+        classifications are dropped here, not the underlying continuous value.
+
+    Args:
+        y_features: (N, 8) array in the fixed column order [Baseline, STV, LTV,
+                    Accels, Early, Late, Variable, Prolonged] -- raw clinical
+                    units, NOT Z-normalized (i.e. the same convention as the
+                    y_features stored in *_dataset.pt, or a model's predicted
+                    features after un-normalizing with feature_means/feature_stds).
+
+    Returns:
+        np.ndarray of shape (N, 7), dtype float32, values in {0.0, 1.0}.
+        Column order matches FIGO_CRITERIA_NAMES.
+    """
+    baseline = y_features[:, 0]
+    ltv = y_features[:, 2]
+    late = y_features[:, 5]
+    variable = y_features[:, 6]
+    prolonged = y_features[:, 7]
+
+    flags = np.stack([
+        baseline < 100,
+        (baseline >= 110) & (baseline <= 160),
+        baseline > 160,
+        (ltv >= 5) & (ltv <= 25),
+        late > 0,
+        variable > 0,
+        prolonged > 0,
+    ], axis=1)
+    return flags.astype(np.float32)
+
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+
+
+def derive_figo_criteria_flags_torch(y_features: torch.Tensor) -> torch.Tensor:
+    """
+    Torch-native equivalent of derive_figo_criteria_flags(), for computing
+    FIGOCriteriaHead's targets live inside the training loop from a batch
+    tensor (avoids a GPU->CPU->numpy->GPU round trip every batch). Same column
+    order (FIGO_CRITERIA_NAMES), same thresholds, same exclusion of both
+    variability_reduced and variability_increased -- see
+    derive_figo_criteria_flags()'s docstring for the full rationale (the
+    latter's exclusion is a duration-vs-window-length mismatch confirmed
+    against the FIGO 2015 guideline text, not just a prevalence artifact).
+
+    Args:
+        y_features: (B, 8) tensor in RAW clinical units (NOT Z-normalized) --
+                    i.e. the same convention as the y_features loaded directly
+                    from *_dataset.pt (see the y_features-normalization bug fix
+                    note in compute_multitask_loss for why this distinction
+                    matters).
+
+    Returns:
+        torch.Tensor of shape (B, 7), dtype matches input, values in {0.0, 1.0}.
+    """
+    baseline = y_features[:, 0]
+    ltv = y_features[:, 2]
+    late = y_features[:, 5]
+    variable = y_features[:, 6]
+    prolonged = y_features[:, 7]
+
+    return torch.stack([
+        (baseline < 100).float(),
+        ((baseline >= 110) & (baseline <= 160)).float(),
+        (baseline > 160).float(),
+        ((ltv >= 5) & (ltv <= 25)).float(),
+        (late > 0).float(),
+        (variable > 0).float(),
+        (prolonged > 0).float(),
+    ], dim=1)
 
 
 def figo_rule_loss(

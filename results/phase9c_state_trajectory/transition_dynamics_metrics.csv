@@ -1,0 +1,4 @@
+metric_category,metric_name,normal_mean,acidemic_mean,p_value
+Exp 5: State Reversal,Total Reversal Count per Patient,1.26,1.19,0.5531
+Exp 6: Progression Velocity,Maximum 4-Window Velocity (V4),2.76,2.79,0.7884
+Exp 8: Multidomain Concurrence,Max Consecutive Multidomain Windows (C_t),4.0,3.98,0.1354

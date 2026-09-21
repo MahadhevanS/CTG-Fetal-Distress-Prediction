@@ -1,0 +1,7 @@
+model,sensitivity_overall_pct,median_warning_min,iqr_warning_min,mean_warning_min,detected_ge_60m_pct,detected_ge_45m_pct,detected_ge_30m_pct,detected_ge_20m_pct,detected_ge_10m_pct
+Phase 8 Snapshot Baseline,79.09,12.5,17.5,15.6,0.0,0.0,14.55,27.27,50.0
+Model 1 (Current State Only),80.0,40.0,7.5,35.4,0.0,0.0,65.45,74.55,78.18
+Model 2 (Current State + Trajectory),80.0,40.0,7.5,35.4,0.0,0.0,65.45,74.55,78.18
+Model 3 (Current Features + Trajectory),74.55,17.5,28.8,20.0,0.0,0.0,22.73,36.36,50.91
+Model 4 (Prediction Trajectory Only),70.91,12.5,20.0,15.7,0.0,0.0,15.45,24.55,40.91
+Model 5 (Combined Prediction + State Trajectory),74.55,17.5,25.0,19.1,0.0,0.0,20.91,34.55,49.09

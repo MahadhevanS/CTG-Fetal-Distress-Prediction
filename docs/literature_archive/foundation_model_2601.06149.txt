@@ -1,0 +1,429 @@
+A Foundation Model Approach for Fetal Stress Prediction During Labor From
+cardiotocography (CTG) recordings
+Naomi Fridmana, Berta Ben Shacharb
+aDepartment of Industrial Engineering, Ariel University, Ariel, Israel
+bNF Algorithms&AI, Tel Aviv, Israel
+Abstract
+Intrapartum cardiotocography (CTG) is widely used for fetal monitoring during labor, yet its interpretation suffers
+from high inter-observer variability and limited predictive accuracy. Deep learning approaches have been constrained
+by the scarcity of CTG recordings, particularly those with clinical outcome labels. We present the first application of
+self-supervised pre-training to intrapartum CTG analysis. Our approach leverages 2,444 hours of unlabeled record-
+ings for masked pre-training, followed by fine-tuning on the 552-recording CTU-UHB benchmark. We employ a
+PatchTST transformer architecture with a channel-asymmetric masking scheme designed for fetal heart rate (FHR)
+signal reconstruction. We achieve an area under the receiver operating characteristic curve (AUC) of 0.83 on the full
+test set and 0.853 on uncomplicated vaginal deliveries, exceeding previously reported results on this benchmark (AUC
+0.68–0.75). Error analysis reveals that false-positive alerts typically correspond to CTG patterns judged concerning
+on retrospective clinical review, suggesting clinically meaningful predictions even when umbilical pH is normal. We
+release standardized dataset splits and model weights to enable reproducible benchmarking. Our results demonstrate
+that self-supervised pre-training can address data scarcity in fetal monitoring, offering a path toward reliable decision
+support in the labor room.
+Keywords:cardiotocography, fetal monitoring, self-supervised learning, transformer, masked pre-training
+1. Introduction
+1.1. Clinical Background
+Annually, approximately two million babies are stillborn worldwide, with over 40% of these events occurring
+during labor [1]. Many of these deaths are preventable through high-quality monitoring during pregnancy [2] and
+timely obstetric intervention [3]. Intrapartum asphyxia is a major contributor to stillbirths [4], which occurs when
+inadequate oxygen supply to the fetus during labor leads to hypoxia. The fetal oxygen supply relies entirely on
+uteroplacental blood flow across the umbilical cord; any disruption—whether from uterine contractions temporarily
+compressing placental vessels or umbilical cord compression—can reduce oxygen delivery to fetal tissues [5]. During
+normal labor, uterine contractions cause transient reductions in FHR (decelerations), from which a healthy fetus
+rapidly recovers. Failure to recover, prolonged decelerations, or reduced variability can indicate fetal compromise
+[6]. Since these responses manifest as characteristic FHR patterns, continuous monitoring during labor has become
+standard practice for identifying fetal compromise [5].
+Intrapartum cardiotocography (CTG) records FHR alongside uterine contractions (UC), enabling clinicians to as-
+sess fetal wellbeing throughout labor (Figure 1, top). Despite widespread adoption, CTG interpretation remains prob-
+lematic due to high false-positive rates [7], subjectivity in visual interpretation [8, 9], and substantial inter-observer
+variability [10]. These challenges are exacerbated in low-resource settings [11, 12].
+The FIGO guidelines define standardized morphological features for CTG interpretation: baseline FHR, variabil-
+ity, accelerations, and decelerations (Figure 1, bottom) [5]. However, these criteria assume artifact-free signals rarely
+Email address:naominoe.fridman@gmail.com(Naomi Fridman)
+arXiv:2601.06149v1  [cs.LG]  5 Jan 2026
+achieved in practice. Visual interpretation requires tracking multiple features simultaneously while correlating FHR
+changes with contraction timing—a demanding task given that monitors display only a limited time window of the
+recording.
+Model development is further complicated by the lack of a definitive outcome measure. Umbilical artery pH offers
+an objective biochemical marker but does not fully capture long-term neurological outcome, while Apgar scores are
+subjectively assigned and influenced by factors beyond intrapartum events. Moreover, retrospective CTG interpreta-
+tion by experts has been shown to be biased by knowledge of delivery outcome [13].
+1.2. Technical Background
+Machine learning approaches to CTG analysis have evolved through several methodological paradigms. Early
+computational methods applied classical signal processing techniques to FHR signals, including spectral analysis,
+time-frequency decomposition, and nonlinear dynamics measures such as entropy and fractal dimension [14, 15].
+These extracted features were then used with traditional classifiers—support vector machines, random forests, or
+logistic regression [16, 17]. Automated systems such as SisPorto [18] demonstrated the feasibility of computerized
+CTG interpretation using rule-based analysis of FIGO-defined morphological features. Ben M’Barek et al. [19]
+achieved AUC of 0.74 on CTU-UHB using logistic regression with such FIGO-based features.
+A parallel line of work leveraged signal processing to transform one-dimensional CTG signals into two-dimensional
+representations suitable for image classification networks. DeepFHR [20] applied continuous wavelet transforms to
+convert FHR signals into time-frequency scalograms, then classified these images with 2D CNNs. Similar approaches
+have used spectrograms, recurrence plots, and histogram-based representations as inputs to standard image architec-
+tures.
+End-to-end deep learning methods process raw or minimally preprocessed signals directly. One-dimensional
+CNNs and recurrent architectures (LSTMs, GRUs) learn representations from the signal itself without explicit feature
+engineering. CTGNet [21] employed 1D CNNs with depthwise separable convolutions to process FHR and UC signals
+jointly. Ogasawara et al. [22] proposed CTG-net, achieving AUC of 0.73 on their institutional dataset and 0.68 on
+CTU-UHB. Petrozziello et al. [23] applied multimodal CNNs to over 35,000 births, reporting AUC of 0.81 on their
+Oxford dataset and approximately 0.75 on CTU-UHB.
+However, direct comparison across studies is challenging due to heterogeneous outcome definitions—some use
+umbilical artery pH with varying thresholds (<7.05, 7.10, 7.15, or 7.20), others use Apgar scores, and some combine
+multiple criteria. Additionally, many high-performing models are trained and tested on private institutional datasets,
+preventing independent validation. Reported AUC values range from 0.68 to over 0.95, but the highest figures typically
+reflect evaluation on private data or methodological issues. The public CTU-UHB database [24] remains the only
+substantial benchmark; on this dataset, properly evaluated methods achieve AUC of 0.68–0.75.
+Beyond these methodological inconsistencies, there are also conceptual reasons to question near-perfect classifica-
+tion results. Deep learning models are typically trained on short CTG segments (3–10 minutes) extracted from longer
+recordings (60–90 minutes), with each segment labeled according to the final umbilical artery pH. However, fetal
+compromise is a dynamic process—pathological patterns may only manifest during specific portions of the recording,
+not throughout its entirety. Labeling every segment from an acidemic delivery as positive assumes the abnormality is
+continuously detectable, which is clinically unrealistic, and likely inflates performance estimates on short segments.
+Transformer architectures have revolutionized sequential modeling across domains [25, 26, 27]. Their self-
+attention mechanism enables learning long-range dependencies without the limitations of recurrent architectures.
+PatchTST [28] introduced patch-based tokenization for time series, improving computational efficiency and represen-
+tational capacity. Applications of transformers to CTG remain limited: Wu et al. [29] proposed ETCNN, a hybrid
+transformer-CNN for morphological feature detection (baseline, accelerations, decelerations), but no prior work has
+applied transformers to intrapartum CTG outcome classification or explored self-supervised pre-training for CTG.
+In this work, we adopt the foundation model paradigm for CTG analysis: a high-capacity model is first pre-trained
+to reconstruct masked fetal heart rate (FHR) segments, thereby learning general representations of CTG signals in a
+self-supervised manner, and is only subsequently fine-tuned for specific downstream clinical tasks such as fetal com-
+promise classification. Masked pre-training improves representation learning on any available data; using unlabeled
+recordings further enlarges the effective training corpus.
+2
+Figure 1: Cardiotocography (CTG) recording examples.Top:Clinical CTG display as seen by clinicians on bedside monitors, showing fetal heart
+rate (FHR, red, upper panel) and uterine contractions (UC, black, lower panel) on standard grid paper (1 cm=1 min). Visual interpretation requires
+simultaneously tracking baseline, variability, accelerations, decelerations, and their temporal relationship to contractions.Bottom:Annotated CTG
+recording from the FHRMA dataset [31], illustrating expert consensus annotations of the FHR baseline (purple), accelerations (green shading), and
+decelerations (pink shading). Even with explicit annotations, classification of these features shows substantial inter-observer variability in clinical
+practice.
+Concretely, we apply self-supervised masked pre-training to intrapartum CTG using the CTGDL dataset [30],
+which integrates CTU-UHB with two additional CTG databases—FHRMA (135 recordings) [31] and SPaM’17 intra-
+partum CTG challenge database (297 recordings) [32, 33]—for a total of 2,444 hours of fetal monitoring data. These
+additional recordings lack clinical outcome labels and have therefore not been used in prior CTU-UHB benchmarking
+studies. We base our architecture on PatchTST [28], extending it with channel-asymmetric masking tailored to the
+distinct clinical roles of FHR and UC signals. For comparison, Khan et al. [34] applied standard PatchTST to antepar-
+tum CTG classification, achieving AUC of 0.77 on a private dataset of over 20,000 labeled recordings. Using the same
+base architecture with our masked pre-training approach and channel-asymmetric masking, we achieve AUC of 0.83
+on the full CTU-UHB test set and 0.853 on vaginal deliveries—demonstrating that self-supervised pre-training com-
+bined with task-specific architectural modifications can outperform fully supervised training on substantially larger
+datasets.
+2. Methods
+2.1. Dataset
+We utilize the CTGDL dataset [30], which integrates three complementary CTG databases totaling 984 record-
+ings and 2,444 hours of fetal monitoring data. The dataset comprises: CTGDL_CTU_UHB (552 recordings with
+clinical outcomes including umbilical artery pH) [35], CTGDL_FHRMA (135 recordings with expert morphological
+annotations) [31], and CTGDL_SPAM (297 long-duration recordings from the CTG Challenge 2017). All recordings
+contain dual-channel signals sampled at 4 Hz: fetal heart rate (FHR) and uterine contractions (UC).
+The complete dataset was used for self-supervised pre-training via masked prediction. For the downstream clas-
+sification task, we used the CTGDL_CTU_UHB subset, which originates from the Czech Technical University and
+3
+University Hospital Brno Intrapartum Cardiotocography Database [35, 36]. This database contains carefully selected
+recordings collected between 2010 and 2012 using Philips Avalon FM50 monitors. Selection criteria included: sin-
+gleton pregnancy, gestational age>36 weeks, no known developmental defects, second stage labor duration≤30
+minutes, and FHR signal quality>50% in each 30-minute window. Each recording starts no more than 90 minutes
+before delivery (mean duration 74.2±7.6 minutes). Clinical characteristics are summarized in Table 1.
+The dataset includes both uncomplicated and high-risk deliveries, with documented cases of cesarean delivery
+(8.3%), induced labor (39.3%), meconium-stained fluid (11.6%), labor arrest (10.0%), hypertension (8.0%), and
+diabetes (6.7%). These rates exceed typical population averages, which is advantageous for studying the critical cases
+where CTG monitoring is most essential, but presents a challenge for developing models that generalize to the broader,
+lower-risk obstetric population.
+Table 1: Clinical characteristics of the CTGDL_CTU_UHB dataset (n=552)
+Category Parameter Value
+Maternal Age (years) 29.7±4.5
+Delivery
+Vaginal 506 (91.7%)
+Cesarean section 46 (8.3%)
+Gestational age (weeks) 40.0±1.1
+Neonatal
+Birth weight (g) 3400±455
+Sex (Male/Female) 286/266
+Apgar 1 min 9 [8–9]
+Apgar 5 min 9 [9–10]
+Outcome Umbilical artery pH 7.23±0.10
+pH<7.15 (Acidemia) 113 (20.5%)
+Risk factors
+Induced labor 217 (39.3%)
+Abnormal amniotic fluid 147 (26.6%)
+Meconium-stained fluid 64 (11.6%)
+Labor arrest (no progress) 55 (10.0%)
+Non-cephalic presentation 53 (9.6%)
+Hypertension 44 (8.0%)
+Diabetes 37 (6.7%)
+Preeclampsia 17 (3.1%)
+Values are mean±SD, n (%), or median [IQR].
+For binary classification, fetal acidemia was defined as umbilical artery pH<7.15, yielding 113 positive cases
+(20.5%). The dataset was split into training, validation, and test sets with stratified sampling to maintain consistent
+class distribution across splits (Table 2). We publish these splits to establish a reproducible benchmark for future
+studies.
+Table 2: Dataset splits for reproducibility
+Split n Acidemia (pH<7.15) Prevalence
+Train 441 90 20.4%
+Validation 56 12 21.4%
+Test 55 11 20.0%
+Total 552 113 20.5%
+2.2. Signal Preprocessing
+Signal preprocessing followed the CTGDL pipeline [30]: physiologically implausible FHR values (<50 or>220
+bpm) were removed, brief artifacts and transient spikes were eliminated, and missing values were filled using linear
+interpolation.
+4
+We extended this pipeline to address a characteristic artifact in UC signals. Unlike FHR, where missing data
+appears as zero or NaN values, UC signals frequently contain flat regions at non-zero levels that represent sensor
+displacement or loss of contact rather than true physiological measurements. To identify such regions, we computed
+the rolling standard deviation over 30-second windows (120 samples at 4 Hz) and marked segments as invalid where
+the standard deviation fell below 10 −5, the original value was not already flagged as missing, and the amplitude
+remained below 80 mmHg. This threshold was chosen empirically based on visual inspection of typical flat artifacts
+(Figure 2) illustrates this phenomenon across representative recordings.
+For model input, signals were normalized to the [0,1] range. FHR values were clipped to 50–210 bpm and divided
+by 160. UC values were clipped to 0–100 mmHg and divided by 100.
+Figure 2: Examples of UC signal quality issues in CTG recordings. Green shaded regions indicate detected no-value segments where the signal
+appears flat at non-zero levels due to sensor displacement. Purple shaded regions indicate original NaN values. These flat segments, while
+numerically valid, contain no physiological information and were excluded from analysis.
+2.3. Model Structure
+We employ PatchTST [28], a Transformer-based architecture designed for time series representation learning.
+Two key design principles make this architecture suitable for CTG analysis: patch-based tokenization and channel-
+independent processing.
+Patch-Based Tokenization..The model segments each input signal into overlapping patches rather than processing
+individual time points. This approach captures local morphological structure within each patch—critical for CTG
+analysis where clinically relevant patterns such as accelerations and decelerations are defined by their shape over tem-
+poral windows rather than instantaneous values. Additionally, patch-based segmentation reduces the sequence length
+presented to the attention mechanism, enabling the model to capture relationships between distant events such as FHR
+responses to uterine contractions. Each patch is projected into a latent space through a learned linear transformation
+WP, and learnable positional encodingsW pos are added to preserve temporal ordering:
+xd =W P·x p +W pos (1)
+This formulation enables the self-attention mechanism to attend to patches based on both content similarity and
+relative temporal position—essential for detecting patterns like late decelerations, which are defined by their temporal
+relationship to uterine contractions.
+5
+Figure 3: PatchTST architecture overview, adapted from [28]. (a) Channel-independent processing: each channel (FHR, UC) is processed sep-
+arately through the transformer backbone and concatenated for prediction. (b) Supervised learning: input series is normalized, segmented into
+patches, projected with positional embeddings, processed by the transformer encoder, and mapped to output via a linear head. (c) Self-supervised
+pre-training: random patches are masked and the model learns to reconstruct them, enabling representation learning from unlabeled data.
+Channel-Independent Processing..A key architectural choice leverages PatchTST’s channel-independence design.
+Unlike channel-mixing approaches where all input features are projected into a shared embedding space, channel-
+independence processes each univariate signal through the same Transformer backbone while maintaining separate
+forward passes. This design offers three advantages for CTG analysis: (1) each signal learns attention patterns tailored
+to its characteristics—FHR signals exhibit different temporal dynamics than UC signals; (2) shared weights act as an
+implicit regularizer, reducing overfitting on limited clinical data; and (3) the model remains robust to noise in one
+channel without propagating artifacts to the other. The embedded patches from both channels are processed through
+identical encoder layers—comprising multi-head self-attention and feed-forward networks with residual connections
+and batch normalization—but maintain independent attention computations. For downstream tasks, the encoded rep-
+resentations from both channels are concatenated, allowing the task-specific head to jointly consider learned features
+from both FHR and UC signals while preserving their independently learned attention patterns.
+2.4. Masked Pre-training
+For self-supervised pre-training, we adopt a masked autoencoder paradigm with a channel-asymmetric masking
+strategy. At each temporal position, the FHR and UC signals form a paired patch. During masking, only the FHR
+patch is replaced with zeros while the corresponding UC patch remains intact (Figure 4). This asymmetric design
+forces the model to reconstruct occluded FHR segments using two complementary sources of information: (1) the
+surrounding FHR context, and (2) the temporally aligned UC signal. Consequently, the model learns to associate
+FHR patterns with concurrent uterine activity—capturing clinically relevant relationships such as FHR decelerations
+in response to contractions.
+To prevent trivial reconstruction through simple interpolation from neighboring patches, we impose two con-
+straints on the masking pattern. First, masked patches must appear in contiguous groups of at least two—isolated
+masked patches are not permitted. Second, the first and last patches of each sequence are excluded from masking to
+6
+preserve boundary context. Approximately 40% of the remaining patches are randomly selected for masking in each
+training sample.
+The model is trained to reconstruct the original FHR values at masked positions using mean squared error:
+Lpretrain = 1
+|M|
+X
+i∈M
+∥xFHR
+i −ˆxFHR
+i ∥2
+2 (2)
+whereMdenotes the set of masked patch indices. This objective compels the model to learn meaningful representa-
+tions of CTG patterns by inferring missing FHR segments from both surrounding temporal context and the concurrent
+UC signal.
+Figure 4: Illustration of the channel-asymmetric masking strategy. Top: original CTG signal with FHR (blue) and UC (red) channels. Middle:
+masked input where selected FHR patches are zeroed (gray regions) while UC remains intact. Bottom: binary mask pattern indicating masked
+(gray) and unmasked (green) FHR patches. The first and last patches are never masked, and masked patches appear in contiguous groups.
+Dropout in both the encoder and head was set to 0.2, matching the configuration reported for PatchTST and pro-
+viding regularization that is effective for patch-based masked pretraining without substantially slowing convergence
+[28]. With a context length of 1,800 samples and a patching scheme of length 48 and stride 24, each segment is
+decomposed into 73 overlapping patches, which yields a sufficiently rich token sequence for masked modeling while
+keeping sequence length and memory usage manageable [28]. The masking ratio was fixed at 0.4, in line with pub-
+lished masked pretraining setups for PatchTST where a random mask ratio of 0.4 is commonly used, ensuring that
+the reconstruction task remains challenging enough to drive useful representation learning but not so extreme as to
+destabilize training [28]. Optimization was performed with the Adam optimizer and a learning rate of 1×10 −4, a
+conservative value within the typical 10−4–10−3 range for Transformer-based pretraining on biomedical time series,
+chosen to favor stable convergence on a limited number of subjects over more aggressive but potentially noisy updates
+[28, 37].
+2.5. Fine-tuning for Classification
+Following self-supervised pre-training, we fine-tuned the model for binary classification of fetal compromise,
+defined as umbilical artery pH<7.15 (Figure 3). The transformer encoder weights were initialized from the pre-
+7
+Table 3: Classification performance for fetal acidemia (pH<7.15) on the test set.
+Subgroup N Acidemia Prevalence AUC Accuracy
+All test cases 55 12 21.4% 0.826 0.786
+Vaginal delivery 50 10 20.0% 0.850 0.800
+Cephalic presentation 50 10 20.0% 0.848 0.800
+Vaginal+Cephalic 46 9 19.6% 0.853 0.804
+No labor arrest 47 8 17.0% 0.837 0.830
+Vaginal+Cephalic+No arrest 43 7 16.3% 0.837 0.837
+trained backbone, while the forecasting head was replaced with a classification head consisting of a linear layer
+mapping the flattened encoder output to two classes.
+To address class imbalance, we augmented the training set with cesarean delivery cases from the CTGDL_SPAM
+dataset. These recordings, identified by stage 2 duration of zero, were labeled as positive cases under the assumption
+that intrapartum cesarean delivery typically indicates CTG abnormalities prompting intervention. This augmentation
+increased the representation of pathological patterns in the training data.
+The model was fine-tuned for 100 epochs using AdamW optimizer with cross-entropy loss and early stopping
+based on validation AUC.
+2.6. Inference and Alert Generation
+A key consideration for clinical deployment is that the model must operate in real-time during labor, rather than
+classifying entire CTG recordings retrospectively. To address this, we developed a sliding window inference approach
+that generates continuous risk predictions throughout the monitoring period (Figure 5).
+During inference, the model processes successive overlapping windows of 1800 samples (7.5 minutes at 4 Hz)
+across the entire CTG recording, producing a prediction score at each time point. Regions where the prediction
+exceeds 0.5 are identified as potential alerts, representing periods of suspected fetal compromise.
+For each contiguous alert segment, we extracted summary statistics: segment length (duration above threshold),
+maximum prediction value, cumulative sum of predictions, and a weighted integral defined as P
+t(pt−0.5) 2 for
+predictionsp t in the segment. This weighted measure emphasizes sustained high-confidence predictions over brief
+threshold crossings.
+To translate these segment-level features into clinically actionable alerts, we applied logistic regression using
+the largest alert segment from each recording. The features included segment length, maximum value, cumulative
+sum, and weighted integral. This two-stage approach—neural network for temporal pattern recognition followed by
+interpretable logistic regression for alert classification—provides both the representational capacity of deep learning
+and the transparency required for clinical decision support.
+3. Results
+Table 3 summarizes classification performance on the held-out test set. The model achieved an AUC of 0.83 and
+accuracy of 79% across all 55 test recordings (11 acidemia cases, 20.0% prevalence). Excluding cesarean deliveries or
+abnormal presentations each improved performance to AUC of 0.85, with similar results when applying both criteria
+(n=46, AUC 0.85, accuracy 80%).
+Figure 6 presents an error analysis of the alert-generation pipeline. Cases 1–2 are the two largest classification
+errors: both received the highest false-positive probabilities (0.58 and 0.32) yet have normal pH (7.20 and 7.24).
+However, both recordings show abnormal CTG patterns, and both labors involved risk factors (Case 1: hypertension,
+induced labor, abnormal amniotic fluid; Case 2: abnormal amniotic fluid). Case 3 illustrates the cesarean paradox:
+a cesarean delivery with no second stage of labor and normal pH (7.26), yet rising predictions—if the cesarean was
+performed due to CTG abnormalities, alerts would be appropriate even though the outcome was normal. Case 4 shows
+a true negative (pH 7.32) with no alerts, while Case 5 (pH 7.09) shows a clear alert before the second stage correctly
+identifying acidemia.
+8
+Figure 5: Sliding window inference and alert generation. Example CTG recording with acidemic outcome (pH=7.02). Top: Model prediction over
+time, with the 0.5 threshold indicated by the dashed red line. Light gray shading marks regions where predictions exceed the threshold, representing
+potential alerts. Cyan rectangles illustrate the 7.5-minute sliding windows used to compute each prediction point. Middle: Fetal heart rate (FHR)
+signal with background color bands indicating normal (green/yellow) and abnormal (pink) ranges. Bottom: Uterine contractions (UC). The shaded
+region on the right indicates the second stage of labor.
+4. Conclusion
+We presented the first application of self-supervised pre-training to intrapartum CTG analysis, achieving AUC of
+0.853 on uncomplicated vaginal deliveries, and 0.83 AUC on the whole test set—the highest reported performance
+on the CTU-UHB benchmark. By leveraging 2,444 hours of unlabeled CTG recordings for masked pre-training, our
+approach demonstrates that the foundation model paradigm can help address data scarcity that has limited previous
+supervised methods. Error analysis revealed that most false-positive alerts corresponded to alarming CTG patterns
+confirmed by clinical review, suggesting the model captures clinically meaningful features.
+Several limitations warrant consideration. The labeled CTU-UHB dataset originates from a single center (Uni-
+versity Hospital Brno), while pre-training data spans three sources: CTU-UHB, FHRMA (Lille Catholic Hospital,
+France), and SPAM [32, 33] (multi-center: Oxford, Lyon, Brno). Although this provides some diversity, signal char-
+acteristics vary across monitors and institutions, and broader representation is needed for robust generalization. The
+model processes CTG signals alone and does not incorporate clinical context such as maternal risk factors or labor
+interventions. For example, induced labor—present in 39% of recordings—alters CTG patterns through stronger,
+more frequent contractions and increased risk of fetal heart rate abnormalities, information that would help the model
+contextualize observed patterns. The small dataset size precluded including such features.
+The main limitation remains availability of labeled data at scales suitable for modern transformer models. Future
+directions include longer input windows, which the patch-based architecture supports efficiently since longer signals
+embed into the same number of patches. Clinical context should be incorporated when larger datasets permit.
+Privacy constraints limit direct sharing of clinical CTG data. However, we release our model weights and standard-
+ized benchmark splits to enable reproducibility. Clinical centers can continue pre-training on their local recordings
+and share only updated weights, expanding model diversity while preserving patient privacy. In the labor room, online
+predictions on the specific recording in progress could enable personalized alerts generation.
+9
+Despite current limitations, our results demonstrate that foundation models can extract meaningful representations
+from CTG signals even with limited labeled data. We release our code and trained weights to facilitate further research.
+Code and Data A vailability
+The CTGDL dataset integrating CTU-UHB, FHRMA, and SPaM recordings is available on Zenodo athttps://
+doi.org/10.5281/zenodo.18034361[38]. The repository includes standardized benchmark splits (train/validation/test)
+to enable reproducible evaluation. Pre-trained model weights and training code are available athttps://github.
+com/[repository].
+10
+Figure 6: Error analysis of alert generation. Each panel shows prediction score (top), FHR (middle), and UC (bottom). Cases 1–2: The two largest
+false positives, with abnormal CTG patterns despite normal pH. Case 3: Cesarean delivery with rising predictions before intervention. Case 4: True
+negative. Case 5: True positive with clear alert detecting acidemia (pH 7.09).
+11
+References
+[1] United Nations Inter-agency Group for Child Mortality Estimation (UN IGME), Never forgotten: The situation
+of stillbirth around the globe (2023).
+[2] J. P. V ogel, et al., Maternal complications and perinatal mortality: findings of the World Health Organization
+Multicountry Survey on Maternal and Newborn Health, BJOG: An International Journal of Obstetrics & Gynae-
+cology 121 (Suppl 1) (2014) 76–88.
+[3] Z. A. Bhutta, et al., Can available interventions end preventable deaths in mothers, newborn babies, and still-
+births, and at what cost?, The Lancet 384 (9940) (2014) 347–370.
+[4] R. L. Goldenberg, M. S. Harrison, E. M. McClure, Stillbirths: The hidden birth asphyxia – US and global
+perspectives, Clinics in Perinatology 43 (3) (2016) 439–453.
+[5] D. Ayres-de Campos, S. Arulkumaran, FIGO Intrapartum Fetal Monitoring Expert Consensus Panel, FIGO
+consensus guidelines on intrapartum fetal monitoring: Physiology of fetal oxygenation and the main goals of
+intrapartum fetal monitoring, International Journal of Gynecology & Obstetrics 131 (1) (2015) 5–8.
+[6] L. Bennet, A. J. Gunn, The fetal heart rate response to hypoxia: insights from animal models, Clinics in Perina-
+tology 36 (3) (2009) 655–672.
+[7] Z. Alfirevic, G. M. Gyte, A. Cuthbert, D. Devane, Continuous cardiotocography (CTG) as a form of electronic
+fetal monitoring (EFM) for fetal assessment during labour, Cochrane Database of Systematic Reviews (2) (2017).
+[8] J. Bernardes, A. Costa-Pereira, D. Ayres-de Campos, H. P. van Geijn, L. Pereira-Leite, Evaluation of interob-
+server agreement of cardiotocograms, International Journal of Gynecology & Obstetrics 57 (1) (1997) 33–37.
+[9] O. Palomäki, T. Luukkaala, R. Luoto, R. Tuimala, Intrapartum cardiotocography – the dilemma of interpreta-
+tional variation, Journal of Perinatal Medicine 34 (4) (2006) 298–302.
+[10] S. Schiermeier, G. Westhof, A. Leven, H. Hatzmann, J. Reinhard, Intra- and interobserver variability of in-
+trapartum cardiotocography: a multicenter study comparing the FIGO classification with computer analysis
+software, Gynecologic and Obstetric Investigation 72 (3) (2011) 169–173.
+[11] H. Blencowe, et al., National, regional, and worldwide estimates of stillbirth rates in 2015, with trends from
+2000: a systematic analysis, The Lancet Global Health 4 (2) (2016) e98–e108.
+[12] J. E. Lawn, et al., Stillbirths: rates, risk factors, and acceleration towards 2030, The Lancet 387 (10018) (2016)
+587–603.
+[13] D. Ayres-de Campos, D. Arteiro, C. Costa-Santos, J. Bernardes, Knowledge of adverse neonatal outcome alters
+clinicians’ interpretation of the intrapartum cardiotocograph, BJOG: An International Journal of Obstetrics &
+Gynaecology 118 (8) (2011) 978–984.
+[14] P. Warrick, E. Hamilton, R. Kearney, D. Precup, A machine learning approach to the detection of fetal hypoxia
+during labor and delivery, in: Proceedings of the AAAI Conference on Artificial Intelligence, V ol. 24, 2010, pp.
+1865–1870.
+[15] P. Warrick, E. Hamilton, R. Kearney, D. Precup, A machine learning approach to the detection of fetal hypoxia
+during labor and delivery, AI Magazine 33 (2) (2012) 79.
+[16] Z. Hoodbhoy, et al., Use of machine learning algorithms for prediction of fetal risk using cardiotocographic data,
+International Journal of Applied and Basic Medical Research 9 (4) (2019) 226.
+[17] A. K. Pradhan, J. K. Rout, A. B. Maharana, B. K. Balabantaray, N. K. Ray, A machine learning approach for the
+prediction of fetal health using CTG, in: 2021 19th OITS International Conference on Information Technology
+(OCIT), IEEE, 2021, pp. 239–244.
+12
+[18] D. Ayres-de Campos, J. Bernardes, A. Garrido, J. Marques-de Sá, L. Pereira-Leite, SisPorto 2.0: a program for
+automated analysis of cardiotocograms, Journal of Maternal-Fetal Medicine 9 (5) (2000) 311–318.
+[19] I. Ben M’Barek, G. Jauvion, J. Vitrou, et al., DeepCTG 1.0: an interpretable model to detect fetal hypoxia from
+cardiotocography data during labor and delivery, Frontiers in Pediatrics 11 (2023) 1190441.
+[20] Z. Zhao, et al., DeepFHR: intelligent prediction of fetal acidemia using fetal heart rate signals based on convo-
+lutional neural network, BMC Medical Informatics and Decision Making 19 (1) (2019) 286.
+[21] P. Fergus, et al., Modelling segmented cardiotocography time-series signals using one-dimensional convolutional
+neural networks for the early detection of abnormal birth outcomes, IEEE Transactions on Emerging Topics in
+Computational Intelligence 5 (6) (2020) 882–892.
+[22] J. Ogasawara, et al., Deep neural network-based classification of cardiotocograms outperformed conventional
+algorithms, Scientific Reports 11 (1) (2021) 13367.
+[23] A. Petrozziello, C. W. Redman, A. T. Papageorghiou, I. Jordanov, A. Georgieva, Multimodal convolutional
+neural networks to detect fetal compromise during labor and delivery, IEEE Access 7 (2019) 112026–112036.
+[24] V . Chudáˇcek, J. Spilka, M. Burša, P. Jank˚ u, L. Hruban, M. Huptych, L. Lhotská, Open access intrapartum CTG
+database, BMC Pregnancy and Childbirth 14 (1) (2014) 16.doi:10.1186/1471-2393-14-16.
+[25] K. S. Kalyan, A. Rajasekharan, S. Sangeetha, AMMUS: A survey of transformer-based pretrained models in
+natural language processing, arXiv preprint arXiv:2108.05542 (2021).
+[26] S. Khan, et al., Transformers in vision: A survey, ACM Computing Surveys 54 (10s) (2022) 1–41.
+[27] S. Karita, et al., A comparative study on transformer vs RNN in speech applications, in: IEEE Automatic Speech
+Recognition and Understanding Workshop (ASRU), 2019, pp. 449–456.
+[28] Y . Nie, N. H. Nguyen, P. Sinthong, J. Kalagnanam, A time series is worth 64 words: Long-term forecasting with
+transformers, arXiv preprint arXiv:2211.14730 (2023).
+[29] Q. Wu, Y . Lu, X. Kang, H. Wang, Z. Zheng, J. Bai, ETCNN: An ensemble transformer-convolutional neural
+network for automatic analysis of fetal heart rate, Biomedical Signal Processing and Control 96 (2024) 106629.
+[30] [Authors], CTGDL: A multi-source cardiotocography dataset for fetal stress prediction and CTG analysis (2025).
+doi:10.5281/zenodo.17903226.
+[31] S. Boudet, A. Houzé de l’Aulnoit, R. Demailly, A. Delgranche, L. Peyrodie, R. Beuscart, D. Houzé de l’Aulnoit,
+Fetal heart rate signal dataset for training morphological analysis methods and evaluating them against an expert
+consensus, Data in Brief 27 (2019) 104720.doi:10.1016/j.dib.2019.104720.
+[32] Ctg challenge: Spam in labour workshop 2017 intrapartum cardiotocography database, in: SPaM in Labour
+Workshop, Oxford, 2017,https://users.ox.ac.uk/~ndog0178/CTGchallenge2017.htm.
+[33] A. Georgieva, S. J. Payne, M. Moulden, C. W. G. Redman, Computer-based intrapartum fetal monitoring and
+beyond, Acta Obstetricia et Gynecologica Scandinavica 98 (5) (2019) 550–559.doi:10.1111/aogs.13639.
+[34] M. J. Khan, M. Vatish, G. Davis Jones, PatchCTG: Patch cardiotocography transformer for antepartum fetal
+health monitoring, arXiv preprint arXiv:2411.07796 (2024).
+[35] V . Chudáˇcek, J. Spilka, M. Burša, P. Jank˚ u, L. Hruban, M. Huptych, L. Lhotská, Open access intrapartum CTG
+database, BMC Pregnancy and Childbirth 14 (1) (2014) 16.doi:10.1186/1471-2393-14-16.
+[36] A. L. Goldberger, L. A. Amaral, L. Glass, J. M. Hausdorff, P. C. Ivanov, R. G. Mark, J. E. Mietus, G. B. Moody,
+C.-K. Peng, H. E. Stanley, PhysioBank, PhysioToolkit, and PhysioNet: Components of a new research resource
+for complex physiologic signals, Circulation 101 (23) (2000) e215–e220.
+13
+[37] V . Chudáˇcek, J. Šplátek, M. Burša, P. Jank˚ u, L. Hruban, M. Huptych, L. Zach, L. Lhotská, Open access intra-
+partum CTG database, BMC Pregnancy and Childbirth 14 (2014) 16.doi:10.1186/1471-2393-14-16.
+[38] N. Fridman, CTGDL: A multi-source cardiotocography dataset for fetal stress prediction and CTG analysis (Dec.
+2025).doi:10.5281/zenodo.18034361.
+URLhttps://doi.org/10.5281/zenodo.18034361
+14

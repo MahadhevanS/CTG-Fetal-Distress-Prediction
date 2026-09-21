@@ -1,0 +1,5 @@
+horizon_min,horizon_tier,lambda_test,auroc_p6_original_cv,auroc_p90_pooled_cv,auroc_hybrid_cv,delta_a_hybrid_vs_p90_cv,boot_p_a_cv,ci_low_a_cv,ci_high_a_cv,delta_b_hybrid_vs_p6orig_cv,boot_p_b_cv,ci_low_b_cv,ci_high_b_cv,auroc_p6_original_test,auroc_p90_pooled_test,auroc_hybrid_test,delta_a_hybrid_vs_p90_test,boot_p_a_test,delta_b_hybrid_vs_p6orig_test,boot_p_b_test
+0,confirmatory-horizon,0.9,0.6872,0.7254,0.7373,0.0119,0.425,-0.0184,0.0413,0.0501,0.073,-0.0043,0.1038,0.6497,0.6916,0.7549,0.0633,0.001,0.1052,0.031
+10,exploratory-horizon,2.6,0.6859,0.6463,0.68,0.0337,0.118,-0.0075,0.0747,-0.0058,0.803,-0.0578,0.0441,0.5802,0.6399,0.787,0.1471,0.0,0.2068,0.002
+20,exploratory-horizon,3.0,0.6238,0.6032,0.6484,0.0452,0.078,-0.0034,0.0973,0.0246,0.438,-0.0357,0.0876,0.6123,0.6783,0.7959,0.1176,0.006,0.1836,0.005
+30,confirmatory-horizon,3.0,0.5828,0.6117,0.6418,0.0302,0.29,-0.0225,0.0851,0.059,0.068,-0.0043,0.1194,0.6078,0.7014,0.8048,0.1034,0.007,0.197,0.004

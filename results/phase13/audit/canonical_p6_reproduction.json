@@ -1,0 +1,46 @@
+{
+  "n_patients": 547,
+  "n_windows": 8517,
+  "consistency_check_vs_step_predictions": "max|new - reference| across 8517 windows = 0.000000",
+  "delivery_cv_unweighted": 0.6872,
+  "delivery_cv_patient_normalized": 0.6843,
+  "locked_phase12_reference": 0.6872,
+  "horizon_table": [
+    {
+      "horizon_min": 0,
+      "cv_auroc_existing_convention": 0.6872,
+      "cv_auroc_corrected_convention": 0.6872,
+      "cv_auprc_existing": 0.4067,
+      "cv_auprc_corrected": 0.4067,
+      "test_auroc_existing_convention": 0.6497,
+      "test_auroc_corrected_convention": 0.6497
+    },
+    {
+      "horizon_min": 10,
+      "cv_auroc_existing_convention": 0.5814,
+      "cv_auroc_corrected_convention": 0.6859,
+      "cv_auprc_existing": 0.2837,
+      "cv_auprc_corrected": 0.3656,
+      "test_auroc_existing_convention": 0.68,
+      "test_auroc_corrected_convention": 0.5802
+    },
+    {
+      "horizon_min": 20,
+      "cv_auroc_existing_convention": 0.5869,
+      "cv_auroc_corrected_convention": 0.6238,
+      "cv_auprc_existing": 0.2868,
+      "cv_auprc_corrected": 0.3261,
+      "test_auroc_existing_convention": 0.6809,
+      "test_auroc_corrected_convention": 0.6123
+    },
+    {
+      "horizon_min": 30,
+      "cv_auroc_existing_convention": 0.5857,
+      "cv_auroc_corrected_convention": 0.5828,
+      "cv_auprc_existing": 0.2946,
+      "cv_auprc_corrected": 0.3265,
+      "test_auroc_existing_convention": 0.6845,
+      "test_auroc_corrected_convention": 0.6078
+    }
+  ]
+}

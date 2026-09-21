@@ -1,0 +1,42 @@
+==============================================================================
+PADDING MASK VERIFICATION
+==============================================================================
+  attention  output unchanged when padded slots are corrupted : PASS  (max diff 0.00e+00)
+             attention on padded slots = 0.00e+00 PASS
+             attention rows sum to 1, max error 5.96e-08 PASS
+  GRU        output unchanged when padded slots are corrupted : PASS  (max diff 0.00e+00)
+  attention  permutation-invariant: True  (expected True) PASS
+  GRU        permutation-invariant: False  (expected False) PASS
+
+  ALL MASK CHECKS PASSED
+
+8517 windows | 547 patients | 110 positive
+T_MAX 17 | padded patients 166 (30.3%)
+
+  fold 1/5  encoder trained, embeddings (8517, 128)
+  fold 2/5  encoder trained, embeddings (8517, 128)
+  fold 3/5  encoder trained, embeddings (8517, 128)
+  fold 4/5  encoder trained, embeddings (8517, 128)
+  fold 5/5  encoder trained, embeddings (8517, 128)
+
+==============================================================================
+RESULTS -- patient-level, frozen protocol, repeat 0
+==============================================================================
+  T3_attention       (4,274 params)            AUROC 0.6370 [0.574-0.700]  AUPRC 0.3251
+  T4_gru             (7,025 params)            AUROC 0.6505 [0.590-0.710]  AUPRC 0.3281
+  T4_gru_shuffled    (7,025 params)            AUROC 0.6197 [0.554-0.681]  AUPRC 0.3128
+
+==============================================================================
+PER-FOLD AUROC and PAIRED DELTAS
+==============================================================================
+  T3_attention       0.6875 0.6565 0.5596 0.7424 0.5622   mean 0.6416
+  T4_gru             0.7299 0.6684 0.5731 0.6985 0.6134   mean 0.6567
+  T4_gru_shuffled    0.6085 0.6565 0.6385 0.7158 0.5047   mean 0.6248
+
+  T4_gru vs T3_attention       pooled +0.0136 | per-fold [+0.042, +0.012, +0.014, -0.044, +0.051] | 4/5 | W p=0.438 | fail
+  T4_gru vs T4_gru_shuffled    pooled +0.0308 | per-fold [+0.121, +0.012, -0.065, -0.017, +0.109] | 3/5 | W p=0.625 | fail
+
+  Pre-registered bar: +0.02 pooled AND >=4/5 folds, T4 vs T3.
+  Reference (different rung, same protocol): T0 max-agg 0.6834; 19-feature LR 0.7268 [0.670-0.779].
+
+Wrote results/temporal_control.json

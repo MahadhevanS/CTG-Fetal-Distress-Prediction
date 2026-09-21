@@ -1,0 +1,25 @@
+{
+  "attention_metrics": {
+    "mean_c_max_overall": 0.20287485964855068,
+    "mean_c_max_positive": 0.21877565709027377,
+    "mean_c_max_negative": 0.19887237058999335,
+    "mean_c_top3_overall": 0.4455849496065426,
+    "mean_c_top3_positive": 0.47078467698937115,
+    "mean_c_top3_negative": 0.4392417688007963,
+    "mean_entropy_overall": 2.359882237043636,
+    "mean_entropy_positive": 2.2855508439380317,
+    "mean_entropy_negative": 2.3785926563608357
+  },
+  "duration_stratification": {
+    "short_records_n": 166,
+    "short_records_att_auroc": 0.5164473684210527,
+    "short_records_max_auroc": 0.6161595394736842,
+    "full_records_n": 381,
+    "full_records_att_auroc": 0.5461614527148507,
+    "full_records_max_auroc": 0.6903541891405969
+  },
+  "correlation_with_max_score": {
+    "pearson_r": -0.017455870092367366,
+    "spearman_rho": -0.029109609881971393
+  }
+}

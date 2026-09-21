@@ -1,0 +1,11 @@
+phase,metric_name,value,ci_95,provenance_type,artifact_path
+Phase 2,Exp2.1_Raw_FHR_1D,0.6593,"[0.6011, 0.7180]",Locked Result File,results/phase2_representation/phase2_results.json
+Phase 3,Fixed_P90,0.6701,"[0.6111, 0.7259]",Locked Result File,results/phase3_mil/phase3_results.json
+Phase 4,Logit_Prior_Modulation,0.7361,"[0.6793, 0.7878]",Locked Result File,results/phase4_fusion/phase4_results.json
+Phase 6,Continuous_Clinical_Huber,0.7426,"[0.6876, 0.7931]",Locked Result File,results/phase6_outcome_supervision/phase6_results.json
+Phase 8,Rolling_Huber_30m,0.5699,"[0.5120, 0.6280]",Locked Result File,results/phase8_rolling/rolling_predictions.csv
+Phase 9C,State_Risk_Gradient,6.8% -> 43.8%,Monotonic (p<0.001),Locked Result File,results/phase9c_state_trajectory/state_risk_gradient.csv
+Phase 11,P6_Full_Framework_Del,0.6872,"[0.6280, 0.7450]",Locked Result File,results/phase11_priorart_benchmark/model_comparison.csv
+Phase 11,P2_Sequential_30m,0.5983,"[0.5380, 0.6580]",Locked Result File,results/phase11_priorart_benchmark/model_comparison.csv
+Phase 11.5,P5_vs_P3_Delta_AUROC,+0.0165,"[+0.0006, +0.0319]",Locked Bootstrap File,results/phase11_5_advantage_attribution/horizon_advantage.csv
+Phase 11.5,Step6_Multidomain_Jump,+0.0676,"[+0.0192, +0.1292]",Locked Bootstrap File,results/phase11_5_advantage_attribution/full_framework_decomposition.csv

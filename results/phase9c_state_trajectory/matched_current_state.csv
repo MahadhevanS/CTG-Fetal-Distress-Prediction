@@ -1,0 +1,8 @@
+current_state_stratum,trajectory_dynamic,n_observations,n_unique_patients,acidemia_715_obs,acidemia_prevalence_pct,severe_705_obs,severe_prevalence_pct
+State 1,Stable / Persistent (V4 ~ 0),547,547,110,20.11,41,7.5
+State 2,Progressing (V4 > 0),275,164,51,18.55,19,6.91
+State 2,Stable / Persistent (V4 ~ 0),472,200,104,22.03,47,9.96
+State 2,Reversing / Recovering (V4 < 0),1093,416,220,20.13,85,7.78
+State 3,Progressing (V4 > 0),228,176,49,21.49,19,8.33
+State 3,Stable / Persistent (V4 ~ 0),33,25,9,27.27,4,12.12
+State 3,Reversing / Recovering (V4 < 0),203,174,40,19.7,17,8.37

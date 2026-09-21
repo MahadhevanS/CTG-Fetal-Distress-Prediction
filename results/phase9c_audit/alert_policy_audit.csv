@@ -1,0 +1,6 @@
+Policy,TP,FP,TN,FN,Sensitivity_Pct,Specificity_Pct,PPV_Pct,NPV_Pct,False_Alerts_Per_Hour,Alerts_Per_Patient,Median_Lead_Time_Min,Pct_Warned_ge30m
+Policy 1 (Single Threshold p >= tau),79,185,252,31,71.82,57.67,29.92,89.05,0.8434,0.483,10.0,15.5
+Policy 2 (Two Consecutive p >= tau),61,121,316,49,55.45,72.31,33.52,86.58,0.4759,0.333,7.5,11.0
+Policy 3 (Two Consecutive S >= 3),108,434,3,2,98.18,0.69,19.93,60.0,2.4602,0.991,35.0,71.0
+Policy 4 (State S >= 3 and V >= 0),110,437,0,0,100.0,0.0,20.11,0.0,3.0271,1.0,37.5,82.1
+Policy 5 (Hybrid: p >= 0.85*tau + S >= 2 + P >= 2),83,212,225,27,75.45,51.49,28.14,89.29,1.0464,0.539,10.0,10.5

@@ -1,0 +1,5 @@
+representation,pearson_r_value_vs_nwindows,p_value,pearson_r_delta_vs_nwindows,p_delta
+p90,-0.0551,0.1978,-0.1901,0.0
+max,0.0073,0.8638,-0.1231,0.0039
+mean,-0.1478,0.0005,-0.2315,0.0
+median,-0.1769,0.0,-0.2316,0.0

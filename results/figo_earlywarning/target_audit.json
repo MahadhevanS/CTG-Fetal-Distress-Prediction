@@ -1,0 +1,152 @@
+{
+  "A_first_event_epoch": {
+    "t+1": 300,
+    "t+2": 232,
+    "t+3": 171
+  },
+  "abnormal at t+1 exactly (10 min)": {
+    "n": 1838,
+    "n_pos": 539,
+    "prevalence": 0.29325353645266594,
+    "clock": 0.5731981644221829,
+    "lr": 0.5908369646409897,
+    "delta": 0.017638800218806816,
+    "trusted": true,
+    "note": ""
+  },
+  "abnormal at t+2, t+1 still Normal": {
+    "n": 1050,
+    "n_pos": 313,
+    "prevalence": 0.2980952380952381,
+    "clock": 0.5475505134796537,
+    "lr": 0.5689111803746298,
+    "delta": 0.021360666894976177,
+    "trusted": true,
+    "note": ""
+  },
+  "abnormal at t+3, t+1/t+2 still Normal": {
+    "n": 590,
+    "n_pos": 171,
+    "prevalence": 0.28983050847457625,
+    "clock": 0.5764979273960558,
+    "lr": 0.5261483063266759,
+    "delta": -0.0503496210693799,
+    "trusted": true,
+    "note": ""
+  },
+  "any abnormal within 10 min": {
+    "n": 1838,
+    "n_pos": 539,
+    "prevalence": 0.29325353645266594,
+    "clock": 0.5731981644221829,
+    "lr": 0.5908369646409897,
+    "delta": 0.017638800218806816,
+    "trusted": true,
+    "note": ""
+  },
+  "any abnormal within 20 min": {
+    "n": 1467,
+    "n_pos": 730,
+    "prevalence": 0.49761417859577367,
+    "clock": 0.5674792290106132,
+    "lr": 0.5943402538986264,
+    "delta": 0.02686102488801323,
+    "trusted": true,
+    "note": ""
+  },
+  "any abnormal within 30 min": {
+    "n": 1122,
+    "n_pos": 703,
+    "prevalence": 0.6265597147950089,
+    "clock": 0.5681328231887206,
+    "lr": 0.581201601048354,
+    "delta": 0.013068777859633451,
+    "trusted": true,
+    "note": ""
+  },
+  "any abnormal within 40 min": {
+    "n": 784,
+    "n_pos": 565,
+    "prevalence": 0.7206632653061225,
+    "clock": 0.5727158847537075,
+    "lr": 0.6264032003879259,
+    "delta": 0.05368731563421836,
+    "trusted": true,
+    "note": ""
+  },
+  "C_concept_persistence": {
+    "baseline_bpm": [
+      0.8595424934966401,
+      0.7587215378357546,
+      0.7033559794988291
+    ],
+    "variability_bpm": [
+      0.21437300667420242,
+      0.14884608623607845,
+      0.10027192622454377
+    ],
+    "decel_repetitive": [
+      0.1736840214405996,
+      0.11049928095199203,
+      0.07465089026901577
+    ]
+  },
+  "C_flag_persistence_auroc": {
+    "baseline_normal": [
+      0.8004896035130743,
+      0.7220534759358288,
+      0.7103277299822028
+    ],
+    "variability_normal": [
+      0.580268124663502,
+      0.5335490607823563,
+      0.5062677312004159
+    ],
+    "no_repetitive_decels": [
+      0.5850546375266524,
+      0.5520326889366219,
+      0.5340866873065016
+    ]
+  },
+  "any abnormal (baseline target)": {
+    "n": 1122,
+    "n_pos": 703,
+    "prevalence": 0.6265597147950089,
+    "clock": 0.5681328231887206,
+    "lr": 0.581201601048354,
+    "delta": 0.013068777859633451,
+    "trusted": true,
+    "note": ""
+  },
+  ">=2 normality criteria fail": {
+    "n": 1122,
+    "n_pos": 72,
+    "prevalence": 0.06417112299465241,
+    "clock": 0.5249140211640211,
+    "lr": 0.5817724867724867,
+    "delta": 0.056858465608465636,
+    "trusted": true,
+    "note": "unambiguous abnormality, not a single marginal crossing"
+  },
+  "Pathological within 30 min": {
+    "n": 1122,
+    "n_pos": 13,
+    "prevalence": 0.011586452762923352,
+    "clock": 0.6021710480682527,
+    "lr": 0.3500728306859957,
+    "delta": -0.252098217382257,
+    "trusted": false,
+    "note": ""
+  },
+  "clear excursion (>1 bpm past a threshold)": {
+    "n": 1122,
+    "n_pos": 139,
+    "prevalence": 0.12388591800356506,
+    "clock": 0.6126707992710613,
+    "lr": 0.4691774555940192,
+    "delta": -0.14349334367704208,
+    "trusted": true,
+    "note": "margin-based; check surviving class balance"
+  },
+  "E_oracle_current_concepts": 0.435290962360426
+}

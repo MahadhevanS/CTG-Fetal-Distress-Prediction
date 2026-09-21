@@ -1,0 +1,142 @@
+# Model 8 Configuration: Knowledge-Infused Multi-Task Framework
+# Backbone: CTG-CrossFormer (Dang et al., 2026)
+# =============================================================
+# Replacing PatchTST with CTG-CrossFormer as the temporal backbone encoder.
+# Universal latent representation z in R^128 remains unchanged.
+
+backbone:
+  model: ctg_crossformer
+  in_channels: 2
+  seq_len: 4800
+  cnn_channels: 128
+  n_heads_cross: 4
+  n_heads_tf: 8
+  n_tf_layers: 4
+  d_ff: 512
+  dropout: 0.1
+  latent_dim: 128
+
+# -------------------------------------------------------------------
+# Head capacity (revised 2026-08-13, framework architecture review):
+# CTGCrossformerForClassification (the standalone benchmark) does NOT
+# classify from the encoder's 128-dim universal latent z -- it re-runs the
+# encoder's internal stages and classifies directly from the richer,
+# pre-adapter 256-dim pooled representation, via its own dedicated
+# Linear(256->128)->ReLU->Dropout(0.3)->Linear(128->1) head (see
+# CTGCrossformerForClassification in src/models/ctg_crossformer.py). Model
+# 8's DistressHead only ever sees z AFTER it has already been compressed by
+# latent_adapter (Linear(256->128), shared across all 3 task heads) -- an
+# extra lossy bottleneck the standalone classifier bypasses entirely, on
+# top of receiving a representation the shared adapter was never trained to
+# specialize for distress alone. Confirmed this bypass is CrossFormer-
+# specific: PatchTSTForClassification and MultiScaleLSTMForClassification
+# both classify directly from encoder.latent_dim (the real z), matching
+# what Model 8 receives, with the same hidden_dim=64/dropout=0.2 already
+# used as this framework's default -- so this change is scoped to
+# CrossFormer only, not applied to the other backbone configs.
+#
+# The shared 128-dim latent bottleneck itself is NOT being widened here --
+# it's an explicit design invariant tied to patent non-infringement framing
+# (see knowledge_infused_framework.py's docstring) and touching it would
+# affect every backbone, not just this one. What's fixed below is giving
+# CrossFormer's heads the same capacity its own paper-recommended
+# classifier uses, within that constraint -- this narrows the gap but will
+# NOT fully close it; some residual gap against the 0.8565 standalone
+# number is an expected, honest consequence of hard parameter sharing
+# across 3 tasks at a compressed bottleneck, not a remaining bug.
+# -------------------------------------------------------------------
+heads:
+  hidden_dim: 128   # was 64 -- now matches CTGCrossformerForClassification's own hidden_dim
+  dropout: 0.3       # was 0.2 -- now matches CTGCrossformerForClassification's own dropout
+
+training:
+  epochs: 50
+  batch_size: 32      # Paper recommended batch size
+  lr: 0.0003          # OneCycleLR max LR
+  weight_decay: 0.00001
+  k_folds: 5
+  gradient_clip: 1.0
+  optimizer: adamw
+
+# -------------------------------------------------------------------
+# Scheduler (revised 2026-08-15, Option-A diagnostic): a 5-config, single-fold,
+# 20-epoch triage isolating scheduler/EMA/augmentation found scheduler to be
+# the clearest, unconfounded driver of the distress_only-vs-standalone gap --
+# switching only the scheduler (holding EMA/augmentation constant) took AUROC
+# 0.7919->0.8041 AND resolved a severe F1 collapse (0.0000->0.3657). Matches
+# the standalone script's exact OneCycleLR shape (train_ctg_crossformer.py:
+# max_lr=lr, pct_start=0.1 -- NOT the 10x-lr default this codebase's OneCycleLR
+# branch otherwise uses).
+# -------------------------------------------------------------------
+scheduler:
+  type: onecycle
+  onecycle_max_lr: 0.0003
+  onecycle_pct_start: 0.1
+
+loss:
+  lambda_figo: 0.3
+  lambda_features: 0.2
+  lambda_knowledge: 0.1
+  lambda_consistency: 0.5
+  # FIGOCriteriaHead loss weight (prototype, 2026-08-15) -- only active for the
+  # plus_criteria / features_criteria ablation variants; magnitude matches
+  # lambda_figo since it's replacing that head's role in those variants.
+  lambda_criteria: 0.3
+
+loss_weighting:
+  method: fixed
+
+# -------------------------------------------------------------------
+# Sampling (added 2026-08-12): without this, distress_only scored 0.7810
+# AUROC here vs. 0.8565 for the validated standalone CrossFormer benchmark
+# (train_ctg_crossformer.py) -- a ~0.075 gap between two setups that share
+# the same encoder and primary loss. Root cause: the standalone script uses
+# a sqrt-inverse-frequency WeightedRandomSampler (oversampling the minority
+# class) with pos_weight fixed at 1.0, while this config was defaulting to
+# plain shuffling with a full dynamic pos_weight = n_neg/n_pos -- i.e. no
+# oversampling at all to compensate for the imbalance the standalone script
+# does correct for. `method: balanced` here isn't a bit-for-bit match (it's
+# BalancedBatchSampler's hard 50/50 per-batch composition, not sqrt-inverse-
+# frequency weighting), but it's the same codebase's already-tested
+# mechanism for the same problem, and pos_weight is correctly forced to 1.0
+# by the training loop whenever this method is active (avoids the double-
+# counting bug already fixed for Model 8's original PatchTST config).
+#
+# NOTE: this fix is CrossFormer-specific. train.py (used for the MS-LSTM and
+# CNN1D standalone benchmarks) also defaults to plain shuffling + dynamic
+# pos_weight with no oversampling -- so configs/model8_mslstm_config.yaml
+# and configs/model8_cnn1d_config.yaml already match their own standalone
+# baselines correctly and do NOT need this same change.
+# -------------------------------------------------------------------
+sampling:
+  method: balanced
+
+# -------------------------------------------------------------------
+# EMA (revised 2026-08-15, Option-A diagnostic; CONFIRMED 2026-08-15 at full
+# scale): disabling EMA alone (holding scheduler=warmup_cosine, augmentation=on)
+# took AUROC 0.7919->0.8082 in the 20-epoch/1-fold diagnostic, with the caveat
+# that EMA's ~10-epoch half-life only got ~2 half-lives there, so it might have
+# just been non-convergence rather than genuine harm. Re-tested at real scale
+# (full ablation, 50 epochs/5 folds): EMA on = 0.7461 AUROC vs. EMA off = 0.7893
+# -- a consistent, real drop across folds (fold 2: 0.7128->0.6684, fold 5:
+# 0.7464->0.7041), not a short-run artifact. Also re-tested with uncertainty
+# loss weighting: EMA on = 0.7593 vs. EMA off = 0.7771 -- same direction. EMA
+# hurts this backbone/task regardless of loss-weighting method; keep disabled.
+# -------------------------------------------------------------------
+ema:
+  enabled: false
+  decay: 0.9995
+  use_for_validation: true
+
+# -------------------------------------------------------------------
+# Paths -- kept distinct from configs/model8_config.yaml (PatchTST backbone)
+# so a CrossFormer-backed run does not overwrite the PatchTST-backed Model 8
+# checkpoints/results (filenames only encode the ablation variant, not the
+# backbone, so a shared checkpoint_dir would silently collide).
+# -------------------------------------------------------------------
+paths:
+  data_dir: data/processed/
+  feature_scaler_path: data/processed/feature_scaler.npz
+  checkpoint_dir: checkpoints/model8_crossformer/
+  results_dir: checkpoints/model8_crossformer/results/
+  horizon_analysis_dir: checkpoints/model8_crossformer/results/horizon_analysis/

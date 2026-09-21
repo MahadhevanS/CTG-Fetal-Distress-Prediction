@@ -1,0 +1,12 @@
+{"unit_id": "Model_2_magnitude_only_fold0", "model_path": "results/phase16\\checkpoints\\Model_2_magnitude_only_fold0.pt", "val_loss": 0.46124163269996643, "n_epochs": 69}
+{"unit_id": "Model_2_magnitude_only_fold1", "model_path": "results/phase16\\checkpoints\\Model_2_magnitude_only_fold1.pt", "val_loss": 0.4665510654449463, "n_epochs": 11}
+{"unit_id": "Model_2_magnitude_only_fold2", "model_path": "results/phase16\\checkpoints\\Model_2_magnitude_only_fold2.pt", "val_loss": 0.48353052139282227, "n_epochs": 86}
+{"unit_id": "Model_2_magnitude_only_fold3", "model_path": "results/phase16\\checkpoints\\Model_2_magnitude_only_fold3.pt", "val_loss": 0.4739665985107422, "n_epochs": 11}
+{"unit_id": "Model_2_magnitude_only_fold4", "model_path": "results/phase16\\checkpoints\\Model_2_magnitude_only_fold4.pt", "val_loss": 0.5081453919410706, "n_epochs": 14}
+{"unit_id": "Model_2_magnitude_only_testmodel", "model_path": "results/phase16\\checkpoints\\Model_2_magnitude_only_testmodel.pt", "val_loss": 0.5003566145896912, "n_epochs": 11}
+{"unit_id": "Model_3_magnitude_position_fold0", "model_path": "results/phase16\\checkpoints\\Model_3_magnitude_position_fold0.pt", "val_loss": 0.456375390291214, "n_epochs": 200}
+{"unit_id": "Model_3_magnitude_position_fold1", "model_path": "results/phase16\\checkpoints\\Model_3_magnitude_position_fold1.pt", "val_loss": 0.4457665681838989, "n_epochs": 192}
+{"unit_id": "Model_3_magnitude_position_fold2", "model_path": "results/phase16\\checkpoints\\Model_3_magnitude_position_fold2.pt", "val_loss": 0.4807775318622589, "n_epochs": 132}
+{"unit_id": "Model_3_magnitude_position_fold3", "model_path": "results/phase16\\checkpoints\\Model_3_magnitude_position_fold3.pt", "val_loss": 0.4684094488620758, "n_epochs": 119}
+{"unit_id": "Model_3_magnitude_position_fold4", "model_path": "results/phase16\\checkpoints\\Model_3_magnitude_position_fold4.pt", "val_loss": 0.4992002546787262, "n_epochs": 200}
+{"unit_id": "Model_3_magnitude_position_testmodel", "model_path": "results/phase16\\checkpoints\\Model_3_magnitude_position_testmodel.pt", "val_loss": 0.48978543281555176, "n_epochs": 200}

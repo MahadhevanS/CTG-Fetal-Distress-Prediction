@@ -1,0 +1,2 @@
+pearson_r,pearson_p,spearman_r,spearman_p,interpretation
+-0.0493,0.25,-0.0396,0.3548,weak/no correlation -> parity effect not explained by recording length

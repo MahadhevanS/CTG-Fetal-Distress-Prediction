@@ -1,0 +1,6 @@
+state_code,state_name,n_patients,acidemia_cases_715,acidemia_prevalence_pct,severe_cases_705,severe_prevalence_pct
+0,State 0: Stable,0,0,0.0,0,0.0
+1,State 1: Emerging Abnormality,0,0,0.0,0,0.0
+2,State 2: Persistent Abnormality,0,0,0.0,0,0.0
+3,State 3: Progressive Deterioration,0,0,0.0,0,0.0
+4,State 4: Severe Multidomain Deterioration,547,110,20.11,41,7.5

@@ -1,0 +1,2 @@
+model,phase4_gold_auroc,phase7_retrained_auroc,auroc_delta_drop,score_pearson_r,score_spearman_rho,score_mae,rank_reversal_percentage,root_cause_diagnosis
+Model A (Phase 4 Master),0.7360723944247972,0.6547118785105055,0.08136051591429172,0.5818962162009418,0.5989002190646194,0.2556524266224095,28.5232135323543,"Retraining 1D ResNet from scratch in Phase 7 for 35 epochs produced standalone signal AUROC=0.5519 vs Phase 3's 0.6701, dragging down logit fusion from 0.7361 to 0.6547."

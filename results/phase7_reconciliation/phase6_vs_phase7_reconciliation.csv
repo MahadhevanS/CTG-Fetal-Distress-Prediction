@@ -1,0 +1,9 @@
+component,historical_phase4,phase6,phase7,identical
+Cohort Patients,547,547,547,True
+Primary Positives (pH <= 7.15),110,110,110,True
+Patient Folds,folds.json (seed 0),folds.json (seed 0),folds.json (seed 0),True
+Evaluation Windows,"8,517 (20m)","8,517 (20m)","8,517 (20m)",True
+19 Clinical Descriptors,Identical,Identical,Identical,True
+Model B (Continuous Clinical AUROC),N/A,0.7426,0.7426,True
+Phase 4 Master Model AUROC,0.7361,0.7361,0.6547 (Retrained),False
+Model C (Continuous Fusion AUROC),N/A,0.7315,0.5622 (Retrained),False

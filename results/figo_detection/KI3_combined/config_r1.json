@@ -1,0 +1,90 @@
+{
+  "arm": "KI3_combined",
+  "label": "KI-3  concepts + rule + head",
+  "mode": "ki3",
+  "use_uc": false,
+  "lambda_grid": [
+    0.1,
+    0.3,
+    1.0
+  ],
+  "lambda_per_fold": [
+    0.3,
+    1.0,
+    1.0,
+    1.0,
+    1.0
+  ],
+  "n_params": 78451,
+  "epochs": 40,
+  "lr": 0.0003,
+  "seed": 0,
+  "concept_quality": {
+    "baseline_bpm": {
+      "kind": "continuous",
+      "r2": 0.7038915157318115,
+      "corr": 0.8428063654670487
+    },
+    "variability_bpm": {
+      "kind": "continuous",
+      "r2": 0.24951928853988647,
+      "corr": 0.499691655889277
+    },
+    "stv_bpm": {
+      "kind": "continuous",
+      "r2": 0.8402208089828491,
+      "corr": 0.9171714464387827
+    },
+    "n_accels": {
+      "kind": "continuous",
+      "r2": 0.33955633640289307,
+      "corr": 0.5883380138089153
+    },
+    "n_contractions": {
+      "kind": "continuous",
+      "r2": 0.023821592330932617,
+      "corr": 0.15519165155043835
+    },
+    "n_decels": {
+      "kind": "continuous",
+      "r2": 0.563753604888916,
+      "corr": 0.7512266286429804
+    },
+    "n_decel_late": {
+      "kind": "continuous",
+      "r2": 0.04540455341339111,
+      "corr": 0.2137186530281145
+    },
+    "n_decel_prolonged": {
+      "kind": "continuous",
+      "r2": 0.30025601387023926,
+      "corr": 0.5490628317206219
+    },
+    "frac_time_in_decel": {
+      "kind": "continuous",
+      "r2": 0.6577571630477905,
+      "corr": 0.8119310192177526
+    },
+    "longest_decel_s": {
+      "kind": "continuous",
+      "r2": 0.5159501433372498,
+      "corr": 0.7187756241972224
+    },
+    "deepest_decel_bpm": {
+      "kind": "continuous",
+      "r2": 0.48147130012512207,
+      "corr": 0.6973761035619634
+    },
+    "decel_repetitive": {
+      "kind": "binary",
+      "auroc": 0.7796626028565925,
+      "prevalence": 0.232199028134346
+    },
+    "variability_measurable": {
+      "kind": "binary",
+      "auroc": 0.8376013477130417,
+      "prevalence": 0.9782670736312866
+    }
+  },
+  "runtime_s": 273.4
+}

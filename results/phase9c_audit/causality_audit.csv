@@ -1,0 +1,8 @@
+variable,max_delta,causal_status
+Raw 19 Clinical Features,0.0,PASS
+Domain Severities,0.0,PASS
+Research State S_t,0.0,PASS
+Velocity V_1step,0.0,PASS
+Velocity V_4step,0.0,PASS
+Acceleration A_t,0.0,PASS
+Temporal Alignment (T_state < T_del),0.0,PASS

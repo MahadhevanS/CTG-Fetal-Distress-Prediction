@@ -1,0 +1,74 @@
+{
+  "cohort": {
+    "total_patients": 547,
+    "positive_patients": 110,
+    "negative_patients": 437,
+    "total_windows": 8517,
+    "positive_windows": 1659,
+    "negative_windows": 6858
+  },
+  "recording_level_quality": {
+    "fhr_missing_pct_mean": 18.47747964645004,
+    "fhr_missing_pct_median": 18.17948717948718,
+    "fhr_missing_pct_p25_p75": [
+      8.910714285714286,
+      26.450066137566136
+    ],
+    "uc_missing_pct_mean": 19.402244210578694,
+    "total_implausible_values": 1783,
+    "total_abrupt_jumps": 87092,
+    "total_flatline_samples": 464,
+    "gap_duration_distribution": {
+      "0-5s": 28766,
+      "5-15s": 6523,
+      "15-30s": 1738,
+      "30-60s": 956,
+      ">60s": 815,
+      "total_gaps": 38798
+    }
+  },
+  "window_level_quality": {
+    "window_missing_pct_mean": 11.852730812884035,
+    "window_missing_pct_median": 7.541666666666667,
+    "window_interp_pct_mean": 8.356576063559155,
+    "window_gap_distribution": {
+      "0-5s": 132031,
+      "5-15s": 29235,
+      "15-30s": 7643,
+      "30-60s": 3307,
+      ">60s": 2001,
+      "total_gaps": 174217
+    },
+    "windows_with_zero_missing": 830,
+    "windows_with_missing_gt_30pct": 966,
+    "windows_with_missing_gt_40pct": 352
+  },
+  "missingness_by_outcome": {
+    "pos_fhr_missing_pct_mean": 21.195967272381385,
+    "neg_fhr_missing_pct_mean": 17.793192143355192,
+    "pos_window_missing_pct_mean": 13.274412296564197,
+    "neg_window_missing_pct_mean": 11.508815738310489,
+    "pos_windows_per_patient": 15.081818181818182,
+    "neg_windows_per_patient": 15.693363844393593
+  },
+  "baseline_audit": {
+    "baseline_mean_bpm": 136.41599154631913,
+    "baseline_std_bpm": 15.403692308182205,
+    "pct_outside_110_160_bpm": 7.925325818950335,
+    "mean_rolling_drift_within_window_bpm": 47.6597328616142,
+    "median_rolling_drift_within_window_bpm": 24.772681486129386,
+    "leakage_diff_window_vs_whole_rec_bpm": 7.357637665844781
+  },
+  "morphology_preservation": {
+    "stv_p0_mean": 0.8690277207380661,
+    "stv_p1_mean": 0.9162042883311151,
+    "ltv_p0_mean": 26.392325703728503,
+    "ltv_p1_mean": 36.81578440158207,
+    "acc_p0_mean": 1.5402136902665258,
+    "acc_p1_mean": 1.2556064341904427,
+    "dec_p0_mean": 4.225666314429963,
+    "dec_p1_mean": 3.6491722437477985,
+    "res_spikes_p0": 439945,
+    "res_spikes_p1": 334609
+  }
+}

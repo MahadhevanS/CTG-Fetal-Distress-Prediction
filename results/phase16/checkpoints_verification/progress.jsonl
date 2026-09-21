@@ -1,0 +1,15 @@
+{"unit_id": "epoch_ext_400_fold0", "model_path": "results/phase16\\checkpoints_verification\\epoch_ext_400_fold0.pt", "val_loss": 0.456375390291214, "n_epochs": 205}
+{"unit_id": "epoch_ext_400_fold1", "model_path": "results/phase16\\checkpoints_verification\\epoch_ext_400_fold1.pt", "val_loss": 0.4457665681838989, "n_epochs": 192}
+{"unit_id": "epoch_ext_400_fold2", "model_path": "results/phase16\\checkpoints_verification\\epoch_ext_400_fold2.pt", "val_loss": 0.4807775318622589, "n_epochs": 132}
+{"unit_id": "epoch_ext_400_fold3", "model_path": "results/phase16\\checkpoints_verification\\epoch_ext_400_fold3.pt", "val_loss": 0.4684094488620758, "n_epochs": 119}
+{"unit_id": "epoch_ext_400_fold4", "model_path": "results/phase16\\checkpoints_verification\\epoch_ext_400_fold4.pt", "val_loss": 0.4991781413555145, "n_epochs": 223}
+{"unit_id": "resplit_seed11_fold0", "model_path": "results/phase16\\checkpoints_verification\\resplit_seed11_fold0.pt", "val_loss": 0.5257233381271362, "n_epochs": 29}
+{"unit_id": "resplit_seed11_fold1", "model_path": "results/phase16\\checkpoints_verification\\resplit_seed11_fold1.pt", "val_loss": 0.49999165534973145, "n_epochs": 174}
+{"unit_id": "resplit_seed11_fold2", "model_path": "results/phase16\\checkpoints_verification\\resplit_seed11_fold2.pt", "val_loss": 0.49726375937461853, "n_epochs": 190}
+{"unit_id": "resplit_seed11_fold3", "model_path": "results/phase16\\checkpoints_verification\\resplit_seed11_fold3.pt", "val_loss": 0.47776713967323303, "n_epochs": 99}
+{"unit_id": "resplit_seed11_fold4", "model_path": "results/phase16\\checkpoints_verification\\resplit_seed11_fold4.pt", "val_loss": 0.48125073313713074, "n_epochs": 200}
+{"unit_id": "resplit_seed22_fold0", "model_path": "results/phase16\\checkpoints_verification\\resplit_seed22_fold0.pt", "val_loss": 0.4975455701351166, "n_epochs": 187}
+{"unit_id": "resplit_seed22_fold1", "model_path": "results/phase16\\checkpoints_verification\\resplit_seed22_fold1.pt", "val_loss": 0.5048370957374573, "n_epochs": 11}
+{"unit_id": "resplit_seed22_fold2", "model_path": "results/phase16\\checkpoints_verification\\resplit_seed22_fold2.pt", "val_loss": 0.4590749144554138, "n_epochs": 187}
+{"unit_id": "resplit_seed22_fold3", "model_path": "results/phase16\\checkpoints_verification\\resplit_seed22_fold3.pt", "val_loss": 0.5063316226005554, "n_epochs": 189}
+{"unit_id": "resplit_seed22_fold4", "model_path": "results/phase16\\checkpoints_verification\\resplit_seed22_fold4.pt", "val_loss": 0.45759162306785583, "n_epochs": 144}

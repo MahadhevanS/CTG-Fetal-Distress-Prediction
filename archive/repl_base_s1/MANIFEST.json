@@ -1,0 +1,95 @@
+{
+  "name": "repl_base_s1",
+  "archived_utc": "2026-08-21T13:31:03.831146Z",
+  "command": "python src/models/train_ctg_crossformer.py --data_dir data/processed_mil/ --checkpoint_dir checkpoints/repl_base_s1/ --fold_mode patient_level --early_stop_mode nested --patience 15 --class_weight inverse_freq --seed 1",
+  "config": "configs/ctg_crossformer_config.yaml",
+  "metrics": {
+    "test_auroc": 0.7827,
+    "test_auprc": 0.1313,
+    "test_brier": 0.1399,
+    "test_ece": 0.2957,
+    "test_mean_prob": 0.3419
+  },
+  "notes": "Paired NO-PRETRAINING baseline for crp_seed1. Identical recipe minus --pretrained_encoder; this is the run crp_seed1's +0.0156 AUROC / +0.0250 AUPRC gain is measured against. Command reconstructed from archive/crp_seed1/MANIFEST.json (the pairing is by construction: same seed, same flags, no encoder). Metrics recomputed 2026-08-21 by scripts/eval_all_models.py and match the paired_baseline_* fields already recorded in archive/crp_seed1/MANIFEST.json.",
+  "git": {
+    "commit": "101a9a53f01086f0aad743d00b691ebc72dd575b",
+    "branch": "crossformer_test",
+    "dirty_files": [
+      "M scripts/demo_explainability.py",
+      "?? archive/repl_base_s1/",
+      "?? checkpoints/ctg_crossformer_crp/",
+      "?? docs/calibration_test_plan.md",
+      "?? docs/model_metrics.json",
+      "?? docs/reproduce_crp.md",
+      "?? scripts/calibrate_crp.py",
+      "?? scripts/eval_all_models.py",
+      "?? scripts/eval_crp_metrics.py",
+      "?? scripts/run_clinical_review.py"
+    ]
+  },
+  "data": {
+    "dir": "data/processed_mil/",
+    "files": {
+      "ctu_signal_scaler.npz": {
+        "sha256": "b9b0cef1eda3986455f955662c784b8f0fd57a4e71f6235da816e3c59b2ce519",
+        "bytes": 516
+      },
+      "feature_scaler.npz": {
+        "sha256": "e185d77a415b0e50ecbf3d584769296e14e6e8ae9fa65f44e0415ce20435ef9e",
+        "bytes": 600
+      },
+      "test_dataset.pt": {
+        "sha256": "dda9b796d99f1da2161bd3722bcb5d36dd6c7429192767af73bfd101a8c77043",
+        "bytes": 42447504
+      },
+      "test_extended_features.npy": {
+        "sha256": "a284af83673ba56ca3bb67e85f04c6bdfd42722bda070babd7ff2270316833aa",
+        "bytes": 48660
+      },
+      "train_dataset.pt": {
+        "sha256": "f1c140a0077903672623421f71e20ee1653670fdebec864ad0121fbdc9153230",
+        "bytes": 203417499
+      },
+      "train_extended_features.npy": {
+        "sha256": "f39deb2514077fe1734662ac9b99c72beb1dba9bff86e05b2bbc722d9c36fff4",
+        "bytes": 232712
+      },
+      "val_dataset.pt": {
+        "sha256": "ebd6e0b395480141d1bc2b621d11c8ba5cb6ee52bfe8be4d0c33dba6fca6fb73",
+        "bytes": 44718085
+      },
+      "val_extended_features.npy": {
+        "sha256": "4e850166c25c1f22144dc0d8199b80b9c3cbea4df854e1bd8acd4c76a0f47de0",
+        "bytes": 51256
+      }
+    }
+  },
+  "checkpoints": {
+    "ctg_crossformer_fold_1_best.pth": {
+      "sha256": "6664d6854c29fa7e8b99d5a30125a997b70a58bc35ceab8093db8312c5a19b7b",
+      "bytes": 10071609
+    },
+    "ctg_crossformer_fold_2_best.pth": {
+      "sha256": "ecdf43f5b96a77e59e0cf74c7b5fde8318017721aab5f76ce2fa62ad5536c400",
+      "bytes": 10071609
+    },
+    "ctg_crossformer_fold_3_best.pth": {
+      "sha256": "ee1ef5c5cf343a9deb229e80c15bcd4fa03fac16bae30ec85a6c2b2e9114184e",
+      "bytes": 10071609
+    },
+    "ctg_crossformer_fold_4_best.pth": {
+      "sha256": "1e2b07c281993afff147b28986259f1278f322d626f02fa42f789acda816bf94",
+      "bytes": 10071609
+    },
+    "ctg_crossformer_fold_5_best.pth": {
+      "sha256": "737fa586e9fe923c063b816a111aba37a80d11311becd96856eca1b98aa7f49f",
+      "bytes": 10071609
+    }
+  },
+  "env": {
+    "python": "3.10.11",
+    "torch": "2.11.0+cu128",
+    "cuda": "12.8",
+    "platform": "Windows-10-10.0.26200-SP0"
+  }
+}

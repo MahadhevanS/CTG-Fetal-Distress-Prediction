@@ -24,7 +24,7 @@ Reference: preprocessing_technical_documentation.md §2.1 & §3.1
 """
 
 
-def load_ctu_chb_record(record_path: str) -> Tuple[np.ndarray, np.ndarray, float]:
+def load_ctu_chb_record(record_path: str, strict: bool = False) -> Tuple[np.ndarray, np.ndarray, float]:
     """
     Loads a CTU-CHB record using wfdb, validates the sampling frequency,
     and resamples to TARGET_FS (4 Hz) if necessary.
@@ -47,9 +47,25 @@ def load_ctu_chb_record(record_path: str) -> Tuple[np.ndarray, np.ndarray, float
         3. If fs == TARGET_FS, asserts this explicitly so any future dataset
            change raises a clear error rather than silently misbehaving.
 
+    Error handling (audit fix, 2026-08-08):
+        By default (`strict=False`) a failed load (missing file, corrupt
+        record, etc.) is caught, logged, and reported back as empty arrays
+        with fs=0.0. This is intentional for callers that scan many records
+        and must skip bad ones without aborting a multi-hour run (e.g.
+        `pipeline.py`'s per-record loop, or a bulk signal-quality audit).
+        Callers loading a single, specific record they expect to exist
+        (e.g. EDA notebooks demonstrating one record by ID) should pass
+        `strict=True` so a missing/corrupt file raises immediately instead
+        of silently propagating empty arrays into downstream plotting or
+        feature-extraction code, which can otherwise produce misleading
+        blank output instead of a clear error.
+
     Args:
         record_path: Path to the record without extension
                      (e.g., 'data/raw/ctu-chb-intrapartum/1001')
+        strict: If True, re-raise load failures instead of returning empty
+                arrays. Default False preserves the original skip-and-continue
+                behaviour relied on by bulk-processing callers.
 
     Returns:
         fhr (np.ndarray): Fetal Heart Rate signal (bpm). Missing values == 0.0.
@@ -106,6 +122,10 @@ def load_ctu_chb_record(record_path: str) -> Tuple[np.ndarray, np.ndarray, float
         # Re-raise assertion errors so they are visible — do not swallow
         raise
     except Exception as e:
+        if strict:
+            raise RuntimeError(
+                f"Failed to load CTU-CHB record '{record_path}': {e}"
+            ) from e
         print(f"  [ERROR] Failed to load record '{record_path}': {e}")
         return np.array([]), np.array([]), 0.0
 

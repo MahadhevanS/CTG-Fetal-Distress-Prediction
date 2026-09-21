@@ -1,0 +1,60 @@
+{
+  "primary_benchmark_715": {
+    "Model_A_Phase4": {
+      "auroc": 0.6547118785105055,
+      "ci": [
+        0.5914655971088137,
+        0.7161551978710807
+      ],
+      "auprc": 0.3674801906799599
+    },
+    "Model_B_Continuous_Clinical": {
+      "auroc": 0.7425837320574162,
+      "ci": [
+        0.687647543305623,
+        0.7930630779058788
+      ],
+      "auprc": 0.47727209370985296
+    },
+    "Model_C_Continuous_Fusion": {
+      "auroc": 0.562200956937799,
+      "ci": [
+        0.49895610248951305,
+        0.6244256073980511
+      ],
+      "auprc": 0.2947542786113435
+    }
+  },
+  "paired_bootstrap_comparisons": [
+    {
+      "comparison": "Model B (Continuous Clinical) - Model A (Phase 4)",
+      "delta_auroc": 0.0880786563945999,
+      "ci": [
+        0.03603241691718712,
+        0.14324656576850708
+      ],
+      "p_value_bootstrap": 0.0015,
+      "p_value_delong": 0.0007583719894836971
+    },
+    {
+      "comparison": "Model C (Continuous Fusion) - Model A (Phase 4)",
+      "delta_auroc": -0.09383902395232857,
+      "ci": [
+        -0.1594594866437039,
+        -0.02618275126602877
+      ],
+      "p_value_bootstrap": 0.004,
+      "p_value_delong": 0.005365840934279165
+    },
+    {
+      "comparison": "Model B (Continuous Clinical) - Model C (Continuous Fusion)",
+      "delta_auroc": 0.18191768034692848,
+      "ci": [
+        0.10396332934135522,
+        0.25422394292317796
+      ],
+      "p_value_bootstrap": 0.0,
+      "p_value_delong": 1.5370517503221492e-06
+    }
+  ]
+}

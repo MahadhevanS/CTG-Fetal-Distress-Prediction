@@ -1,0 +1,103 @@
+{
+  "audit_phase": "Phase 9C \u2014 State Transition and Physiological Deterioration Timing",
+  "cohort_size": 547,
+  "acidemia_cases_715": 110,
+  "severe_cases_705": 41,
+  "rolling_windows": 8517,
+  "execution_time_sec": 18.46,
+  "all_gates_passed": true,
+  "final_lock_decision": "LOCKED (Full Lock - Outcome A)",
+  "scientific_conclusion": "Physiology-guided state trajectories demonstrate significant incremental temporal association with subsequent acidemia beyond current state (progression vs reversal OR > 2.3x, p < 0.001), although biological compensation boundaries constrain global discrimination at >=30 minutes to AUROC ~ 0.569. Hybrid alerting achieves 94.74% specificity and 0.075 false alerts/hour with 15.0-minute median lead time.",
+  "decision_matrix": [
+    {
+      "gate": "9C-A",
+      "requirement": "Warning-Horizon Integrity",
+      "status": "PASS",
+      "details": "Horizon filters verified; 505/547 patient rank invariance explains identical >=60m and >=45m AUROC (0.5360)."
+    },
+    {
+      "gate": "9C-B",
+      "requirement": "Patient-Level Matched-State Analysis",
+      "status": "PASS",
+      "details": "Progressing trajectories exhibit 2.3x-2.6x higher patient-level acidemia risk vs reversing trajectories (p < 0.001)."
+    },
+    {
+      "gate": "9C-C",
+      "requirement": "State Assignment Reproducibility",
+      "status": "PASS",
+      "details": "Exact 547/547 patient maximum state (S_max) reconstruction confirmed."
+    },
+    {
+      "gate": "9C-D",
+      "requirement": "State Threshold Provenance",
+      "status": "PASS",
+      "details": "All 5 state thresholds derived a priori in Phase 9B with zero test-fold leakage."
+    },
+    {
+      "gate": "9C-E",
+      "requirement": "Directionality Provenance",
+      "status": "PASS",
+      "details": "19/19 clinical descriptors documented with physiological FIGO rationale and zero leakage."
+    },
+    {
+      "gate": "9C-F",
+      "requirement": "Causal Integrity",
+      "status": "PASS",
+      "details": "Synthetic future perturbation confirmed max |Delta X| = 0.000000000000 across all variables."
+    },
+    {
+      "gate": "9C-G",
+      "requirement": "Temporal Alignment",
+      "status": "PASS",
+      "details": "T_state < T_delivery verified for all windows; trajectory classified using historical data only."
+    },
+    {
+      "gate": "9C-H",
+      "requirement": "State-Entry Timing",
+      "status": "PASS",
+      "details": "Lead times verified (State 1: 27.5m, State 2: 17.5m, State 3: 12.5m, State 4: 7.5m)."
+    },
+    {
+      "gate": "9C-I",
+      "requirement": "Alert Policy Provenance",
+      "status": "PASS",
+      "details": "Policy parameters (tau=0.28, 0.85*tau, S>=2, P>=2) anchored to training baseline distribution."
+    },
+    {
+      "gate": "9C-J",
+      "requirement": "Alert Metric Recalculation",
+      "status": "PASS",
+      "details": "Hybrid Policy 5 reproduces 31.82% sens, 94.74% spec, 0.075 FAR/hr, 15.0m lead time."
+    },
+    {
+      "gate": "9C-K",
+      "requirement": "AUROC Reproduction",
+      "status": "PASS",
+      "details": "AUROC tables reproduced bit-for-bit across all 5 models and 6 horizons."
+    },
+    {
+      "gate": "9C-L",
+      "requirement": "Patient-Level Uncertainty",
+      "status": "PASS",
+      "details": "B=2,000 paired patient bootstrap CIs and p-values quantified for all models."
+    },
+    {
+      "gate": "9C-M",
+      "requirement": "Incremental Trajectory Information",
+      "status": "PASS",
+      "details": "Trajectory adds meaningful stratification within matched states and improves near-delivery discrimination."
+    },
+    {
+      "gate": "9C-N",
+      "requirement": "Severe-Acidemia Consistency",
+      "status": "PASS",
+      "details": "Severe acidemia (pH <= 7.05, N=41) exhibits consistent 21.3x jump across states (1.23% to 26.19%)."
+    },
+    {
+      "gate": "9C-O",
+      "requirement": "End-to-End Reproducibility",
+      "status": "PASS",
+      "details": "Full audit suite executes cleanly and deterministically from raw dataset to final outputs."
+    }
+  ]
+}

@@ -1,0 +1,94 @@
+{
+  "arm": "KI3_combined",
+  "label": "KI-3  concepts + rule + head",
+  "mode": "ki3",
+  "lambda_grid": [
+    0.1,
+    0.3,
+    1.0
+  ],
+  "lambda_per_fold": [
+    0.1,
+    1.0,
+    1.0,
+    0.3,
+    0.3
+  ],
+  "n_params": 78516,
+  "epochs": 40,
+  "lr": 0.0003,
+  "seed": 0,
+  "concept_quality": {
+    "baseline_bpm": {
+      "kind": "continuous",
+      "r2": 0.6802080869674683,
+      "corr": 0.8258266418420097
+    },
+    "variability_bpm": {
+      "kind": "continuous",
+      "r2": 0.22024232149124146,
+      "corr": 0.470899707593278
+    },
+    "stv_bpm": {
+      "kind": "continuous",
+      "r2": 0.8018615245819092,
+      "corr": 0.9007032929867014
+    },
+    "n_accels": {
+      "kind": "continuous",
+      "r2": 0.3147794008255005,
+      "corr": 0.5676955674343711
+    },
+    "n_contractions": {
+      "kind": "continuous",
+      "r2": 0.01881641149520874,
+      "corr": 0.13911027494755715
+    },
+    "n_decels": {
+      "kind": "continuous",
+      "r2": 0.5475423336029053,
+      "corr": 0.7439344270807211
+    },
+    "n_decel_late": {
+      "kind": "continuous",
+      "r2": 0.04700511693954468,
+      "corr": 0.21758824429725326
+    },
+    "n_decel_prolonged": {
+      "kind": "continuous",
+      "r2": 0.29579871892929077,
+      "corr": 0.5474207140765913
+    },
+    "frac_time_in_decel": {
+      "kind": "continuous",
+      "r2": 0.6586361527442932,
+      "corr": 0.8134727905851995
+    },
+    "longest_decel_s": {
+      "kind": "continuous",
+      "r2": 0.5006712079048157,
+      "corr": 0.7110393694497561
+    },
+    "deepest_decel_bpm": {
+      "kind": "continuous",
+      "r2": 0.4575955271720886,
+      "corr": 0.6827389288841136
+    },
+    "decel_repetitive": {
+      "kind": "binary",
+      "auroc": 0.7601329223656328,
+      "prevalence": 0.232199028134346
+    },
+    "variability_measurable": {
+      "kind": "binary",
+      "auroc": 0.7600386159787074,
+      "prevalence": 0.9782670736312866
+    },
+    "has_acute_hypoxia_decel": {
+      "kind": "binary",
+      "auroc": 0.3092105263157895,
+      "prevalence": 0.00028595939511433244
+    }
+  },
+  "runtime_s": 264.9
+}

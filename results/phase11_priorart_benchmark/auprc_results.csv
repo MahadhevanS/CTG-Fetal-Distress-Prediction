@@ -1,0 +1,37 @@
+model_code,model_name,horizon,auprc_primary_715,auprc_severe_705
+P1,P1 (Compact CTG Baseline - DeepCTG-Inspired),>=60m,0.2333,0.0736
+P2,P2 (Sequential / Event Baseline - Vargas-Calixto-Inspired),>=60m,0.3582,0.1777
+P3,P3 (Locked Snapshot Baseline - Continuous Clinical Huber),>=60m,0.2967,0.14
+P4,P4 (Snapshot + Physiological State),>=60m,0.2893,0.1383
+P5,P5 (Snapshot + Deterioration Trajectory),>=60m,0.2982,0.1482
+P6,P6 (Full Physiology-Guided Proposed System),>=60m,0.4067,0.256
+P1,P1 (Compact CTG Baseline - DeepCTG-Inspired),>=45m,0.2333,0.0736
+P2,P2 (Sequential / Event Baseline - Vargas-Calixto-Inspired),>=45m,0.3582,0.1777
+P3,P3 (Locked Snapshot Baseline - Continuous Clinical Huber),>=45m,0.2967,0.14
+P4,P4 (Snapshot + Physiological State),>=45m,0.2893,0.1383
+P5,P5 (Snapshot + Deterioration Trajectory),>=45m,0.2982,0.1482
+P6,P6 (Full Physiology-Guided Proposed System),>=45m,0.4067,0.256
+P1,P1 (Compact CTG Baseline - DeepCTG-Inspired),>=30m,0.2608,0.126
+P2,P2 (Sequential / Event Baseline - Vargas-Calixto-Inspired),>=30m,0.3064,0.1875
+P3,P3 (Locked Snapshot Baseline - Continuous Clinical Huber),>=30m,0.2892,0.1735
+P4,P4 (Snapshot + Physiological State),>=30m,0.2862,0.1739
+P5,P5 (Snapshot + Deterioration Trajectory),>=30m,0.2733,0.1612
+P6,P6 (Full Physiology-Guided Proposed System),>=30m,0.2946,0.1794
+P1,P1 (Compact CTG Baseline - DeepCTG-Inspired),>=20m,0.2514,0.1195
+P2,P2 (Sequential / Event Baseline - Vargas-Calixto-Inspired),>=20m,0.2909,0.1655
+P3,P3 (Locked Snapshot Baseline - Continuous Clinical Huber),>=20m,0.2869,0.175
+P4,P4 (Snapshot + Physiological State),>=20m,0.2838,0.1759
+P5,P5 (Snapshot + Deterioration Trajectory),>=20m,0.2773,0.1754
+P6,P6 (Full Physiology-Guided Proposed System),>=20m,0.2868,0.1621
+P1,P1 (Compact CTG Baseline - DeepCTG-Inspired),>=10m,0.2384,0.0922
+P2,P2 (Sequential / Event Baseline - Vargas-Calixto-Inspired),>=10m,0.2784,0.1464
+P3,P3 (Locked Snapshot Baseline - Continuous Clinical Huber),>=10m,0.26,0.1273
+P4,P4 (Snapshot + Physiological State),>=10m,0.2566,0.1271
+P5,P5 (Snapshot + Deterioration Trajectory),>=10m,0.2533,0.132
+P6,P6 (Full Physiology-Guided Proposed System),>=10m,0.2837,0.1619
+P1,P1 (Compact CTG Baseline - DeepCTG-Inspired),Delivery (0m),0.2333,0.0736
+P2,P2 (Sequential / Event Baseline - Vargas-Calixto-Inspired),Delivery (0m),0.3582,0.1777
+P3,P3 (Locked Snapshot Baseline - Continuous Clinical Huber),Delivery (0m),0.2967,0.14
+P4,P4 (Snapshot + Physiological State),Delivery (0m),0.2893,0.1383
+P5,P5 (Snapshot + Deterioration Trajectory),Delivery (0m),0.2982,0.1482
+P6,P6 (Full Physiology-Guided Proposed System),Delivery (0m),0.4067,0.256

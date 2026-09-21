@@ -1,0 +1,374 @@
+[
+  {
+    "name": "A_fhr",
+    "path": "E:\\Maha\\CTG-Fetal-Distress-Prediction\\results\\figo_detection\\A_fhr\\oof.npz",
+    "n": 3497,
+    "n_positive": 1261,
+    "prevalence": 0.36059479553903345,
+    "n_patients": 547,
+    "n_params": 221378,
+    "auroc": 0.736886419189132,
+    "auprc": 0.6555381265470398,
+    "brier": 0.20351481475164326,
+    "sens_at_90spec": 0.37272006344171293,
+    "sens_at_95spec": 0.2823156225218081,
+    "spec_at_85sens": 0.417262969588551,
+    "spec_at_90sens": 0.3246869409660107,
+    "spec_at_95sens": 0.16279069767441856,
+    "balanced_sens": 0.6732751784298177,
+    "balanced_spec": 0.6735241502683363,
+    "balanced_threshold": 0.4893140494823456,
+    "min_sens_spec": 0.6732751784298177,
+    "fold_auroc": [
+      0.7204195648956637,
+      0.7494030315614618,
+      0.7372763107405728,
+      0.7505905511811023,
+      0.7489853896103897
+    ],
+    "fold_auroc_mean": 0.7413349695978381,
+    "fold_auroc_sd": 0.012876482499475334,
+    "operating_point": {
+      "threshold": 0.3125401258468628,
+      "tp": 1119,
+      "fp": 1441,
+      "tn": 795,
+      "fn": 142,
+      "sensitivity": 0.887390959555908,
+      "specificity": 0.3555456171735242,
+      "ppv": 0.437109375,
+      "npv": 0.848452508004269,
+      "balanced_accuracy": 0.621468288364716,
+      "f1": 0.5857105469772311,
+      "selected_by": "lowest threshold reaching 90% sensitivity on inner-validation patients of each training fold"
+    },
+    "ci": {
+      "auroc": [
+        0.7154309767747753,
+        0.7572426593449305
+      ],
+      "auprc": [
+        0.6193168178069205,
+        0.6909087294036498
+      ],
+      "sensitivity": [
+        0.8657644000463742,
+        0.9073652526383836
+      ],
+      "specificity": [
+        0.3284983924612204,
+        0.3839868463560171
+      ]
+    }
+  },
+  {
+    "name": "B_concat",
+    "path": "E:\\Maha\\CTG-Fetal-Distress-Prediction\\results\\figo_detection\\B_concat\\oof.npz",
+    "n": 3497,
+    "n_positive": 1261,
+    "prevalence": 0.36059479553903345,
+    "n_patients": 547,
+    "n_params": 222818,
+    "auroc": 0.732440746830397,
+    "auprc": 0.636780624158891,
+    "brier": 0.21182992746514437,
+    "sens_at_90spec": 0.37272006344171293,
+    "sens_at_95spec": 0.27835051546391754,
+    "spec_at_85sens": 0.41234347048300535,
+    "spec_at_90sens": 0.30053667262969586,
+    "spec_at_95sens": 0.18336314847942758,
+    "balanced_sens": 0.6764472640761301,
+    "balanced_spec": 0.674865831842576,
+    "balanced_threshold": 0.49168822169303894,
+    "min_sens_spec": 0.674865831842576,
+    "fold_auroc": [
+      0.7280505401805535,
+      0.7441687430786268,
+      0.7530261276031673,
+      0.7454634931997136,
+      0.7216967814793901
+    ],
+    "fold_auroc_mean": 0.7384811371082903,
+    "fold_auroc_sd": 0.0130687686193422,
+    "operating_point": {
+      "threshold": 0.27760703563690187,
+      "tp": 1114,
+      "fp": 1455,
+      "tn": 781,
+      "fn": 147,
+      "sensitivity": 0.8834258524980174,
+      "specificity": 0.3492844364937388,
+      "ppv": 0.4336317633320358,
+      "npv": 0.8415948275862069,
+      "balanced_accuracy": 0.6163551444958781,
+      "f1": 0.5817232375979111,
+      "selected_by": "lowest threshold reaching 90% sensitivity on inner-validation patients of each training fold"
+    },
+    "ci": {
+      "auroc": [
+        0.711599813853898,
+        0.7533870745093171
+      ],
+      "auprc": [
+        0.6008790352237489,
+        0.6722555433875987
+      ],
+      "sensitivity": [
+        0.8605549725129211,
+        0.9046494632930803
+      ],
+      "specificity": [
+        0.3230953968234002,
+        0.37807479382558723
+      ]
+    }
+  },
+  {
+    "name": "C_cross",
+    "path": "E:\\Maha\\CTG-Fetal-Distress-Prediction\\results\\figo_detection\\C_cross\\oof.npz",
+    "n": 3497,
+    "n_positive": 1261,
+    "prevalence": 0.36059479553903345,
+    "n_patients": 547,
+    "n_params": 452066,
+    "auroc": 0.7327964715512435,
+    "auprc": 0.6421400754831742,
+    "brier": 0.21132318753554102,
+    "sens_at_90spec": 0.3695479777954005,
+    "sens_at_95spec": 0.2775574940523394,
+    "spec_at_85sens": 0.4159212880143113,
+    "spec_at_90sens": 0.32021466905187834,
+    "spec_at_95sens": 0.14758497316636854,
+    "balanced_sens": 0.675654242664552,
+    "balanced_spec": 0.6744186046511628,
+    "balanced_threshold": 0.49088695645332336,
+    "min_sens_spec": 0.6744186046511628,
+    "fold_auroc": [
+      0.7037146662720142,
+      0.7238458610188262,
+      0.7503488331531027,
+      0.7525411596277739,
+      0.7392451298701298
+    ],
+    "fold_auroc_mean": 0.7339391299883694,
+    "fold_auroc_sd": 0.020364551215519097,
+    "operating_point": {
+      "threshold": 0.28041082322597505,
+      "tp": 1120,
+      "fp": 1472,
+      "tn": 764,
+      "fn": 141,
+      "sensitivity": 0.8881839809674861,
+      "specificity": 0.3416815742397138,
+      "ppv": 0.43209876543209874,
+      "npv": 0.8441988950276244,
+      "balanced_accuracy": 0.6149327776036,
+      "f1": 0.5813651699974046,
+      "selected_by": "lowest threshold reaching 90% sensitivity on inner-validation patients of each training fold"
+    },
+    "ci": {
+      "auroc": [
+        0.7106353056943494,
+        0.7544870598510963
+      ],
+      "auprc": [
+        0.6062525954808522,
+        0.6800942802099814
+      ],
+      "sensitivity": [
+        0.8657532140841951,
+        0.9082500772902906
+      ],
+      "specificity": [
+        0.31268817917901714,
+        0.37245873549259734
+      ]
+    }
+  },
+  {
+    "name": "D_cross_ucshuf",
+    "path": "E:\\Maha\\CTG-Fetal-Distress-Prediction\\results\\figo_detection\\D_cross_ucshuf\\oof.npz",
+    "n": 3497,
+    "n_positive": 1261,
+    "prevalence": 0.36059479553903345,
+    "n_patients": 547,
+    "n_params": 452066,
+    "auroc": 0.7067122382071758,
+    "auprc": 0.6263872426754253,
+    "brier": 0.21524060595998076,
+    "sens_at_90spec": 0.3584456780333069,
+    "sens_at_95spec": 0.25455987311657413,
+    "spec_at_85sens": 0.38014311270125223,
+    "spec_at_90sens": 0.25491949910554557,
+    "spec_at_95sens": 0.13372093023255816,
+    "balanced_sens": 0.6494845360824743,
+    "balanced_spec": 0.6493738819320214,
+    "balanced_threshold": 0.4940026104450226,
+    "min_sens_spec": 0.6493738819320214,
+    "fold_auroc": [
+      0.6989973360959005,
+      0.7313295957918051,
+      0.7046604109254542,
+      0.7109341445955619,
+      0.7162178853754941
+    ],
+    "fold_auroc_mean": 0.7124278745568432,
+    "fold_auroc_sd": 0.012395395631672496,
+    "operating_point": {
+      "threshold": 0.33835036754608155,
+      "tp": 1096,
+      "fp": 1440,
+      "tn": 796,
+      "fn": 165,
+      "sensitivity": 0.8691514670896114,
+      "specificity": 0.3559928443649374,
+      "ppv": 0.43217665615141954,
+      "npv": 0.8283038501560874,
+      "balanced_accuracy": 0.6125721557272744,
+      "f1": 0.5772978667368975,
+      "selected_by": "lowest threshold reaching 90% sensitivity on inner-validation patients of each training fold"
+    },
+    "ci": {
+      "auroc": [
+        0.684892812192623,
+        0.7287100884095411
+      ],
+      "auprc": [
+        0.5894210314128567,
+        0.6624867449482998
+      ],
+      "sensitivity": [
+        0.8463375325623768,
+        0.8915959415408267
+      ],
+      "specificity": [
+        0.3280679354573759,
+        0.38409117832925505
+      ]
+    }
+  },
+  {
+    "name": "E_cross_fhrshuf",
+    "path": "E:\\Maha\\CTG-Fetal-Distress-Prediction\\results\\figo_detection\\E_cross_fhrshuf\\oof.npz",
+    "n": 3497,
+    "n_positive": 1261,
+    "prevalence": 0.36059479553903345,
+    "n_patients": 547,
+    "n_params": 452066,
+    "auroc": 0.5322432717311274,
+    "auprc": 0.38833393838333147,
+    "brier": 0.2521151842925833,
+    "sens_at_90spec": 0.12926249008723237,
+    "sens_at_95spec": 0.07295796986518636,
+    "spec_at_85sens": 0.16323792486583188,
+    "spec_at_90sens": 0.10957066189624332,
+    "spec_at_95sens": 0.05008944543828264,
+    "balanced_sens": 0.5249801744647106,
+    "balanced_spec": 0.5232558139534884,
+    "balanced_threshold": 0.5068605542182922,
+    "min_sens_spec": 0.5232558139534884,
+    "fold_auroc": [
+      0.5317217330176114,
+      0.5525418743078627,
+      0.49911919628841517,
+      0.5310307802433787,
+      0.5193128881987578
+    ],
+    "fold_auroc_mean": 0.5267452944112052,
+    "fold_auroc_sd": 0.019538652870544678,
+    "operating_point": {
+      "threshold": 0.46922274827957156,
+      "tp": 1073,
+      "fp": 1874,
+      "tn": 362,
+      "fn": 188,
+      "sensitivity": 0.8509119746233148,
+      "specificity": 0.16189624329159213,
+      "ppv": 0.3640990838140482,
+      "npv": 0.6581818181818182,
+      "balanced_accuracy": 0.5064041089574535,
+      "f1": 0.509980988593156,
+      "selected_by": "lowest threshold reaching 90% sensitivity on inner-validation patients of each training fold"
+    },
+    "ci": {
+      "auroc": [
+        0.5085250825216172,
+        0.5544300387644967
+      ],
+      "auprc": [
+        0.3598641861215291,
+        0.4203079178079959
+      ],
+      "sensitivity": [
+        0.8254454893095673,
+        0.8759108246038141
+      ],
+      "specificity": [
+        0.1392092558891922,
+        0.18700364874293732
+      ]
+    }
+  },
+  {
+    "name": "Z_frozen_smallcnn",
+    "path": "E:\\Maha\\CTG-Fetal-Distress-Prediction\\results\\figo_detection\\Z_frozen_smallcnn\\oof.npz",
+    "n": 3497,
+    "n_positive": 1261,
+    "prevalence": 0.36059479553903345,
+    "n_patients": 547,
+    "n_params": 69281,
+    "auroc": 0.7559377300861543,
+    "auprc": 0.6326507415904981,
+    "brier": 0.19867556975354483,
+    "sens_at_90spec": 0.3584456780333069,
+    "sens_at_95spec": 0.24345757335448057,
+    "spec_at_85sens": 0.4973166368515206,
+    "spec_at_90sens": 0.39803220035778175,
+    "spec_at_95sens": 0.26028622540250446,
+    "balanced_sens": 0.6883425852498017,
+    "balanced_spec": 0.6882826475849732,
+    "balanced_threshold": 0.4801040291786194,
+    "min_sens_spec": 0.6882826475849732,
+    "fold_auroc": [
+      0.7316764096492525,
+      0.7716206395348837,
+      0.7707032476366554,
+      0.7658375089477452,
+      0.7781973461321288
+    ],
+    "fold_auroc_mean": 0.7636070303801331,
+    "fold_auroc_sd": 0.018384715932532915,
+    "operating_point": {
+      "threshold": 0.33237263560295105,
+      "tp": 1114,
+      "fp": 1275,
+      "tn": 961,
+      "fn": 147,
+      "sensitivity": 0.8834258524980174,
+      "specificity": 0.42978533094812166,
+      "ppv": 0.46630389284219337,
+      "npv": 0.8673285198555957,
+      "balanced_accuracy": 0.6566055917230695,
+      "f1": 0.6104109589041096,
+      "selected_by": "lowest threshold reaching 90% sensitivity on inner-validation patients of each training fold"
+    },
+    "ci": {
+      "auroc": [
+        0.7368677103379776,
+        0.7743423989517806
+      ],
+      "auprc": [
+        0.5975423444967599,
+        0.6687910045840801
+      ],
+      "sensitivity": [
+        0.8631628271223775,
+        0.902867995448925
+      ],
+      "specificity": [
+        0.40342940986676246,
+        0.45735808707666
+      ]
+    }
+  }
+]

@@ -1,0 +1,25 @@
+comparison,horizon,horizon_min,snapshot_auroc,model_auroc,delta_auroc,ci95,p_value,evidence_level
+Model B (Snapshot + State) vs Snapshot Baseline,>=60m,60,0.5976,0.5945,-0.0031,"[-0.0079, 0.0018]",0.211,No Meaningful Difference
+Model C (Snapshot + State + Trajectory) vs Snapshot Baseline,>=60m,60,0.5976,0.6179,0.0204,"[0.0031, 0.0378]",0.026,Strong Positive (CI excludes 0)
+Model D (Snapshot + Trajectory) vs Snapshot Baseline,>=60m,60,0.5976,0.6142,0.0166,"[0.0012, 0.032]",0.034,Strong Positive (CI excludes 0)
+Model E (Full Physiological Fusion) vs Snapshot Baseline,>=60m,60,0.5976,0.6872,0.09,"[0.0351, 0.1492]",0.002,Strong Positive (CI excludes 0)
+Model B (Snapshot + State) vs Snapshot Baseline,>=45m,45,0.5976,0.5945,-0.0031,"[-0.0079, 0.0018]",0.211,No Meaningful Difference
+Model C (Snapshot + State + Trajectory) vs Snapshot Baseline,>=45m,45,0.5976,0.6179,0.0204,"[0.0031, 0.0378]",0.026,Strong Positive (CI excludes 0)
+Model D (Snapshot + Trajectory) vs Snapshot Baseline,>=45m,45,0.5976,0.6142,0.0166,"[0.0012, 0.032]",0.034,Strong Positive (CI excludes 0)
+Model E (Full Physiological Fusion) vs Snapshot Baseline,>=45m,45,0.5976,0.6872,0.09,"[0.0351, 0.1492]",0.002,Strong Positive (CI excludes 0)
+Model B (Snapshot + State) vs Snapshot Baseline,>=30m,30,0.5461,0.5459,-0.0002,"[-0.0153, 0.0142]",0.992,No Meaningful Difference
+Model C (Snapshot + State + Trajectory) vs Snapshot Baseline,>=30m,30,0.5461,0.5345,-0.0116,"[-0.0412, 0.0184]",0.436,No Meaningful Difference
+Model D (Snapshot + Trajectory) vs Snapshot Baseline,>=30m,30,0.5461,0.5355,-0.0105,"[-0.0415, 0.0204]",0.499,No Meaningful Difference
+Model E (Full Physiological Fusion) vs Snapshot Baseline,>=30m,30,0.5461,0.5857,0.0392,"[-0.0133, 0.091]",0.135,Moderate Positive (CI overlaps 0)
+Model B (Snapshot + State) vs Snapshot Baseline,>=20m,20,0.55,0.5505,0.0005,"[-0.0137, 0.014]",0.919,Moderate Positive (CI overlaps 0)
+Model C (Snapshot + State + Trajectory) vs Snapshot Baseline,>=20m,20,0.55,0.5471,-0.0027,"[-0.0228, 0.0175]",0.779,No Meaningful Difference
+Model D (Snapshot + Trajectory) vs Snapshot Baseline,>=20m,20,0.55,0.5489,-0.0008,"[-0.0223, 0.021]",0.926,No Meaningful Difference
+Model E (Full Physiological Fusion) vs Snapshot Baseline,>=20m,20,0.55,0.5869,0.0368,"[-0.0122, 0.0845]",0.127,Moderate Positive (CI overlaps 0)
+Model B (Snapshot + State) vs Snapshot Baseline,>=10m,10,0.536,0.536,-0.0001,"[-0.0144, 0.0137]",0.983,No Meaningful Difference
+Model C (Snapshot + State + Trajectory) vs Snapshot Baseline,>=10m,10,0.536,0.5313,-0.0045,"[-0.0231, 0.0134]",0.639,No Meaningful Difference
+Model D (Snapshot + Trajectory) vs Snapshot Baseline,>=10m,10,0.536,0.5327,-0.003,"[-0.023, 0.0161]",0.762,No Meaningful Difference
+Model E (Full Physiological Fusion) vs Snapshot Baseline,>=10m,10,0.536,0.5814,0.0448,"[-0.001, 0.0879]",0.058,Moderate Positive (CI overlaps 0)
+Model B (Snapshot + State) vs Snapshot Baseline,Delivery (0m),0,0.5976,0.5945,-0.0031,"[-0.0079, 0.0018]",0.211,No Meaningful Difference
+Model C (Snapshot + State + Trajectory) vs Snapshot Baseline,Delivery (0m),0,0.5976,0.6179,0.0204,"[0.0031, 0.0378]",0.026,Strong Positive (CI excludes 0)
+Model D (Snapshot + Trajectory) vs Snapshot Baseline,Delivery (0m),0,0.5976,0.6142,0.0166,"[0.0012, 0.032]",0.034,Strong Positive (CI excludes 0)
+Model E (Full Physiological Fusion) vs Snapshot Baseline,Delivery (0m),0,0.5976,0.6872,0.09,"[0.0351, 0.1492]",0.002,Strong Positive (CI excludes 0)

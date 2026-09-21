@@ -1,0 +1,32 @@
+{
+  "project_title": "Physiology-Guided Multidomain Deterioration Framework for Intrapartum Fetal Acidemia Early Warning",
+  "phase": "Phase 12 \u2014 Final Scientific Synthesis & Thesis Validation",
+  "status": "LOCKED & METHODOLOGICALLY CLOSED",
+  "cohort_invariants": {
+    "dataset": "CTU-UHB Intrapartum Cardiotocography Database",
+    "n_patients": 547,
+    "n_primary_acidemia_positives_715": 110,
+    "n_severe_acidemia_positives_705": 41,
+    "n_rolling_causal_windows": 8517,
+    "window_length_min": 20.0,
+    "window_stride_min": 2.5,
+    "validation_protocol": "Patient-stratified 5-fold cross-validation",
+    "bootstrap_replicates": 2000
+  },
+  "thesis_core_answers": {
+    "Q1_methodological_novelty": "Causally constrained, physiology-guided framework integrating instantaneous multidomain physiological severity with explicit state, persistence, progression and reversal dynamics under strict patient-level evaluation.",
+    "Q2_empirical_superiority": "Statistically significant superiority over DeepCTG-inspired compact baseline (Delta=+0.1801, p<0.001) and locked snapshot baseline (Delta=+0.0896, p<0.001) near delivery. Statistically comparable to Vargas-Calixto sequential baseline (Delta=+0.0098, p=0.697 at delivery; Delta=-0.0126, p=0.485 at >=30m).",
+    "Q3_trajectory_betterment": "Temporal trajectory adds statistically significant predictive information over snapshot risk alone (Delta=+0.0165, 95% CI [+0.0006, +0.0319], p=0.041 at delivery).",
+    "Q4_multidomain_betterment": "Multidomain physiological severity fusion is the principal performance driver, accounting for approximately 78% of the total system gain (+0.0676 AUROC, p<0.001 under the component ladder).",
+    "Q5_operational_advantage": "Longest median warning lead time (17.5 min at locked threshold; 16.0 min at matched FAR=0.50/hr vs P2 12.5 min, P3 10.0 min, P1 12.5 min).",
+    "Q6_scientific_boundaries": "No universal superiority across all horizons; early-warning discrimination at >=30 min remains bounded by acute labor decompensation; trajectory associations reflect empirical risk differentiation rather than causal biological compensation; prospective clinical efficacy remains to be proven."
+  },
+  "hypothesis_verdicts": {
+    "H1_signal_representation": "CONFIRMED (1D temporal representation captures essential CTG morphology)",
+    "H2_multidomain_information": "CONFIRMED (Clinical descriptors provide orthogonal, complementary signal)",
+    "H3_trajectory_increment": "CONFIRMED (P5 > P3 Delta=+0.0165, p=0.041)",
+    "H4_state_direction_complementarity": "CONFIRMED (Nested progression R_t -> R_t+S_t -> R_t+S_t+D_t -> R_t+S_t+D_t+P_t achieves +0.0170 gain, p=0.043)",
+    "H5_multidomain_primary_driver": "CONFIRMED (Multidomain fusion accounts for ~78% of total system gain under component ladder)",
+    "H6_prior_art_bounded_superiority": "CONFIRMED (Beats P1 & P3 near delivery; comparable to P2; no universal superiority)"
+  }
+}

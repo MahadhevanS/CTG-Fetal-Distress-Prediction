@@ -1,0 +1,362 @@
+ python src/training/train_knowledge_infused.py --config configs/model8_crossformer_config.yaml --ablation all
+
+#################################################################
+# Running Ablation Variant: DISTRESS_ONLY
+#################################################################
+
+=================================================================
+ Model 8 Training | Ablation: DISTRESS_ONLY | Device: cuda
+ Epochs: 50 | Batch: 32 | LR: 0.0003 | Folds: 5
+ λ_figo=0.3, λ_features=0.2, λ_know=0.1
+ Loss Weighting: fixed | Scheduler: warmup_cosine
+ EMA: True | SWA: False
+ Augmentation: False | Sampling: default
+=================================================================
+
+[MultiTaskCTGDataset] Loaded 6826 windows | 546 unique patients | Distress prevalence: 0.147
+
+--- Fold 1/5 (Train: 5390, Val: 1436) ---
+ pos_weight: 6.09 (n_pos=760, n_neg=4630)
+   [Calibration] T=0.899 | ECE=0.2460 | Brier=0.1894
+ Fold 1 → AUROC: 0.7694 | AUPRC: 0.3114 | Sens@90%Spec: 18.37%
+
+--- Fold 2/5 (Train: 5686, Val: 1140) ---
+ pos_weight: 5.91 (n_pos=823, n_neg=4863)
+   [Calibration] T=0.932 | ECE=0.2811 | Brier=0.1993
+ Fold 2 → AUROC: 0.7581 | AUPRC: 0.3352 | Sens@90%Spec: 25.82%
+
+--- Fold 3/5 (Train: 5539, Val: 1287) ---
+ pos_weight: 5.86 (n_pos=808, n_neg=4731)
+   [Calibration] T=1.230 | ECE=0.0542 | Brier=0.1250
+ Fold 3 → AUROC: 0.7782 | AUPRC: 0.3601 | Sens@90%Spec: 40.10%
+
+--- Fold 4/5 (Train: 5298, Val: 1528) ---
+ pos_weight: 5.57 (n_pos=806, n_neg=4492)
+   [Calibration] T=1.103 | ECE=0.0959 | Brier=0.1300
+ Fold 4 → AUROC: 0.8231 | AUPRC: 0.3044 | Sens@90%Spec: 30.15%
+
+--- Fold 5/5 (Train: 5391, Val: 1435) ---
+ pos_weight: 5.55 (n_pos=823, n_neg=4568)
+   [Calibration] T=0.852 | ECE=0.2439 | Brier=0.1531
+ Fold 5 → AUROC: 0.7761 | AUPRC: 0.4229 | Sens@90%Spec: 46.15%
+
+=================================================================
+ FINAL 5-FOLD CV RESULTS | Model 8 — DISTRESS_ONLY
+=================================================================
+ accuracy                 : 77.5814% ± 6.3801%
+ auroc                    : 0.7810 ± 0.0222
+ auprc                    : 0.3468 ± 0.0428
+ f1                       : 0.4599 ± 0.0302
+ precision                : 37.7734% ± 5.7291%
+ recall                   : 64.0220% ± 14.5343%
+ specificity              : 79.6912% ± 9.3336%
+ sens_at_90spec           : 32.1195% ± 9.9328%
+ optimal_threshold        : 0.3260 ± 0.1983
+ ece                      : 0.1842 ± 0.0911
+ brier_score              : 0.1593 ± 0.0303
+=================================================================
+
+[Saved] CV results → checkpoints/model8_crossformer/results/model8_distress_only_cv_results.json
+
+#################################################################
+# Running Ablation Variant: PLUS_FIGO
+#################################################################
+
+=================================================================
+ Model 8 Training | Ablation: PLUS_FIGO | Device: cuda
+ Epochs: 50 | Batch: 32 | LR: 0.0003 | Folds: 5
+ λ_figo=0.3, λ_features=0.2, λ_know=0.1
+ Loss Weighting: fixed | Scheduler: warmup_cosine
+ EMA: True | SWA: False
+ Augmentation: False | Sampling: default
+=================================================================
+
+[MultiTaskCTGDataset] Loaded 6826 windows | 546 unique patients | Distress prevalence: 0.147
+
+--- Fold 1/5 (Train: 5390, Val: 1436) ---
+ pos_weight: 6.09 (n_pos=760, n_neg=4630)
+   [Calibration] T=1.228 | ECE=0.0908 | Brier=0.1425
+ Fold 1 → AUROC: 0.7557 | AUPRC: 0.3163 | Sens@90%Spec: 28.98%
+
+--- Fold 2/5 (Train: 5686, Val: 1140) ---
+ pos_weight: 5.91 (n_pos=823, n_neg=4863)
+   [Calibration] T=1.122 | ECE=0.0705 | Brier=0.1306
+ Fold 2 → AUROC: 0.7309 | AUPRC: 0.3059 | Sens@90%Spec: 26.92%
+
+--- Fold 3/5 (Train: 5539, Val: 1287) ---
+ pos_weight: 5.86 (n_pos=808, n_neg=4731)
+   [Calibration] T=1.088 | ECE=0.0623 | Brier=0.1189
+ Fold 3 → AUROC: 0.7498 | AUPRC: 0.3585 | Sens@90%Spec: 40.61%
+
+--- Fold 4/5 (Train: 5298, Val: 1528) ---
+ pos_weight: 5.57 (n_pos=806, n_neg=4492)
+   [Calibration] T=0.850 | ECE=0.2364 | Brier=0.1533
+ Fold 4 → AUROC: 0.8204 | AUPRC: 0.3276 | Sens@90%Spec: 31.16%
+
+--- Fold 5/5 (Train: 5391, Val: 1435) ---
+ pos_weight: 5.55 (n_pos=823, n_neg=4568)
+   [Calibration] T=1.119 | ECE=0.0640 | Brier=0.1086
+ Fold 5 → AUROC: 0.7712 | AUPRC: 0.2860 | Sens@90%Spec: 35.71%
+
+=================================================================
+ FINAL 5-FOLD CV RESULTS | Model 8 — PLUS_FIGO
+=================================================================
+ accuracy                 : 73.2604% ± 6.9161%
+ auroc                    : 0.7656 ± 0.0303
+ auprc                    : 0.3188 ± 0.0241
+ f1                       : 0.4388 ± 0.0202
+ precision                : 32.6950% ± 3.6493%
+ recall                   : 69.5802% ± 10.4317%
+ specificity              : 73.6528% ± 9.8410%
+ sens_at_90spec           : 32.6764% ± 4.9242%
+ optimal_threshold        : 0.1620 ± 0.1408
+ ece                      : 0.1048 ± 0.0666
+ brier_score              : 0.1308 ± 0.0160
+=================================================================
+
+[Saved] CV results → checkpoints/model8_crossformer/results/model8_plus_figo_cv_results.json
+
+#################################################################
+# Running Ablation Variant: DISTRESS_FEATURES_ONLY
+#################################################################
+
+=================================================================
+ Model 8 Training | Ablation: DISTRESS_FEATURES_ONLY | Device: cuda
+ Epochs: 50 | Batch: 32 | LR: 0.0003 | Folds: 5
+ λ_figo=0.3, λ_features=0.2, λ_know=0.1
+ Loss Weighting: fixed | Scheduler: warmup_cosine
+ EMA: True | SWA: False
+ Augmentation: False | Sampling: default
+=================================================================
+
+[MultiTaskCTGDataset] Loaded 6826 windows | 546 unique patients | Distress prevalence: 0.147
+
+--- Fold 1/5 (Train: 5390, Val: 1436) ---
+ pos_weight: 6.09 (n_pos=760, n_neg=4630)
+   [Calibration] T=0.900 | ECE=0.2594 | Brier=0.1879
+ Fold 1 → AUROC: 0.8161 | AUPRC: 0.4526 | Sens@90%Spec: 48.16%
+
+--- Fold 2/5 (Train: 5686, Val: 1140) ---
+ pos_weight: 5.91 (n_pos=823, n_neg=4863)
+   [Calibration] T=0.915 | ECE=0.2787 | Brier=0.2007
+ Fold 2 → AUROC: 0.7551 | AUPRC: 0.3030 | Sens@90%Spec: 31.32%
+
+--- Fold 3/5 (Train: 5539, Val: 1287) ---
+ pos_weight: 5.86 (n_pos=808, n_neg=4731)
+   [Calibration] T=1.076 | ECE=0.0491 | Brier=0.1091
+ Fold 3 → AUROC: 0.7838 | AUPRC: 0.4152 | Sens@90%Spec: 53.30%
+
+--- Fold 4/5 (Train: 5298, Val: 1528) ---
+ pos_weight: 5.57 (n_pos=806, n_neg=4492)
+   [Calibration] T=0.839 | ECE=0.1526 | Brier=0.1348
+ Fold 4 → AUROC: 0.8269 | AUPRC: 0.3753 | Sens@90%Spec: 40.20%
+
+--- Fold 5/5 (Train: 5391, Val: 1435) ---
+ pos_weight: 5.55 (n_pos=823, n_neg=4568)
+   [Calibration] T=0.839 | ECE=0.1449 | Brier=0.1168
+ Fold 5 → AUROC: 0.7782 | AUPRC: 0.3761 | Sens@90%Spec: 38.46%
+
+=================================================================
+ FINAL 5-FOLD CV RESULTS | Model 8 — DISTRESS_FEATURES_ONLY
+=================================================================
+ accuracy                 : 78.7523% ± 4.8257%
+ auroc                    : 0.7920 ± 0.0262
+ auprc                    : 0.3845 ± 0.0498
+ f1                       : 0.4811 ± 0.0486
+ precision                : 39.3155% ± 8.0599%
+ recall                   : 65.8945% ± 9.1768%
+ specificity              : 80.9949% ± 6.8949%
+ sens_at_90spec           : 42.2888% ± 7.6824%
+ optimal_threshold        : 0.4360 ± 0.0557
+ ece                      : 0.1769 ± 0.0838
+ brier_score              : 0.1499 ± 0.0375
+=================================================================
+
+[Saved] CV results → checkpoints/model8_crossformer/results/model8_distress_features_only_cv_results.json
+
+#################################################################
+# Running Ablation Variant: PLUS_FEATURES
+#################################################################
+
+=================================================================
+ Model 8 Training | Ablation: PLUS_FEATURES | Device: cuda
+ Epochs: 50 | Batch: 32 | LR: 0.0003 | Folds: 5
+ λ_figo=0.3, λ_features=0.2, λ_know=0.1
+ Loss Weighting: fixed | Scheduler: warmup_cosine
+ EMA: True | SWA: False
+ Augmentation: False | Sampling: default
+=================================================================
+
+[MultiTaskCTGDataset] Loaded 6826 windows | 546 unique patients | Distress prevalence: 0.147
+
+--- Fold 1/5 (Train: 5390, Val: 1436) ---
+ pos_weight: 6.09 (n_pos=760, n_neg=4630)
+   [Calibration] T=0.902 | ECE=0.2767 | Brier=0.1906
+ Fold 1 → AUROC: 0.8272 | AUPRC: 0.5220 | Sens@90%Spec: 54.29%
+
+--- Fold 2/5 (Train: 5686, Val: 1140) ---
+ pos_weight: 5.91 (n_pos=823, n_neg=4863)
+   [Calibration] T=1.000 | ECE=0.3499 | Brier=0.2422
+ Fold 2 → AUROC: 0.7783 | AUPRC: 0.3693 | Sens@90%Spec: 23.08%
+
+--- Fold 3/5 (Train: 5539, Val: 1287) ---
+ pos_weight: 5.86 (n_pos=808, n_neg=4731)
+   [Calibration] T=0.783 | ECE=0.0461 | Brier=0.1073
+ Fold 3 → AUROC: 0.7938 | AUPRC: 0.4913 | Sens@90%Spec: 50.76%
+
+--- Fold 4/5 (Train: 5298, Val: 1528) ---
+ pos_weight: 5.57 (n_pos=806, n_neg=4492)
+   [Calibration] T=0.850 | ECE=0.2286 | Brier=0.1509
+ Fold 4 → AUROC: 0.8090 | AUPRC: 0.3087 | Sens@90%Spec: 29.15%
+
+--- Fold 5/5 (Train: 5391, Val: 1435) ---
+ pos_weight: 5.55 (n_pos=823, n_neg=4568)
+   [Calibration] T=0.835 | ECE=0.2188 | Brier=0.1409
+ Fold 5 → AUROC: 0.8061 | AUPRC: 0.4432 | Sens@90%Spec: 54.40%
+
+=================================================================
+ FINAL 5-FOLD CV RESULTS | Model 8 — PLUS_FEATURES
+=================================================================
+ accuracy                 : 78.8098% ± 8.0574%
+ auroc                    : 0.8029 ± 0.0163
+ auprc                    : 0.4269 ± 0.0784
+ f1                       : 0.4818 ± 0.0485
+ precision                : 40.1768% ± 7.4821%
+ recall                   : 64.2877% ± 11.9472%
+ specificity              : 81.1510% ± 11.4907%
+ sens_at_90spec           : 42.3331% ± 13.4470%
+ optimal_threshold        : 0.4740 ± 0.0445
+ ece                      : 0.2240 ± 0.1003
+ brier_score              : 0.1664 ± 0.0463
+=================================================================
+
+[Saved] CV results → checkpoints/model8_crossformer/results/model8_plus_features_cv_results.json
+
+#################################################################
+# Running Ablation Variant: DISTRESS_FIGO_ONLY
+#################################################################
+
+=================================================================
+ Model 8 Training | Ablation: DISTRESS_FIGO_ONLY | Device: cuda
+ Epochs: 50 | Batch: 32 | LR: 0.0003 | Folds: 5
+ λ_figo=0.3, λ_features=0.2, λ_know=0.1
+ Loss Weighting: fixed | Scheduler: warmup_cosine
+ EMA: True | SWA: False
+ Augmentation: False | Sampling: default
+=================================================================
+
+[MultiTaskCTGDataset] Loaded 6826 windows | 546 unique patients | Distress prevalence: 0.147
+
+--- Fold 1/5 (Train: 5390, Val: 1436) ---
+ pos_weight: 6.09 (n_pos=760, n_neg=4630)
+   [Calibration] T=0.917 | ECE=0.2790 | Brier=0.1966
+ Fold 1 → AUROC: 0.8230 | AUPRC: 0.4592 | Sens@90%Spec: 54.69%
+
+--- Fold 2/5 (Train: 5686, Val: 1140) ---
+ pos_weight: 5.91 (n_pos=823, n_neg=4863)
+   [Calibration] T=1.253 | ECE=0.3475 | Brier=0.2436
+ Fold 2 → AUROC: 0.7492 | AUPRC: 0.3226 | Sens@90%Spec: 26.37%
+
+--- Fold 3/5 (Train: 5539, Val: 1287) ---
+ pos_weight: 5.86 (n_pos=808, n_neg=4731)
+   [Calibration] T=1.040 | ECE=0.0433 | Brier=0.1158
+ Fold 3 → AUROC: 0.7383 | AUPRC: 0.3618 | Sens@90%Spec: 36.55%
+
+--- Fold 4/5 (Train: 5298, Val: 1528) ---
+ pos_weight: 5.57 (n_pos=806, n_neg=4492)
+   [Calibration] T=1.075 | ECE=0.0597 | Brier=0.1064
+ Fold 4 → AUROC: 0.8274 | AUPRC: 0.3971 | Sens@90%Spec: 38.19%
+
+--- Fold 5/5 (Train: 5391, Val: 1435) ---
+ pos_weight: 5.55 (n_pos=823, n_neg=4568)
+   [Calibration] T=0.832 | ECE=0.0615 | Brier=0.1016
+ Fold 5 → AUROC: 0.8102 | AUPRC: 0.3390 | Sens@90%Spec: 40.66%
+
+=================================================================
+ FINAL 5-FOLD CV RESULTS | Model 8 — DISTRESS_FIGO_ONLY
+=================================================================
+ accuracy                 : 78.3890% ± 4.7644%
+ auroc                    : 0.7896 ± 0.0380
+ auprc                    : 0.3759 ± 0.0486
+ f1                       : 0.4580 ± 0.0407
+ precision                : 37.9450% ± 8.2884%
+ recall                   : 60.9415% ± 6.6880%
+ specificity              : 81.4627% ± 6.7411%
+ sens_at_90spec           : 39.2932% ± 9.1073%
+ optimal_threshold        : 0.3220 ± 0.2216
+ ece                      : 0.1582 ± 0.1286
+ brier_score              : 0.1528 ± 0.0571
+=================================================================
+
+[Saved] CV results → checkpoints/model8_crossformer/results/model8_distress_figo_only_cv_results.json
+
+#################################################################
+# Running Ablation Variant: FULL
+#################################################################
+
+=================================================================
+ Model 8 Training | Ablation: FULL | Device: cuda
+ Epochs: 50 | Batch: 32 | LR: 0.0003 | Folds: 5
+ λ_figo=0.3, λ_features=0.2, λ_know=0.1
+ Loss Weighting: fixed | Scheduler: warmup_cosine
+ EMA: True | SWA: False
+ Augmentation: False | Sampling: default
+=================================================================
+
+[MultiTaskCTGDataset] Loaded 6826 windows | 546 unique patients | Distress prevalence: 0.147
+
+--- Fold 1/5 (Train: 5390, Val: 1436) ---
+ pos_weight: 6.09 (n_pos=760, n_neg=4630)
+   [Calibration] T=0.886 | ECE=0.2304 | Brier=0.1824
+ Fold 1 → AUROC: 0.7772 | AUPRC: 0.3697 | Sens@90%Spec: 42.86%
+
+--- Fold 2/5 (Train: 5686, Val: 1140) ---
+ pos_weight: 5.91 (n_pos=823, n_neg=4863)
+   [Calibration] T=1.227 | ECE=0.3443 | Brier=0.2414
+ Fold 2 → AUROC: 0.7474 | AUPRC: 0.3773 | Sens@90%Spec: 27.47%
+
+--- Fold 3/5 (Train: 5539, Val: 1287) ---
+ pos_weight: 5.86 (n_pos=808, n_neg=4731)
+   [Calibration] T=0.896 | ECE=0.0272 | Brier=0.1038
+ Fold 3 → AUROC: 0.7994 | AUPRC: 0.4626 | Sens@90%Spec: 48.73%
+
+--- Fold 4/5 (Train: 5298, Val: 1528) ---
+ pos_weight: 5.57 (n_pos=806, n_neg=4492)
+E:\Maha\CTG-Fetal-Distress-Prediction\src\training\calibration.py:294: RuntimeWarning: overflow encountered in exp
+  return 1.0 / (1.0 + np.exp(-cal_logits))
+   [Calibration] T=-1.128 | ECE=0.0534 | Brier=0.2202
+ Fold 4 → AUROC: 0.8389 | AUPRC: 0.3789 | Sens@90%Spec: 38.69%
+
+--- Fold 5/5 (Train: 5391, Val: 1435) ---
+ pos_weight: 5.55 (n_pos=823, n_neg=4568)
+   [Calibration] T=0.850 | ECE=0.1910 | Brier=0.1368
+ Fold 5 → AUROC: 0.7603 | AUPRC: 0.3165 | Sens@90%Spec: 25.82%
+
+=================================================================
+ FINAL 5-FOLD CV RESULTS | Model 8 — FULL
+=================================================================
+ accuracy                 : 76.5645% ± 3.5262%
+ auroc                    : 0.7846 ± 0.0323
+ auprc                    : 0.3810 ± 0.0468
+ f1                       : 0.4673 ± 0.0365
+ precision                : 36.0309% ± 5.7902%
+ recall                   : 69.5675% ± 9.5649%
+ specificity              : 77.9090% ± 5.4825%
+ sens_at_90spec           : 36.7157% ± 8.8324%
+ optimal_threshold        : 0.4240 ± 0.1306
+ ece                      : 0.1693 ± 0.1170
+ brier_score              : 0.1769 ± 0.0510
+=================================================================
+
+[Saved] CV results → checkpoints/model8_crossformer/results/model8_full_cv_results.json
+
+=================================================================
+ ABLATION COMPARISON SUMMARY (AUROC)
+=================================================================
+ distress_only            : 0.7810 ± 0.0222
+ plus_figo                : 0.7656 ± 0.0303
+ distress_features_only   : 0.7920 ± 0.0262
+ plus_features            : 0.8029 ± 0.0163
+ distress_figo_only       : 0.7896 ± 0.0380
+ full                     : 0.7846 ± 0.0323
+=================================================================

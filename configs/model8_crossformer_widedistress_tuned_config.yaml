@@ -1,0 +1,86 @@
+# Model 8 Configuration: Knowledge-Infused Multi-Task Framework
+# Backbone: CTG-CrossFormer, Wide-Distress variant -- TUNED HYPERPARAMETERS
+# ==========================================================================
+# Applies the winning config from tune_model8_hyperparameters.py's proxy
+# search against configs/model8_crossformer_widedistress_config.yaml
+# (--ablation full, 15 epochs / 3 folds per trial, 12 trials -- proxy AUROC
+# 0.8015, best trial of 12) at FULL LENGTH (50 epochs / 5 folds).
+#
+# Combines two changes that have each only been validated SEPARATELY so far:
+#   - The wide-distress architecture itself (DistressHead reading the 256-dim
+#     pre-adapter pooled representation) -- validated full-scale on its own
+#     with default hyperparameters: AUROC 0.7924 +/- 0.0444
+#     (checkpoints/model8_crossformer_widedistress/results/model8_full_cv_results.json).
+#   - This specific set of tuned hyperparameters -- validated only as a proxy
+#     so far (15 epochs/3 folds), on the SAME wide-distress architecture.
+# This run is what actually tells us whether architecture + tuned
+# hyperparameters compound, or whether one change eats into the other's gain.
+#
+# Also inherits the 2026-08-16 joint (distress, FIGO) fold-stratification fix
+# automatically -- that's baked into train_knowledge_infused.py itself now,
+# not a per-config setting, so every run from here on uses it.
+#
+# Compare against, in order of how directly relevant:
+#   1. Wide-distress + default hyperparams (full scale): 0.7924 +/- 0.0444
+#   2. Standard CrossFormer + default hyperparams (full scale, the original
+#      baseline everything is measured against): 0.7893 +/- 0.0515
+#   3. Standard CrossFormer + these SAME tuned hyperparams, once
+#      configs/model8_crossformer_tuned_config.yaml's own full-length run
+#      lands (proxy was 0.8044) -- tells you whether the tuned hyperparameters
+#      help the architecture change specifically, or would have helped either
+#      way.
+
+backbone:
+  model: ctg_crossformer_wide_distress
+  in_channels: 2
+  seq_len: 4800
+  cnn_channels: 128
+  n_heads_cross: 4
+  n_heads_tf: 8
+  n_tf_layers: 4
+  d_ff: 512
+  dropout: 0.1
+  latent_dim: 128
+
+heads:
+  hidden_dim: 128   # unchanged -- FIGO/features/criteria heads only; DistressHead's own hidden_dim/dropout are fixed inside WideDistressHead (128/0.3)
+  dropout: 0.3
+
+training:
+  epochs: 50            # full length, not the tuner's 15-epoch proxy
+  batch_size: 16         # tuner winner (was 32)
+  lr: 0.0005              # tuner winner (was 0.0003)
+  weight_decay: 0.001    # tuner winner (was 0.00001)
+  k_folds: 5             # full length, not the tuner's 3-fold proxy
+  gradient_clip: 1.0
+  optimizer: adamw
+
+scheduler:
+  type: onecycle
+  onecycle_max_lr: 0.0005        # tuner winner (was 0.0003)
+  onecycle_pct_start: 0.1        # tuner winner (unchanged from base config)
+
+loss:
+  lambda_figo: 0.3          # tuner winner (unchanged from base config)
+  lambda_features: 0.3      # tuner winner (was 0.2)
+  lambda_knowledge: 0.05    # tuner winner (was 0.1)
+  lambda_consistency: 0.5
+  lambda_criteria: 0.3
+
+loss_weighting:
+  method: uncertainty        # tuner winner (was fixed) -- untested at full scale before this run
+
+sampling:
+  method: balanced
+
+ema:
+  enabled: false   # tuner-forced; matches the wide-distress baseline's own EMA-off setting
+  decay: 0.9995
+  use_for_validation: true
+
+paths:
+  data_dir: data/processed/
+  feature_scaler_path: data/processed/feature_scaler.npz
+  checkpoint_dir: checkpoints/model8_crossformer_widedistress_tuned/
+  results_dir: checkpoints/model8_crossformer_widedistress_tuned/results/
+  horizon_analysis_dir: checkpoints/model8_crossformer_widedistress_tuned/results/horizon_analysis/

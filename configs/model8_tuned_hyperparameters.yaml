@@ -1,0 +1,26 @@
+ctg_crossformer__full:
+  params:
+    lr: 0.0002
+    onecycle_pct_start: 0.2
+    weight_decay: 1.0e-05
+    batch_size: 16
+    lambda_figo: 0.2
+    lambda_features: 0.3
+    lambda_knowledge: 0.2
+    loss_weighting_method: dwa
+  score: 0.6691373406907086
+  metrics:
+    accuracy: 79.86464589512342
+    auroc: 0.8044281554100235
+    auprc: 0.4311002938696402
+    f1: 0.48137741879177437
+    precision: 40.07011447171336
+    recall: 63.61414376934044
+    specificity: 82.78405104998807
+    sens_at_90spec: 46.62011186117362
+    optimal_threshold: 0.5199999999999999
+    ece: 0.2106524255623851
+    brier_score: 0.15835753083229065
+  proxy_epochs: 15
+  proxy_k_folds: 3
+  base_config: configs/model8_crossformer_config.yaml

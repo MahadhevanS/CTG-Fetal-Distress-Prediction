@@ -1,0 +1,35 @@
+{
+ "anchor_window_lr_maxagg": 0.73,
+ "static": {
+  "name": "STATIC only (mean/sd/min/max)          ",
+  "agg": "native",
+  "auroc": 0.7172248803827751,
+  "auprc": 0.4336126304696565,
+  "ci_lo": 0.65505253492093,
+  "ci_hi": 0.7715803657506722,
+  "n_patients": 547,
+  "n_positive": 110
+ },
+ "temporal": {
+  "name": "TEMPORAL only (final/trend/fmi/lme)    ",
+  "agg": "native",
+  "auroc": 0.7153526107759517,
+  "auprc": 0.46130914308229637,
+  "ci_lo": 0.6572082068739232,
+  "ci_hi": 0.7706123291898628,
+  "n_patients": 547,
+  "n_positive": 110
+ },
+ "static_plus_temporal": {
+  "name": "STATIC + TEMPORAL                      ",
+  "agg": "native",
+  "auroc": 0.7118369045142501,
+  "auprc": 0.4333864091220453,
+  "ci_lo": 0.6513735033243899,
+  "ci_hi": 0.7685826425964393,
+  "n_patients": 547,
+  "n_positive": 110
+ },
+ "temporal_contribution": -0.005387975868525019,
+ "gate": "KILL the temporal-descriptor route"
+}

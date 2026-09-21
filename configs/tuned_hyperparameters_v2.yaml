@@ -1,0 +1,50 @@
+bilstm:
+  batch_size: 16
+  dropout: 0.3
+  hidden_size: 128
+  lr: 0.0003
+  num_layers: 2
+  weight_decay: 0.001
+cnn1d:
+  batch_size: 64
+  latent_dim: 128
+  lr: 0.001
+  weight_decay: 0.0001
+gru:
+  batch_size: 16
+  dropout: 0.2
+  gru_hidden: 64
+  lr: 0.0005
+  num_layers: 2
+  weight_decay: 1.0e-05
+multiscale_lstm:
+  batch_size: 64
+  dropout: 0.1
+  hidden_size: 128
+  lr: 0.0005
+  num_layers: 2
+  weight_decay: 0.0001
+patchctg:
+  batch_size: 32
+  dropout: 0.2
+  lr: 0.0005
+  n_heads: 8
+  n_layers: 4
+  patch_len: 32
+  stride: 8
+  weight_decay: 1.0e-05
+patchtst:
+  batch_size: 16
+  dropout: 0.1
+  lr: 0.0003
+  n_heads: 8
+  n_layers: 2
+  patch_len: 32
+  stride: 16
+  weight_decay: 1.0e-05
+tcn:
+  batch_size: 16
+  dropout: 0.2
+  kernel_size: 7
+  lr: 0.0003
+  weight_decay: 0.0001

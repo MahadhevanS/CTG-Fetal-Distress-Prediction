@@ -1,0 +1,71 @@
+# Model 8 Configuration: Knowledge-Infused Multi-Task Framework
+# Backbone: CTG-CrossFormer -- WIDE-DISTRESS PROTOTYPE (2026-08-16)
+# ==========================================================================
+# Identical to configs/model8_crossformer_config.yaml (the validated baseline:
+# full, fixed weighting, EMA off -> AUROC 0.7893 +/- 0.0515) in EVERY setting
+# except backbone.model, so this run isolates the architecture change alone --
+# deliberately NOT stacked with the unvalidated tuned hyperparameters from
+# configs/model8_crossformer_tuned_config.yaml, to avoid confounding two
+# untested changes at once (the exact mistake the uncertainty+EMA run avoided
+# only after being re-run in isolation).
+#
+# backbone.model: ctg_crossformer_wide_distress gives DistressHead a private
+# path to the 256-dim pre-adapter pooled representation instead of the shared
+# 128-dim latent -- see src/models/knowledge_infused_framework_wide_distress.py
+# for the full architecture and rationale. FIGOHead/ClinicalFeatureHead/
+# FIGOCriteriaHead are unaffected, still on the shared 128-dim z.
+
+backbone:
+  model: ctg_crossformer_wide_distress
+  in_channels: 2
+  seq_len: 4800
+  cnn_channels: 128
+  n_heads_cross: 4
+  n_heads_tf: 8
+  n_tf_layers: 4
+  d_ff: 512
+  dropout: 0.1
+  latent_dim: 128
+
+heads:
+  hidden_dim: 128   # unchanged from base config -- still applies to FIGO/features/criteria heads
+  dropout: 0.3       # DistressHead's own hidden_dim/dropout are fixed inside WideDistressHead (128/0.3, matching CTGCrossformerForClassification)
+
+training:
+  epochs: 50
+  batch_size: 32
+  lr: 0.0003
+  weight_decay: 0.00001
+  k_folds: 5
+  gradient_clip: 1.0
+  optimizer: adamw
+
+scheduler:
+  type: onecycle
+  onecycle_max_lr: 0.0003
+  onecycle_pct_start: 0.1
+
+loss:
+  lambda_figo: 0.3
+  lambda_features: 0.2
+  lambda_knowledge: 0.1
+  lambda_consistency: 0.5
+  lambda_criteria: 0.3
+
+loss_weighting:
+  method: fixed
+
+sampling:
+  method: balanced
+
+ema:
+  enabled: false
+  decay: 0.9995
+  use_for_validation: true
+
+paths:
+  data_dir: data/processed_mil/
+  feature_scaler_path: data/processed_mil/feature_scaler.npz
+  checkpoint_dir: checkpoints/model8_widedistress_mil_substrate/
+  results_dir: checkpoints/model8_widedistress_mil_substrate/results/
+  horizon_analysis_dir: checkpoints/model8_widedistress_mil_substrate/results/horizon_analysis/

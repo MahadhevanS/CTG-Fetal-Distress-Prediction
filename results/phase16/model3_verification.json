@@ -1,0 +1,55 @@
+{
+  "original": {
+    "auroc": 0.7216,
+    "delta": 0.0344,
+    "p": 0.014,
+    "ci_low": 0.0064,
+    "ci_high": 0.0649
+  },
+  "epoch_extension_400": {
+    "auroc": 0.7216,
+    "delta": 0.0345,
+    "p": 0.014,
+    "ci_low": 0.0065,
+    "ci_high": 0.065,
+    "epochs_used": [
+      205,
+      192,
+      132,
+      119,
+      223
+    ]
+  },
+  "fold_resplit_results": [
+    {
+      "fold_source": "resplit_seed_11",
+      "auroc": 0.7187,
+      "delta": 0.0315,
+      "p": 0.09,
+      "ci_low": -0.0054,
+      "ci_high": 0.0711,
+      "epochs_used": [
+        29,
+        174,
+        190,
+        99,
+        200
+      ]
+    },
+    {
+      "fold_source": "resplit_seed_22",
+      "auroc": 0.7145,
+      "delta": 0.0273,
+      "p": 0.183,
+      "ci_low": -0.0126,
+      "ci_high": 0.0663,
+      "epochs_used": [
+        187,
+        11,
+        187,
+        189,
+        144
+      ]
+    }
+  ]
+}

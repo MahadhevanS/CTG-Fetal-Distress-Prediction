@@ -1,0 +1,2 @@
+python src/training/train_knowledge_infused.py --config configs/model8_crossformer_tuned_config.yaml --ablation full --seed 42 > crossformer_fold2_fixed_ablation.txt
+python src/training/train_knowledge_infused.py --config configs/model8_crossformer_widedistress_tuned_config.yaml --ablation full --seed 42 > crossformer_wide_fold2_fixed_ablation.txt
