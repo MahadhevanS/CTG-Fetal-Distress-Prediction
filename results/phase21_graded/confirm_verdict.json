@@ -1,0 +1,30 @@
+{
+  "G-A": {
+    "fresh_dM": [
+      0.0098,
+      0.0077,
+      0.0074,
+      0.0042,
+      0.0149
+    ],
+    "mean_dM": 0.0088,
+    "pooled_p": 0.285,
+    "resplits_positive": 5,
+    "worst_horizon_mean": 0.0077,
+    "CONFIRMED": false
+  },
+  "G-A-wide": {
+    "fresh_dM": [
+      0.0068,
+      0.0052,
+      0.0093,
+      0.0044,
+      0.0187
+    ],
+    "mean_dM": 0.0089,
+    "pooled_p": 0.361,
+    "resplits_positive": 5,
+    "worst_horizon_mean": 0.0064,
+    "CONFIRMED": false
+  }
+}

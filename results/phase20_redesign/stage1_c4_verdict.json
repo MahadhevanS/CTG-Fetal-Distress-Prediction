@@ -1,0 +1,13 @@
+{
+  "S1": {
+    "tier": "NOT SUPPORTED",
+    "A1": false,
+    "A2": false,
+    "A3": false,
+    "resplits_positive": 0,
+    "canonical_worst_horizon": -0.0074,
+    "resplit_mean_worst_horizon": -0.0202,
+    "canonical_dM": -0.0053,
+    "canonical_p": 0.636
+  }
+}

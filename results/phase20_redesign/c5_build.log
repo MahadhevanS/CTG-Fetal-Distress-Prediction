@@ -1,0 +1,24 @@
+  0/547 patients  14s
+  25/547 patients  15s
+  50/547 patients  16s
+  75/547 patients  18s
+  100/547 patients  19s
+  125/547 patients  21s
+  150/547 patients  22s
+  175/547 patients  24s
+  200/547 patients  25s
+  225/547 patients  26s
+  250/547 patients  28s
+  275/547 patients  29s
+  300/547 patients  31s
+  325/547 patients  32s
+  350/547 patients  34s
+  375/547 patients  35s
+  400/547 patients  36s
+  425/547 patients  38s
+  450/547 patients  39s
+  475/547 patients  40s
+  500/547 patients  42s
+  525/547 patients  43s
+  built (8517, 39); rows with NaN: 0; time 46s
+  names: 39

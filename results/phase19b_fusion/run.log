@@ -1,0 +1,32 @@
+========================================================================================
+  PHASE 19b -- does the deployable fusion need TAM?
+========================================================================================
+  gate h= 0m: U_TAM=0.7335 vs Phase18-stability 0.7335 [PASS] | PRS=0.6872 vs 0.6872 [PASS]
+  gate h=10m: U_TAM=0.6957 vs Phase18-stability 0.6957 [PASS] | PRS=0.6859 vs 0.6859 [PASS]
+  gate h=20m: U_TAM=0.6675 vs Phase18-stability 0.6675 [PASS] | PRS=0.6238 vs 0.6238 [PASS]
+  gate h=30m: U_TAM=0.6646 vs Phase18-stability 0.6646 [PASS] | PRS=0.5828 vs 0.5828 [PASS]
+  gate PASSED
+  model  auroc_0m  auroc_10m  auroc_20m  auroc_30m      M
+  U_TAM    0.7335     0.6957     0.6675     0.6646 0.6903
+  U_PRS    0.7141     0.6975     0.6682     0.6554 0.6838
+    TAM    0.7216     0.6683     0.6015     0.5976 0.6472
+PRS_ref    0.6872     0.6859     0.6238     0.5828 0.6449
+ PARITY    0.5755     0.5755     0.5755     0.5755 0.5755
+  U_PRS - U_TAM: {'dM': -0.0065, 'dM_p': 0.259, 'dM_ci_lo': -0.0168, 'dM_ci_hi': 0.0042, 'd0': -0.0194, 'p0': 0.049, 'd10': 0.0018, 'p10': 0.818, 'd20': 0.0007, 'p20': 0.936, 'd30': -0.0092, 'p30': 0.311}
+  selected alpha per fold  U_TAM=[0.35000000000000003, 0.35000000000000003, 0.30000000000000004, 0.35000000000000003, 0.35000000000000003]  U_PRS=[0.35000000000000003, 0.30000000000000004, 0.30000000000000004, 0.35000000000000003, 0.35000000000000003]
+  test partition: M(U_TAM)=0.7547  M(U_PRS)=0.7348  dM=-0.0198  alpha={'U_TAM': 0.30000000000000004, 'U_PRS': 0.30000000000000004}
+  resplit 11: dM=-0.0040 (p=0.524)  per-horizon 0m=-0.0156 10m=-0.0003 20m=+0.0047 30m=-0.0049
+  resplit 22: dM=-0.0014 (p=0.822)  per-horizon 0m=-0.0171 10m=+0.0050 20m=+0.0065 30m=+0.0001
+  resplit 33: dM=-0.0032 (p=0.609)  per-horizon 0m=-0.0171 10m=+0.0048 20m=+0.0045 30m=-0.0051
+  resplit 44: dM=-0.0033 (p=0.586)  per-horizon 0m=-0.0173 10m=+0.0043 20m=+0.0050 30m=-0.0053
+  resplit 55: dM=-0.0040 (p=0.501)  per-horizon 0m=-0.0199 10m=+0.0038 20m=+0.0045 30m=-0.0043
+
+  VERDICT: {'tier': 'INCONCLUSIVE', 'canonical_dM': -0.0065, 'canonical_p': 0.259, 'resplits_dM_gt0': 0, 'resplits_dM_ge_-0.005': 5, 'resplits_dM_lt_-0.005': 0, 'canonical_worst_horizon_delta': -0.0194, 'resplit_mean_worst_horizon_delta': np.float64(-0.0174), 'test_dM': np.float64(-0.0198)}
+
+  operational (80% target sens, per-fold training-only threshold, patient-level ever-alerted):
+    {'system': 'U_TAM', 'achieved_sens': 0.8636, 'FAR': 0.6247, 'median_lead_min': 40.0, 'pct_ge20': 0.8316, 'pct_ge30': 0.7053}
+    {'system': 'U_PRS', 'achieved_sens': 0.8818, 'FAR': 0.6773, 'median_lead_min': 40.0, 'pct_ge20': 0.8351, 'pct_ge30': 0.6907}
+    {'system': 'TAM', 'achieved_sens': 0.8818, 'FAR': 0.6934, 'median_lead_min': 32.5, 'pct_ge20': 0.6598, 'pct_ge30': 0.5464}
+    {'system': 'PRS_ref', 'achieved_sens': 0.9273, 'FAR': 0.8307, 'median_lead_min': 35.0, 'pct_ge20': 0.7157, 'pct_ge30': 0.598}
+
+Saved -> results/phase19b_fusion/

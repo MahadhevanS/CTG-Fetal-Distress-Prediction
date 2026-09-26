@@ -1,0 +1,94 @@
+{
+  "G-A": {
+    "tier": "SUGGESTIVE",
+    "A1": false,
+    "A2": true,
+    "A3": true,
+    "resplits_positive": 5,
+    "canonical_worst_horizon": -0.0073,
+    "resplit_mean_worst_horizon": 0.011,
+    "A4": true,
+    "dM_vs_B0P": [
+      0.0056,
+      0.0127,
+      0.0038,
+      0.0172,
+      0.0238,
+      0.0084
+    ],
+    "canonical_dM": 0.0054,
+    "canonical_p": 0.605,
+    "holm_adjusted_p": 1.0,
+    "resplit_dM": [
+      0.0125,
+      0.0042,
+      0.017,
+      0.027,
+      0.0093
+    ]
+  },
+  "G-B": {
+    "tier": "NOT SUPPORTED",
+    "A1": false,
+    "A2": false,
+    "A3": true,
+    "resplits_positive": 3,
+    "canonical_worst_horizon": -0.0175,
+    "resplit_mean_worst_horizon": 0.0008,
+    "A4": false,
+    "dM_vs_B0P": [
+      0.0024,
+      0.0105,
+      -0.0034,
+      0.0122,
+      0.0149,
+      -0.0049
+    ],
+    "canonical_dM": 0.0022,
+    "canonical_p": 0.827,
+    "holm_adjusted_p": 1.0,
+    "resplit_dM": [
+      0.0103,
+      -0.0029,
+      0.012,
+      0.018,
+      -0.004
+    ]
+  },
+  "G-C": {
+    "tier": "SUGGESTIVE",
+    "A1": false,
+    "A2": false,
+    "A3": true,
+    "resplits_positive": 4,
+    "canonical_worst_horizon": -0.0093,
+    "resplit_mean_worst_horizon": 0.0014,
+    "A4": true,
+    "dM_vs_B0P": [
+      0.0034,
+      0.0097,
+      0.0,
+      0.0084,
+      0.0172,
+      -0.0089
+    ],
+    "canonical_dM": 0.0032,
+    "canonical_p": 0.688,
+    "holm_adjusted_p": 1.0,
+    "resplit_dM": [
+      0.0095,
+      0.0005,
+      0.0082,
+      0.0204,
+      -0.0081
+    ]
+  },
+  "B0P_control_dM_vs_B0": [
+    -0.0002,
+    -0.0002,
+    0.0004,
+    -0.0002,
+    0.0032,
+    0.0009
+  ]
+}

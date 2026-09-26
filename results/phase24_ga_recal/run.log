@@ -1,0 +1,66 @@
+  CANONICAL     M_D 0.6957  M_B0 0.6903  dM +0.0054  OPfar sens D/B0 0.873/0.873  lead D/B0 32.5/40.0  cal_slope 1.32
+  resplit_301   M_D 0.6879  M_B0 0.6763  dM +0.0116  OPfar sens D/B0 0.855/0.846  lead D/B0 35.0/40.0  cal_slope 1.29
+  resplit_313   M_D 0.6818  M_B0 0.6669  dM +0.0149  OPfar sens D/B0 0.818/0.864  lead D/B0 37.5/40.0  cal_slope 1.15
+  resplit_327   M_D 0.6788  M_B0 0.6651  dM +0.0137  OPfar sens D/B0 0.882/0.836  lead D/B0 40.0/40.0  cal_slope 1.19
+  resplit_341   M_D 0.6866  M_B0 0.6693  dM +0.0173  OPfar sens D/B0 0.873/0.855  lead D/B0 40.0/40.0  cal_slope 1.24
+  resplit_359   M_D 0.6730  M_B0 0.6501  dM +0.0229  OPfar sens D/B0 0.846/0.827  lead D/B0 40.0/40.0  cal_slope 0.93
+  resplit_372   M_D 0.6827  M_B0 0.6702  dM +0.0125  OPfar sens D/B0 0.864/0.836  lead D/B0 35.0/40.0  cal_slope 1.29
+  resplit_386   M_D 0.6798  M_B0 0.6687  dM +0.0111  OPfar sens D/B0 0.846/0.846  lead D/B0 37.5/40.0  cal_slope 1.38
+  resplit_401   M_D 0.6844  M_B0 0.6682  dM +0.0162  OPfar sens D/B0 0.818/0.836  lead D/B0 38.75/40.0  cal_slope 1.28
+  resplit_417   M_D 0.6942  M_B0 0.6735  dM +0.0207  OPfar sens D/B0 0.846/0.855  lead D/B0 37.5/40.0  cal_slope 1.34
+  resplit_433   M_D 0.6884  M_B0 0.6812  dM +0.0072  OPfar sens D/B0 0.873/0.855  lead D/B0 37.5/40.0  cal_slope 1.19
+{
+  "label": "EXPLORATORY NO SUPPORT",
+  "D1": true,
+  "D2": true,
+  "L": false,
+  "E": false,
+  "fresh_mean_dM": 0.0148,
+  "fresh_dM_all": [
+    0.0116,
+    0.0149,
+    0.0137,
+    0.0173,
+    0.0229,
+    0.0125,
+    0.0111,
+    0.0162,
+    0.0207,
+    0.0072
+  ],
+  "fresh_positive": 10,
+  "fresh_mean_per_horizon_delta": {
+    "0m": 0.0158,
+    "10m": 0.0174,
+    "20m": 0.0141,
+    "30m": 0.0121
+  },
+  "lead_canonical_opfar": {
+    "d_sens": 0.0,
+    "d_median_lead": -7.5,
+    "d_ge20": -0.125
+  },
+  "lead_fresh_mean_opfar": {
+    "d_sens": 0.0064,
+    "d_median_lead": -2.125,
+    "d_ge20": -0.0588
+  },
+  "calib_slope_canonical": 1.322,
+  "calib_slope_fresh_mean": 1.228,
+  "canonical": {
+    "dM": 0.0053,
+    "dM_p": 0.569,
+    "dM_ci_lo": -0.0128,
+    "dM_ci_hi": 0.0243,
+    "d0": 0.0126,
+    "p0": 0.21,
+    "d10": 0.0065,
+    "p10": 0.53,
+    "d20": 0.0057,
+    "p20": 0.636,
+    "d30": -0.0034,
+    "p30": 0.816
+  },
+  "fresh_pooled_p": 0.067,
+  "caveat": "No independent/external cohort available; all splits reuse the same 547 CTU-UHB patients."
+}

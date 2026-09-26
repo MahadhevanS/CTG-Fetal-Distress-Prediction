@@ -1,0 +1,55 @@
+{
+  "label": "EXPLORATORY NO SUPPORT",
+  "D1": true,
+  "D2crit": true,
+  "L": true,
+  "E": false,
+  "fresh_mean_dM": 0.0152,
+  "fresh_dM_all": [
+    0.0058,
+    0.008,
+    0.0147,
+    0.0235,
+    0.0171,
+    0.0188,
+    0.007,
+    0.0196,
+    0.0175,
+    0.0204
+  ],
+  "fresh_positive": 10,
+  "fresh_mean_per_horizon_delta": {
+    "0m": 0.0116,
+    "10m": 0.0178,
+    "20m": 0.0163,
+    "30m": 0.0153
+  },
+  "lead_canonical_opfar": {
+    "d_sens": 0.0182,
+    "d_median_lead": 0.0,
+    "d_ge20": 0.0545
+  },
+  "lead_fresh_mean_opfar": {
+    "d_sens": 0.0236,
+    "d_median_lead": -2.125,
+    "d_ge20": -0.0198
+  },
+  "calib_slope_canonical": 1.294,
+  "calib_slope_fresh_mean": 1.184,
+  "canonical": {
+    "dM": -0.0054,
+    "dM_p": 0.636,
+    "dM_ci_lo": -0.0296,
+    "dM_ci_hi": 0.0182,
+    "d0": -0.005,
+    "p0": 0.674,
+    "d10": -0.0103,
+    "p10": 0.452,
+    "d20": 0.0017,
+    "p20": 0.936,
+    "d30": -0.008,
+    "p30": 0.587
+  },
+  "fresh_pooled_p": 0.043,
+  "caveat": "No independent/external cohort available; all splits reuse the same 547 CTU-UHB patients."
+}

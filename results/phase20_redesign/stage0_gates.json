@@ -1,0 +1,62 @@
+{
+  "G1": {
+    "max_abs_diff_cv": 0.0,
+    "max_abs_diff_test": 0.0,
+    "pass": true
+  },
+  "G2": {
+    "per_horizon": {
+      "0": {
+        "URM_harness": 0.7334,
+        "URM_frozen": 0.7335,
+        "TAM_harness": 0.7213,
+        "TAM_frozen": 0.7216,
+        "PRS": 0.6872
+      },
+      "10": {
+        "URM_harness": 0.6957,
+        "URM_frozen": 0.6957,
+        "TAM_harness": 0.6684,
+        "TAM_frozen": 0.6683,
+        "PRS": 0.6859
+      },
+      "20": {
+        "URM_harness": 0.6677,
+        "URM_frozen": 0.6675,
+        "TAM_harness": 0.6014,
+        "TAM_frozen": 0.6015,
+        "PRS": 0.6238
+      },
+      "30": {
+        "URM_harness": 0.6646,
+        "URM_frozen": 0.6646,
+        "TAM_harness": 0.5974,
+        "TAM_frozen": 0.5976,
+        "PRS": 0.5828
+      }
+    },
+    "alphas": [
+      0.35,
+      0.35,
+      0.3,
+      0.35,
+      0.35
+    ],
+    "pass": true,
+    "epoch_cap_hits": 7,
+    "n_trainings": 15
+  },
+  "G4": {
+    "M_canonical": 0.6671,
+    "M_mean_6_splits": 0.6576000000000001,
+    "M_sd_6_splits": 0.0074688687229057665,
+    "M_min": 0.6489,
+    "M_max": 0.6671,
+    "seed_M_sd_canonical": 0.0049943301185778255,
+    "seed_M_values": [
+      0.6603,
+      0.669,
+      0.6689
+    ]
+  }
+}

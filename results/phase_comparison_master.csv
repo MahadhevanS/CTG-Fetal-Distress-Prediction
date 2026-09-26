@@ -1,0 +1,12 @@
+model,phase,auroc,sens,far,lead,ge20,ge30,M
+"URM (locked, deployed)",Phase 18,"[np.float64(0.7335), np.float64(0.6921), np.float64(0.6638), np.float64(0.6631)]",0.8636,0.6247,40.0,0.8105,0.6947,0.6881
+TAM alone (component),Phase 16/18,"[0.7216, 0.6683, 0.6015, 0.5976]",0.8818,0.6934,32.5,0.6598,0.5464,0.6472
+U_PRS -- URM without TAM (latest window + parity),Phase 19b,"[np.float64(0.7141), np.float64(0.6975), np.float64(0.6682), np.float64(0.6554)]",0.8818,0.6773,40.0,0.8351,0.6907,0.6838
+PRS alone (component),Phase 12.1/19b,"[np.float64(0.6872), np.float64(0.6859), np.float64(0.6238), np.float64(0.5828)]",0.9273,0.8307,35.0,0.7157,0.598,0.6449
+"G-A (graded-pH window, standard pooler, no recalibration)",Phase 21/22,"[0.7368, 0.6986, 0.6737, 0.6574]",0.8545,0.6064,32.5,0.7128,0.5532,0.6916
+"G-A fixed alpha=1000, standard pooler (no recal)",Phase 23,"[np.float64(0.7475), np.float64(0.7041), np.float64(0.6752), np.float64(0.662)]",0.8636,0.5881,30.0,0.6632,0.5263,0.6972
+"Ensemble window (P6+G-A), standard pooler",Phase 23,"[np.float64(0.7405), np.float64(0.6995), np.float64(0.673), np.float64(0.6655)]",0.8545,0.5858,35.0,0.7234,0.6064,0.6946
+"P6 window, soft-label pooler",Phase 23,"[np.float64(0.7373), np.float64(0.6951), np.float64(0.6661), np.float64(0.6632)]",0.8727,0.6293,40.0,0.8438,0.7188,0.6904
+"Composite V2 (B+A), pre-recalibration",Phase 23,"[np.float64(0.7393), np.float64(0.6976), np.float64(0.6684), np.float64(0.6663)]",0.8636,0.5927,37.5,0.7474,0.6421,0.6929
+"Composite V2E (final, incl. recalibration)",Phase 23,"[np.float64(0.7375), np.float64(0.6953), np.float64(0.6669), np.float64(0.6663)]",0.8636,0.5927,37.5,0.7474,0.6421,0.6915
+Candidate D (G-A fixed alpha + recalibration),Phase 24,"[np.float64(0.746), np.float64(0.7022), np.float64(0.6734), np.float64(0.6611)]",0.8636,0.5881,30.0,0.6632,0.5263,0.6957

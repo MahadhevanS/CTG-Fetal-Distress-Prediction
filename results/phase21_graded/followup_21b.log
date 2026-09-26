@@ -1,0 +1,71 @@
+=== 21b (1/2): fresh resplits ===
+  fresh G-A resplit_66: dM=+0.0098  per-horizon [0.0095, 0.0123, 0.0015, 0.016]
+  fresh G-A resplit_77: dM=+0.0077  per-horizon [0.0077, 0.0067, 0.0077, 0.0085]
+  fresh G-A resplit_88: dM=+0.0074  per-horizon [0.0018, 0.0075, 0.0097, 0.0105]
+  fresh G-A resplit_99: dM=+0.0042  per-horizon [-0.001, -0.0021, 0.0049, 0.015]
+  fresh G-A resplit_111: dM=+0.0149  per-horizon [0.0205, 0.0218, 0.0157, 0.0017]
+   G-A {'fresh_dM': [np.float64(0.0098), np.float64(0.0077), np.float64(0.0074), np.float64(0.0042), np.float64(0.0149)], 'mean_dM': 0.0088, 'pooled_p': 0.285, 'resplits_positive': 5, 'worst_horizon_mean': 0.0077, 'CONFIRMED': False}
+  fresh G-A-wide resplit_66: dM=+0.0068  per-horizon [0.0087, 0.0132, -0.0011, 0.0063]
+  fresh G-A-wide resplit_77: dM=+0.0052  per-horizon [0.0166, 0.0049, -0.003, 0.0024]
+  fresh G-A-wide resplit_88: dM=+0.0093  per-horizon [0.0079, 0.0094, 0.0077, 0.0124]
+  fresh G-A-wide resplit_99: dM=+0.0044  per-horizon [-0.0001, -0.0023, 0.0051, 0.0149]
+  fresh G-A-wide resplit_111: dM=+0.0187  per-horizon [0.0164, 0.0268, 0.0233, 0.0082]
+   G-A-wide {'fresh_dM': [np.float64(0.0068), np.float64(0.0052), np.float64(0.0093), np.float64(0.0044), np.float64(0.0187)], 'mean_dM': 0.0089, 'pooled_p': 0.361, 'resplits_positive': 5, 'worst_horizon_mean': 0.0064, 'CONFIRMED': False}
+
+=== 21b (2/2): test partition, opened once ===
+{
+  "n_test": 83,
+  "n_pos_test": 17,
+  "B0": {
+    "M": 0.7582,
+    "per_horizon": [
+      0.7531,
+      0.7184,
+      0.7807,
+      0.7807
+    ],
+    "alpha": 0.30000000000000004,
+    "window_config": "P6"
+  },
+  "G-A": {
+    "M": 0.8073,
+    "per_horizon": [
+      0.7727,
+      0.7977,
+      0.8494,
+      0.8093
+    ],
+    "alpha": 0.4,
+    "window_config": "alpha=1000",
+    "dM_vs_B0": 0.049,
+    "dM_ci": [
+      0.0004,
+      0.1092
+    ],
+    "dM_p": 0.05
+  },
+  "G-A-wide": {
+    "M": 0.8144,
+    "per_horizon": [
+      0.7861,
+      0.8235,
+      0.8458,
+      0.8021
+    ],
+    "alpha": 0.4,
+    "window_config": "alpha=10000",
+    "dM_vs_B0": 0.0561,
+    "dM_ci": [
+      -0.0182,
+      0.1462
+    ],
+    "dM_p": 0.158
+  },
+  "frozen_URM_test_auroc_reference": {
+    "Delivery": 0.7433,
+    ">=10m": 0.6988,
+    ">=20m": 0.7558,
+    ">=30m": 0.7754
+  },
+  "label_primary_G-A": "EXPLORATORY SUPPORT"
+}

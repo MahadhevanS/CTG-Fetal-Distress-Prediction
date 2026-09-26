@@ -1,0 +1,238 @@
+{
+  "D1": {
+    "rows": [
+      {
+        "target": "pH<=7.15 (the trained label)",
+        "n_pos": 93,
+        "n": 464,
+        "auroc": 0.7101,
+        "ci_lo": 0.649,
+        "ci_hi": 0.7761
+      },
+      {
+        "target": "pH<=7.10",
+        "n_pos": 46,
+        "n": 464,
+        "auroc": 0.7082,
+        "ci_lo": 0.6243,
+        "ci_hi": 0.7835
+      },
+      {
+        "target": "pH<=7.05 (severe)",
+        "n_pos": 31,
+        "n": 464,
+        "auroc": 0.7434,
+        "ci_lo": 0.6464,
+        "ci_hi": 0.836
+      },
+      {
+        "target": "BDecf>=8",
+        "n_pos": 53,
+        "n": 456,
+        "auroc": 0.7529,
+        "ci_lo": 0.6794,
+        "ci_hi": 0.8166
+      },
+      {
+        "target": "BDecf>=12 (metabolic acidemia)",
+        "n_pos": 12,
+        "n": 456,
+        "auroc": 0.8054,
+        "ci_lo": 0.6771,
+        "ci_hi": 0.9111
+      },
+      {
+        "target": "borderline positives (7.10<pH<=7.15) vs normal (pH>7.20)",
+        "n_pos": 47,
+        "n": 347,
+        "auroc": 0.7243,
+        "ci_lo": 0.6366,
+        "ci_hi": 0.8021
+      },
+      {
+        "target": "deep positives (pH<=7.05) vs normal (pH>7.20)",
+        "n_pos": 31,
+        "n": 331,
+        "auroc": 0.7944,
+        "ci_lo": 0.6954,
+        "ci_hi": 0.8833
+      },
+      {
+        "target": "intermediate pH (7.15<pH<=7.20) vs normal (pH>7.20)",
+        "n_pos": 71,
+        "n": 371,
+        "auroc": 0.7036,
+        "ci_lo": 0.6357,
+        "ci_hi": 0.7705
+      }
+    ],
+    "spearman_score_vs_minus_pH": 0.394,
+    "share_positives_within_0.05_of_cutoff": 0.505
+  },
+  "D2": [
+    {
+      "train_fraction": 0.25,
+      "n_train_patients_per_fold": 92,
+      "M_mean": 0.5981,
+      "M_sd": 0.0174
+    },
+    {
+      "train_fraction": 0.5,
+      "n_train_patients_per_fold": 185,
+      "M_mean": 0.6186,
+      "M_sd": 0.0109
+    },
+    {
+      "train_fraction": 0.75,
+      "n_train_patients_per_fold": 278,
+      "M_mean": 0.6344,
+      "M_sd": 0.007
+    },
+    {
+      "train_fraction": 1.0,
+      "n_train_patients_per_fold": 371,
+      "M_mean": 0.639,
+      "M_sd": 0.0
+    }
+  ],
+  "D3": [
+    {
+      "subgroup": "all D464",
+      "n": 464,
+      "n_pos": 93,
+      "prevalence": 0.2,
+      "auroc": 0.7101,
+      "ci_lo": 0.649,
+      "ci_hi": 0.7761
+    },
+    {
+      "subgroup": "vaginal delivery",
+      "n": 427,
+      "n_pos": 80,
+      "prevalence": 0.187,
+      "auroc": 0.7059,
+      "ci_lo": 0.6414,
+      "ci_hi": 0.772
+    },
+    {
+      "subgroup": "caesarean",
+      "n": 37,
+      "n_pos": 13,
+      "prevalence": 0.351,
+      "auroc": 0.6955,
+      "ci_lo": 0.4999,
+      "ci_hi": 0.8636
+    },
+    {
+      "subgroup": "last window in 2nd stage",
+      "n": 108,
+      "n_pos": 27,
+      "prevalence": 0.25,
+      "auroc": 0.6731,
+      "ci_lo": 0.5253,
+      "ci_hi": 0.799
+    },
+    {
+      "subgroup": "last window in 1st stage",
+      "n": 319,
+      "n_pos": 55,
+      "prevalence": 0.172,
+      "auroc": 0.7094,
+      "ci_lo": 0.6311,
+      "ci_hi": 0.7917
+    },
+    {
+      "subgroup": "2nd-stage status unknown",
+      "n": 37,
+      "n_pos": 11,
+      "prevalence": 0.297,
+      "auroc": 0.6958,
+      "ci_lo": 0.47,
+      "ci_hi": 0.881
+    },
+    {
+      "subgroup": "short recording (<=8 windows)",
+      "n": 12,
+      "n_pos": 7,
+      "auroc": null
+    },
+    {
+      "subgroup": "medium (9-12 windows)",
+      "n": 55,
+      "n_pos": 8,
+      "prevalence": 0.145,
+      "auroc": 0.617,
+      "ci_lo": 0.3707,
+      "ci_hi": 0.8219
+    },
+    {
+      "subgroup": "long (>=13 windows)",
+      "n": 397,
+      "n_pos": 78,
+      "prevalence": 0.196,
+      "auroc": 0.7224,
+      "ci_lo": 0.6517,
+      "ci_hi": 0.7846
+    },
+    {
+      "subgroup": "primiparous (parity 0)",
+      "n": 319,
+      "n_pos": 76,
+      "prevalence": 0.238,
+      "auroc": 0.6866,
+      "ci_lo": 0.6127,
+      "ci_hi": 0.7534
+    },
+    {
+      "subgroup": "multiparous",
+      "n": 145,
+      "n_pos": 17,
+      "prevalence": 0.117,
+      "auroc": 0.6425,
+      "ci_lo": 0.4759,
+      "ci_hi": 0.8115
+    }
+  ],
+  "D4_top": [
+    {
+      "descriptor": "accels",
+      "auroc": 0.6671,
+      "signed": 0.1671
+    },
+    {
+      "descriptor": "baseline",
+      "auroc": 0.3486,
+      "signed": -0.1514
+    },
+    {
+      "descriptor": "ltv",
+      "auroc": 0.6227,
+      "signed": 0.1227
+    },
+    {
+      "descriptor": "decel_depth",
+      "auroc": 0.4102,
+      "signed": -0.0898
+    },
+    {
+      "descriptor": "baseline_slope",
+      "auroc": 0.4304,
+      "signed": -0.0696
+    },
+    {
+      "descriptor": "prolonged",
+      "auroc": 0.5589,
+      "signed": 0.0589
+    },
+    {
+      "descriptor": "fhr_uc_lag",
+      "auroc": 0.5544,
+      "signed": 0.0544
+    },
+    {
+      "descriptor": "variability_slope",
+      "auroc": 0.4459,
+      "signed": -0.0541
+    }
+  ]
+}

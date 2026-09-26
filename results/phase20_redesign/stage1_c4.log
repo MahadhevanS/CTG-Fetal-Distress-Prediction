@@ -1,0 +1,14 @@
+  B0 sequences cached for CANONICAL (reproduces Stage 0 exactly)
+  B0 sequences cached for resplit_11 (reproduces Stage 0 exactly)
+  B0 sequences cached for resplit_22 (reproduces Stage 0 exactly)
+  B0 sequences cached for resplit_33 (reproduces Stage 0 exactly)
+  B0 sequences cached for resplit_44 (reproduces Stage 0 exactly)
+  B0 sequences cached for resplit_55 (reproduces Stage 0 exactly)
+  S1 vs S0 CANONICAL    dM=-0.0053 (p=0.636)  M 0.6671->0.6618
+  S1 vs S0 resplit_11   dM=-0.0012 (p=0.926)  M 0.6634->0.6622
+  S1 vs S0 resplit_22   dM=-0.0116 (p=0.407)  M 0.6618->0.6501
+  S1 vs S0 resplit_33   dM=-0.0287 (p=0.029)  M 0.6535->0.6249
+  S1 vs S0 resplit_44   dM=-0.0027 (p=0.802)  M 0.6489->0.6461
+  S1 vs S0 resplit_55   dM=-0.0304 (p=0.036)  M 0.6509->0.6205
+  => S1 vs S0: NOT SUPPORTED  {'tier': 'NOT SUPPORTED', 'A1': False, 'A2': False, 'A3': False, 'resplits_positive': 0, 'canonical_worst_horizon': -0.0074, 'resplit_mean_worst_horizon': -0.0202, 'canonical_dM': -0.0053, 'canonical_p': 0.636}
+  fixed-sequence stops: S1 not adopted, later sets not tested

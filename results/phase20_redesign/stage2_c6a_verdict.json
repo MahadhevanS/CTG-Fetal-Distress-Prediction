@@ -1,0 +1,20 @@
+{
+  "tier": "NOT SUPPORTED",
+  "A1": false,
+  "A2": false,
+  "A3": false,
+  "resplits_positive": 0,
+  "canonical_worst_horizon": -0.0183,
+  "resplit_mean_worst_horizon": -0.0213,
+  "canonical_dM": -0.0135,
+  "canonical_p": 0.208,
+  "resplit_dM": [
+    -0.0094,
+    -0.0061,
+    -0.0025,
+    -0.0054,
+    -0.0453
+  ],
+  "epoch_cap_hits": 0,
+  "n_trainings": 90
+}
