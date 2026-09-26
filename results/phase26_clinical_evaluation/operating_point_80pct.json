@@ -1,0 +1,24 @@
+{
+  "target_sensitivity": 0.8,
+  "mean_threshold": 0.2101,
+  "tp": 95.0,
+  "fp": 269.0,
+  "tn": 168.0,
+  "fn": 15.0,
+  "sensitivity": 0.8636,
+  "specificity": 0.3844,
+  "ppv": 0.261,
+  "npv": 0.918,
+  "f1": 0.4008,
+  "false_alert_rate": 0.6156,
+  "false_alerts_per_patient": 0.4918,
+  "false_alerts_per_hour": 0.51023,
+  "median_lead_min": 40.0,
+  "pct_ge10min": 0.9053,
+  "pct_ge20min": 0.8,
+  "pct_ge30min": 0.6842,
+  "published_operational_metrics_diff": {
+    "sensitivity": 0.0,
+    "false_alert_rate": 0.0091
+  }
+}

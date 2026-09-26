@@ -1,0 +1,344 @@
+{
+  "clear_true_positive": {
+    "patient_id": "1419",
+    "outcome_pH_le_715": true,
+    "risk_score": 0.358,
+    "risk_band": "HIGH",
+    "operating_threshold": 0.21,
+    "warned_20min_before_delivery": true,
+    "fhr_and_uterine_features": {
+      "Baseline FHR": {
+        "value": 130.0,
+        "population_mean": 136.52,
+        "z": -0.42,
+        "direction": "->"
+      },
+      "Short-term variability (STV)": {
+        "value": 0.99,
+        "population_mean": 0.88,
+        "z": 0.36,
+        "direction": "-> (near normal)"
+      },
+      "Long-term variability (LTV)": {
+        "value": 64.68,
+        "population_mean": 26.52,
+        "z": 2.48,
+        "direction": "UP (better)"
+      },
+      "Accelerations": {
+        "value": 5.0,
+        "population_mean": 1.53,
+        "z": 1.54,
+        "direction": "UP (better)"
+      },
+      "Early decelerations": {
+        "value": 3.0,
+        "population_mean": 0.33,
+        "z": 4.01,
+        "direction": "UP"
+      },
+      "Late decelerations": {
+        "value": 0.0,
+        "population_mean": 0.25,
+        "z": -0.4,
+        "direction": "-> (near normal)"
+      },
+      "Variable decelerations": {
+        "value": 6.0,
+        "population_mean": 3.41,
+        "z": 0.89,
+        "direction": "UP (worse)"
+      },
+      "Prolonged decelerations": {
+        "value": 0.0,
+        "population_mean": 0.21,
+        "z": -0.48,
+        "direction": "-> (near normal)"
+      },
+      "Deceleration depth": {
+        "value": 66.3,
+        "population_mean": 60.91,
+        "z": 0.24,
+        "direction": "-> (near normal)"
+      },
+      "Deceleration area": {
+        "value": 6.23,
+        "population_mean": 2.75,
+        "z": 1.12,
+        "direction": "UP (worse)"
+      },
+      "Deceleration burden": {
+        "value": 0.26,
+        "population_mean": 0.15,
+        "z": 1.03,
+        "direction": "UP (worse)"
+      },
+      "Longest deceleration": {
+        "value": 59.25,
+        "population_mean": 41.1,
+        "z": 0.47,
+        "direction": "-> (near normal)"
+      },
+      "Baseline severity (domain score)": {
+        "value": 0.0,
+        "population_mean": 0.04,
+        "z": -0.25,
+        "direction": "-> (near normal)"
+      },
+      "Variability severity (domain score)": {
+        "value": 1.25,
+        "population_mean": 1.57,
+        "z": -0.61,
+        "direction": "DOWN (better)"
+      },
+      "Deceleration severity (domain score)": {
+        "value": 0.57,
+        "population_mean": 0.8,
+        "z": -0.45,
+        "direction": "-> (near normal)"
+      },
+      "Uterine-activity severity (domain score)": {
+        "value": 0.0,
+        "population_mean": 0.1,
+        "z": -0.34,
+        "direction": "-> (near normal)"
+      }
+    },
+    "trajectory_state_sequence": [
+      "State 1 (mildly abnormal)",
+      "State 4 (severely abnormal)",
+      "State 2 (suspicious)",
+      "State 3 (pathological)",
+      "State 4 (severely abnormal)",
+      "State 2 (suspicious)"
+    ],
+    "parity_raw": 0.0
+  },
+  "clear_true_negative": {
+    "patient_id": "1253",
+    "outcome_pH_le_715": false,
+    "risk_score": 0.067,
+    "risk_band": "LOW",
+    "operating_threshold": 0.21,
+    "warned_20min_before_delivery": false,
+    "fhr_and_uterine_features": {
+      "Baseline FHR": {
+        "value": 145.0,
+        "population_mean": 136.61,
+        "z": 0.55,
+        "direction": "UP"
+      },
+      "Short-term variability (STV)": {
+        "value": 0.79,
+        "population_mean": 0.87,
+        "z": -0.25,
+        "direction": "-> (near normal)"
+      },
+      "Long-term variability (LTV)": {
+        "value": 12.27,
+        "population_mean": 26.35,
+        "z": -0.93,
+        "direction": "DOWN (worse)"
+      },
+      "Accelerations": {
+        "value": 3.0,
+        "population_mean": 1.54,
+        "z": 0.64,
+        "direction": "UP (better)"
+      },
+      "Early decelerations": {
+        "value": 0.0,
+        "population_mean": 0.33,
+        "z": -0.49,
+        "direction": "->"
+      },
+      "Late decelerations": {
+        "value": 0.0,
+        "population_mean": 0.23,
+        "z": -0.41,
+        "direction": "-> (near normal)"
+      },
+      "Variable decelerations": {
+        "value": 0.0,
+        "population_mean": 3.46,
+        "z": -1.18,
+        "direction": "DOWN (better)"
+      },
+      "Prolonged decelerations": {
+        "value": 0.0,
+        "population_mean": 0.21,
+        "z": -0.48,
+        "direction": "-> (near normal)"
+      },
+      "Deceleration depth": {
+        "value": 24.4,
+        "population_mean": 60.23,
+        "z": -1.6,
+        "direction": "DOWN (better)"
+      },
+      "Deceleration area": {
+        "value": 0.1,
+        "population_mean": 2.74,
+        "z": -0.86,
+        "direction": "DOWN (better)"
+      },
+      "Deceleration burden": {
+        "value": 0.03,
+        "population_mean": 0.15,
+        "z": -1.07,
+        "direction": "DOWN (better)"
+      },
+      "Longest deceleration": {
+        "value": 6.25,
+        "population_mean": 40.99,
+        "z": -0.89,
+        "direction": "DOWN (better)"
+      },
+      "Baseline severity (domain score)": {
+        "value": 0.0,
+        "population_mean": 0.04,
+        "z": -0.24,
+        "direction": "-> (near normal)"
+      },
+      "Variability severity (domain score)": {
+        "value": 2.13,
+        "population_mean": 1.58,
+        "z": 1.06,
+        "direction": "UP (worse)"
+      },
+      "Deceleration severity (domain score)": {
+        "value": 0.2,
+        "population_mean": 0.78,
+        "z": -1.15,
+        "direction": "DOWN (better)"
+      },
+      "Uterine-activity severity (domain score)": {
+        "value": 0.0,
+        "population_mean": 0.1,
+        "z": -0.34,
+        "direction": "-> (near normal)"
+      }
+    },
+    "trajectory_state_sequence": [
+      "State 1 (mildly abnormal)",
+      "State 2 (suspicious)",
+      "State 3 (pathological)",
+      "State 4 (severely abnormal)",
+      "State 2 (suspicious)",
+      "State 3 (pathological)"
+    ],
+    "parity_raw": 3.0
+  },
+  "missed_case_false_negative": {
+    "patient_id": "1244",
+    "outcome_pH_le_715": true,
+    "risk_score": 0.122,
+    "risk_band": "LOW",
+    "operating_threshold": 0.21,
+    "warned_20min_before_delivery": false,
+    "fhr_and_uterine_features": {
+      "Baseline FHR": {
+        "value": 130.0,
+        "population_mean": 136.33,
+        "z": -0.41,
+        "direction": "->"
+      },
+      "Short-term variability (STV)": {
+        "value": 0.9,
+        "population_mean": 0.87,
+        "z": 0.07,
+        "direction": "-> (near normal)"
+      },
+      "Long-term variability (LTV)": {
+        "value": 33.04,
+        "population_mean": 26.6,
+        "z": 0.43,
+        "direction": "-> (near normal)"
+      },
+      "Accelerations": {
+        "value": 2.0,
+        "population_mean": 1.57,
+        "z": 0.19,
+        "direction": "-> (near normal)"
+      },
+      "Early decelerations": {
+        "value": 1.0,
+        "population_mean": 0.32,
+        "z": 1.01,
+        "direction": "UP"
+      },
+      "Late decelerations": {
+        "value": 0.0,
+        "population_mean": 0.25,
+        "z": -0.41,
+        "direction": "-> (near normal)"
+      },
+      "Variable decelerations": {
+        "value": 2.0,
+        "population_mean": 3.52,
+        "z": -0.52,
+        "direction": "DOWN (better)"
+      },
+      "Prolonged decelerations": {
+        "value": 1.0,
+        "population_mean": 0.21,
+        "z": 1.78,
+        "direction": "UP (worse)"
+      },
+      "Deceleration depth": {
+        "value": 76.4,
+        "population_mean": 60.67,
+        "z": 0.72,
+        "direction": "UP (worse)"
+      },
+      "Deceleration area": {
+        "value": 1.51,
+        "population_mean": 2.81,
+        "z": -0.42,
+        "direction": "-> (near normal)"
+      },
+      "Deceleration burden": {
+        "value": 0.07,
+        "population_mean": 0.15,
+        "z": -0.74,
+        "direction": "DOWN (better)"
+      },
+      "Longest deceleration": {
+        "value": 31.25,
+        "population_mean": 42.05,
+        "z": -0.27,
+        "direction": "-> (near normal)"
+      },
+      "Baseline severity (domain score)": {
+        "value": 0.0,
+        "population_mean": 0.04,
+        "z": -0.24,
+        "direction": "-> (near normal)"
+      },
+      "Variability severity (domain score)": {
+        "value": 1.3,
+        "population_mean": 1.56,
+        "z": -0.51,
+        "direction": "DOWN (better)"
+      },
+      "Deceleration severity (domain score)": {
+        "value": 1.39,
+        "population_mean": 0.8,
+        "z": 1.15,
+        "direction": "UP (worse)"
+      },
+      "Uterine-activity severity (domain score)": {
+        "value": 0.0,
+        "population_mean": 0.1,
+        "z": -0.34,
+        "direction": "-> (near normal)"
+      }
+    },
+    "trajectory_state_sequence": [
+      "State 1 (mildly abnormal)",
+      "State 4 (severely abnormal)",
+      "State 2 (suspicious)"
+    ],
+    "parity_raw": 1.0
+  }
+}

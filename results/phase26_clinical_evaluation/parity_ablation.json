@@ -1,0 +1,152 @@
+[
+  {
+    "arm": "CTG only",
+    "M": 0.6472,
+    "auc_0m": 0.7216,
+    "auc_10m": 0.6683,
+    "auc_20m": 0.6015,
+    "auc_30m": 0.5976,
+    "alpha_per_fold": [
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0
+    ],
+    "dM_vs_CTG + parity (= URM)": -0.0431,
+    "p_delivery_vs_CTG + parity (= URM)": 0.452,
+    "ci_delivery_vs_CTG + parity (= URM)": [
+      -0.0444,
+      0.0211
+    ]
+  },
+  {
+    "arm": "Parity only",
+    "M": 0.5755,
+    "auc_0m": 0.5755,
+    "auc_10m": 0.5755,
+    "auc_20m": 0.5755,
+    "auc_30m": 0.5755,
+    "alpha_per_fold": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "dM_vs_CTG only": -0.0717,
+    "p_delivery_vs_CTG only": 0.0,
+    "ci_delivery_vs_CTG only": [
+      -0.2202,
+      -0.0723
+    ],
+    "dM_vs_CTG + parity (= URM)": -0.1148,
+    "p_delivery_vs_CTG + parity (= URM)": 0.0,
+    "ci_delivery_vs_CTG + parity (= URM)": [
+      -0.2151,
+      -0.1
+    ]
+  },
+  {
+    "arm": "CTG + parity (= URM)",
+    "M": 0.6903,
+    "auc_0m": 0.7335,
+    "auc_10m": 0.6957,
+    "auc_20m": 0.6675,
+    "auc_30m": 0.6646,
+    "alpha_per_fold": [
+      0.35,
+      0.35,
+      0.3,
+      0.35,
+      0.35
+    ],
+    "dM_vs_CTG only": 0.0431,
+    "p_delivery_vs_CTG only": 0.452,
+    "ci_delivery_vs_CTG only": [
+      -0.0211,
+      0.0444
+    ]
+  },
+  {
+    "arm": "CTG + shuffled parity",
+    "M": 0.6415,
+    "auc_0m": 0.6978,
+    "auc_10m": 0.651,
+    "auc_20m": 0.6119,
+    "auc_30m": 0.6053,
+    "alpha_per_fold": [
+      0.05,
+      0.1,
+      1.0,
+      1.0,
+      1.0
+    ],
+    "dM_vs_CTG only": -0.0057,
+    "p_delivery_vs_CTG only": 0.113,
+    "ci_delivery_vs_CTG only": [
+      -0.0532,
+      0.0063
+    ],
+    "dM_vs_CTG + parity (= URM)": -0.0488,
+    "p_delivery_vs_CTG + parity (= URM)": 0.058,
+    "ci_delivery_vs_CTG + parity (= URM)": [
+      -0.0742,
+      0.0013
+    ]
+  },
+  {
+    "arm": "CTG + random demographic var.",
+    "M": 0.6408,
+    "auc_0m": 0.7165,
+    "auc_10m": 0.6742,
+    "auc_20m": 0.5877,
+    "auc_30m": 0.5848,
+    "alpha_per_fold": [
+      1.0,
+      0.95,
+      0.5,
+      0.1,
+      0.45
+    ],
+    "dM_vs_CTG only": -0.0064,
+    "p_delivery_vs_CTG only": 0.654,
+    "ci_delivery_vs_CTG only": [
+      -0.0248,
+      0.0148
+    ],
+    "dM_vs_CTG + parity (= URM)": -0.0495,
+    "p_delivery_vs_CTG + parity (= URM)": 0.393,
+    "ci_delivery_vs_CTG + parity (= URM)": [
+      -0.0554,
+      0.0226
+    ]
+  },
+  {
+    "arm": "CTG + additional maternal vars.",
+    "M": 0.6789,
+    "auc_0m": 0.7222,
+    "auc_10m": 0.682,
+    "auc_20m": 0.6607,
+    "auc_30m": 0.6509,
+    "alpha_per_fold": [
+      0.4,
+      0.3,
+      0.3,
+      0.35,
+      0.3
+    ],
+    "dM_vs_CTG only": 0.0317,
+    "p_delivery_vs_CTG only": 0.984,
+    "ci_delivery_vs_CTG only": [
+      -0.0358,
+      0.0395
+    ],
+    "dM_vs_CTG + parity (= URM)": -0.0114,
+    "p_delivery_vs_CTG + parity (= URM)": 0.175,
+    "ci_delivery_vs_CTG + parity (= URM)": [
+      -0.028,
+      0.0052
+    ]
+  }
+]
