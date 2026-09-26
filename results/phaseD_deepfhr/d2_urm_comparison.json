@@ -1,0 +1,38 @@
+[
+  {
+    "horizon_min": 0,
+    "deepfhr_reconstruction_auroc": 0.5365,
+    "urm_auroc": 0.7335,
+    "delta_urm_minus_deepfhr": 0.197,
+    "ci95_low": 0.1213,
+    "ci95_high": 0.2724,
+    "p_value": 0.0
+  },
+  {
+    "horizon_min": 10,
+    "deepfhr_reconstruction_auroc": 0.5906,
+    "urm_auroc": 0.6921,
+    "delta_urm_minus_deepfhr": 0.1015,
+    "ci95_low": 0.037,
+    "ci95_high": 0.1698,
+    "p_value": 0.002
+  },
+  {
+    "horizon_min": 20,
+    "deepfhr_reconstruction_auroc": 0.5751,
+    "urm_auroc": 0.6638,
+    "delta_urm_minus_deepfhr": 0.0887,
+    "ci95_low": 0.0153,
+    "ci95_high": 0.158,
+    "p_value": 0.015
+  },
+  {
+    "horizon_min": 30,
+    "deepfhr_reconstruction_auroc": 0.5667,
+    "urm_auroc": 0.6631,
+    "delta_urm_minus_deepfhr": 0.0963,
+    "ci95_low": 0.0198,
+    "ci95_high": 0.1749,
+    "p_value": 0.016
+  }
+]
