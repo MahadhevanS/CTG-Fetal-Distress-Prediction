@@ -1,0 +1,18 @@
+========================================================================================
+  PHASE 20 STAGE 0
+========================================================================================
+  G1 P6 refit vs p6_predictions.npz: max|diff| CV=0.00e+00  test=0.00e+00  [PASS]
+  G2 h= 0m: URM 0.7334 vs 0.7335 [PASS] | TAM 0.7213 vs 0.7216 [PASS] | PRS 0.6872 vs 0.6872 [PASS]
+  G2 h=10m: URM 0.6957 vs 0.6957 [PASS] | TAM 0.6684 vs 0.6683 [PASS] | PRS 0.6859 vs 0.6859 [PASS]
+  G2 h=20m: URM 0.6677 vs 0.6675 [PASS] | TAM 0.6014 vs 0.6015 [PASS] | PRS 0.6238 vs 0.6238 [PASS]
+  G2 h=30m: URM 0.6646 vs 0.6646 [PASS] | TAM 0.5974 vs 0.5976 [PASS] | PRS 0.5828 vs 0.5828 [PASS]
+  selected alpha per fold: [0.35, 0.35, 0.3, 0.35, 0.35]   epoch-cap hits 7/15
+  G1 and G2 PASSED
+  D464 {'split': 'CANONICAL', 'M': 0.6671, 'URM_0m': 0.7101, 'URM_10m': 0.6692, 'URM_20m': 0.6484, 'URM_30m': 0.6407, 'M_TAM': 0.6398, 'M_PRS': 0.639, 'M_parity': 0.5743, 'alpha_mean': 0.29, 'cap_hits': 4}
+  D464 {'split': 'resplit_11', 'M': 0.6634, 'URM_0m': 0.7085, 'URM_10m': 0.6746, 'URM_20m': 0.6447, 'URM_30m': 0.626, 'M_TAM': 0.6358, 'M_PRS': 0.6384, 'M_parity': 0.5701, 'alpha_mean': 0.3, 'cap_hits': 0}
+  D464 {'split': 'resplit_22', 'M': 0.6618, 'URM_0m': 0.7109, 'URM_10m': 0.6714, 'URM_20m': 0.6361, 'URM_30m': 0.6286, 'M_TAM': 0.6224, 'M_PRS': 0.6263, 'M_parity': 0.5728, 'alpha_mean': 0.27, 'cap_hits': 7}
+  D464 {'split': 'resplit_33', 'M': 0.6535, 'URM_0m': 0.7052, 'URM_10m': 0.6622, 'URM_20m': 0.6352, 'URM_30m': 0.6115, 'M_TAM': 0.621, 'M_PRS': 0.6222, 'M_parity': 0.5567, 'alpha_mean': 0.25, 'cap_hits': 1}
+  D464 {'split': 'resplit_44', 'M': 0.6489, 'URM_0m': 0.7095, 'URM_10m': 0.6618, 'URM_20m': 0.623, 'URM_30m': 0.6011, 'M_TAM': 0.635, 'M_PRS': 0.6299, 'M_parity': 0.5569, 'alpha_mean': 0.34, 'cap_hits': 6}
+  D464 {'split': 'resplit_55', 'M': 0.6509, 'URM_0m': 0.7122, 'URM_10m': 0.6548, 'URM_20m': 0.6301, 'URM_30m': 0.6067, 'M_TAM': 0.6248, 'M_PRS': 0.6223, 'M_parity': 0.5429, 'alpha_mean': 0.26, 'cap_hits': 3}
+  G4 noise floor: M mean 0.6576  SD across 6 splits 0.0075 (range 0.6489-0.6671);  seed SD 0.0050
+Saved -> results/phase20_redesign/

@@ -1,0 +1,4 @@
+model,brier_score,calibration_intercept,calibration_slope,mean_predicted_risk,observed_event_rate
+Model 3,0.1424,0.1051,1.288,0.2322,0.2011
+Parity Fusion,0.1708,1.0009,0.7922,0.057,0.2011
+Hybrid,0.1403,0.1749,1.1453,0.2013,0.2011

@@ -1,0 +1,56 @@
+{
+  "n_test": 83,
+  "n_pos_test": 17,
+  "B0": {
+    "M": 0.7582,
+    "per_horizon": [
+      0.7531,
+      0.7184,
+      0.7807,
+      0.7807
+    ],
+    "alpha": 0.30000000000000004,
+    "window_config": "P6"
+  },
+  "G-A": {
+    "M": 0.8073,
+    "per_horizon": [
+      0.7727,
+      0.7977,
+      0.8494,
+      0.8093
+    ],
+    "alpha": 0.4,
+    "window_config": "alpha=1000",
+    "dM_vs_B0": 0.049,
+    "dM_ci": [
+      0.0004,
+      0.1092
+    ],
+    "dM_p": 0.05
+  },
+  "G-A-wide": {
+    "M": 0.8144,
+    "per_horizon": [
+      0.7861,
+      0.8235,
+      0.8458,
+      0.8021
+    ],
+    "alpha": 0.4,
+    "window_config": "alpha=10000",
+    "dM_vs_B0": 0.0561,
+    "dM_ci": [
+      -0.0182,
+      0.1462
+    ],
+    "dM_p": 0.158
+  },
+  "frozen_URM_test_auroc_reference": {
+    "Delivery": 0.7433,
+    ">=10m": 0.6988,
+    ">=20m": 0.7558,
+    ">=30m": 0.7754
+  },
+  "label_primary_G-A": "EXPLORATORY SUPPORT"
+}

@@ -1,0 +1,27 @@
+{
+  "status": "PASSED",
+  "audit_timestamp": "2026-09-13T13:20:00Z",
+  "leakage_invariants": {
+    "outer_fold_disjoint_patients": true,
+    "training_only_parity_scaling": true,
+    "training_only_parity_lr_fit": true,
+    "training_only_fusion_lr_fit": true,
+    "no_outcome_in_features": true,
+    "no_patient_id_in_features": true,
+    "no_duration_in_primary_hybrid": true,
+    "no_window_count_in_primary_hybrid": true,
+    "out_of_fold_model3_scores_used": true,
+    "threshold_selection_independent_of_test_fold": true,
+    "bootstrap_clustered_at_patient_level": true
+  },
+  "verification_details": {
+    "n_outer_folds": 5,
+    "n_patients": 547,
+    "features_used": [
+      "to_logit(model3_score)",
+      "to_logit(p_parity)"
+    ],
+    "regularization_C": 0.1,
+    "parity_model": "StandardScaler + LogisticRegression(C=1.0)"
+  }
+}

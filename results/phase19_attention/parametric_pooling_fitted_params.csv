@@ -1,0 +1,16 @@
+variant,fold,lam_per_min,kap,train_pooled_bce
+full_2param,0,0.225,10.0,0.4732
+recency_only,0,0.15,0.0,0.4755
+risk_only,0,0.0,7.0,0.4763
+full_2param,1,0.4,5.0,0.4863
+recency_only,1,0.35,0.0,0.4866
+risk_only,1,0.0,1.0,0.494
+full_2param,2,0.275,5.0,0.4807
+recency_only,2,0.275,0.0,0.4813
+risk_only,2,0.0,2.0,0.486
+full_2param,3,0.35,1.0,0.4804
+recency_only,3,0.35,0.0,0.4804
+risk_only,3,0.0,1.0,0.4876
+full_2param,4,0.375,5.0,0.4784
+recency_only,4,0.375,0.0,0.4789
+risk_only,4,0.0,1.0,0.4856

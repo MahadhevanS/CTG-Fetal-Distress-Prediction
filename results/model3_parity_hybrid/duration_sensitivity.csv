@@ -1,0 +1,4 @@
+stratum,n_patients,n_positives,model3_auroc,hybrid_auroc,delta
+Low (<= 13 windows),103,25,0.6887,0.7041,0.0154
+"Mid (> 13, < 17 windows)",63,13,0.7185,0.72,0.0015
+"High (ceiling, = 17 windows)",381,72,0.7312,0.7486,0.0174

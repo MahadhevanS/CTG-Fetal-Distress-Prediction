@@ -1,0 +1,38 @@
+{
+  "A1": {
+    "tier": "NOT SUPPORTED",
+    "C1": false,
+    "C2": false,
+    "C3": false,
+    "canonical_dM": -0.0112,
+    "canonical_p": 0.118,
+    "resplits_positive": 1,
+    "resplits_p_lt_05": 0,
+    "canonical_worst_horizon_delta": -0.0235,
+    "resplit_mean_worst_horizon_delta": -0.0148
+  },
+  "A2": {
+    "tier": "NOT SUPPORTED",
+    "C1": false,
+    "C2": false,
+    "C3": true,
+    "canonical_dM": -0.0004,
+    "canonical_p": 0.811,
+    "resplits_positive": 1,
+    "resplits_p_lt_05": 0,
+    "canonical_worst_horizon_delta": -0.0029,
+    "resplit_mean_worst_horizon_delta": -0.0027
+  },
+  "A3": {
+    "tier": "NOT SUPPORTED",
+    "C1": false,
+    "C2": false,
+    "C3": true,
+    "canonical_dM": -0.0084,
+    "canonical_p": 0.218,
+    "resplits_positive": 1,
+    "resplits_p_lt_05": 0,
+    "canonical_worst_horizon_delta": -0.0198,
+    "resplit_mean_worst_horizon_delta": -0.0137
+  }
+}

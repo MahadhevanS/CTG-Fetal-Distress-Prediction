@@ -1,0 +1,22 @@
+  done CANONICAL
+  done resplit_121
+  done resplit_132
+  done resplit_143
+  done resplit_154
+  done resplit_165
+  done resplit_176
+  done resplit_187
+  done resplit_198
+  done resplit_209
+  done resplit_220
+CANONICAL:
+     split arm   sens    far  median_lead   ge20   ge30
+CANONICAL  B0 0.8727 0.6316        40.00 0.8333 0.7188
+CANONICAL   C 0.8727 0.6316        33.75 0.7188 0.5833
+CANONICAL  V2 0.8909 0.6110        40.00 0.8265 0.7143
+FRESH MEAN:
+       sens    far  median_lead   ge20   ge30
+arm                                         
+B0   0.861  0.629       39.875  0.817  0.687
+C    0.888  0.624       37.500  0.785  0.655
+V2   0.875  0.627       39.750  0.815  0.684

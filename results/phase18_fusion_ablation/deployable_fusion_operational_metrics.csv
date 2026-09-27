@@ -1,0 +1,6 @@
+system,target_sensitivity,mean_threshold,achieved_sensitivity,true_positives_alerted,false_positives_alerted,false_alert_rate,median_lead_time_min,iqr_lead_time_min,pct_detected_ge10min,pct_detected_ge20min,pct_detected_ge30min
+M3_only,0.8,0.1916,0.8818,97,303,0.6934,32.5,27.5,0.7938,0.6598,0.5464
+F2_deployable,0.8,0.2004,0.8636,95,290,0.6636,40.0,20.0,0.9158,0.7579,0.6632
+A3_selected,0.8,0.2086,0.8636,95,273,0.6247,40.0,15.0,0.9158,0.8105,0.6947
+A3_fixed_0.75,0.8,0.2002,0.8727,96,284,0.6499,35.0,27.5,0.7812,0.6667,0.5625
+A4_sum_to_one,0.8,0.2018,0.8545,94,277,0.6339,40.0,12.5,0.9362,0.8404,0.7128

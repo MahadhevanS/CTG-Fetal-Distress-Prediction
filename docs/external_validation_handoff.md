@@ -194,6 +194,17 @@ of CTU-UHB:
   parity combined (the untested combination named in Section 1) — labeled
   exploratory regardless of outcome, per this project's own established
   rule that a hybrid is never confirmatory on its first test.
+- **Mandatory baselines, computed and reported alongside every comparison
+  above:** Max-pooling and P90-pooling over the same causally-eligible
+  prefix (`numpy.percentile`, the canonical estimator — see
+  `reports/candidate_models_metrics_reference.md` §3), evaluated on the
+  external cohort exactly as they were internally (Phase 15). These are
+  **not** candidates for promotion — they require no training at all — but
+  this project's own internal results (§1) found them a genuinely
+  competitive reference (Max: CV delivery AUROC 0.7210, within noise of
+  Model 3's 0.7216), so any claimed external improvement from Model 3 or
+  parity fusion must be shown to beat these cheap fixed statistics, not
+  only the single-window P6 baseline.
 - **No refitting or recalibration against the external labels** as part of
   this validation — applying the frozen artifacts as-is and measuring what
   happens is the entire point. A recalibration/transfer-learning study is a

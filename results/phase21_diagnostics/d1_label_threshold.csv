@@ -1,0 +1,9 @@
+target,n_pos,n,auroc,ci_lo,ci_hi
+pH<=7.15 (the trained label),93,464,0.7101,0.649,0.7761
+pH<=7.10,46,464,0.7082,0.6243,0.7835
+pH<=7.05 (severe),31,464,0.7434,0.6464,0.836
+BDecf>=8,53,456,0.7529,0.6794,0.8166
+BDecf>=12 (metabolic acidemia),12,456,0.8054,0.6771,0.9111
+borderline positives (7.10<pH<=7.15) vs normal (pH>7.20),47,347,0.7243,0.6366,0.8021
+deep positives (pH<=7.05) vs normal (pH>7.20),31,331,0.7944,0.6954,0.8833
+intermediate pH (7.15<pH<=7.20) vs normal (pH>7.20),71,371,0.7036,0.6357,0.7705

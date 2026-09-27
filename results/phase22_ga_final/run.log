@@ -1,0 +1,19 @@
+  cv547 B0: M_URM 0.6903
+  cv547 GA: M_URM 0.6916
+  cv547 B0P: M_URM 0.6883
+  cv547 M: {'GA': 0.6916, 'B0': 0.6903} paired: {'dM': 0.0013, 'dM_p': 0.891, 'dM_ci_lo': -0.0149, 'dM_ci_hi': 0.0184}
+  robust {'seed': 11, 'set': 'screening', 'M_GA': 0.6818, 'M_B0': 0.6762, 'dM': 0.0056, 'p': 0.512, 'd0': 0.0035, 'd10': 0.0085, 'd20': 0.0047, 'd30': 0.0057}
+  robust {'seed': 22, 'set': 'screening', 'M_GA': 0.6863, 'M_B0': 0.6753, 'dM': 0.011, 'p': 0.182, 'd0': 0.0219, 'd10': 0.0104, 'd20': 0.0066, 'd30': 0.005}
+  robust {'seed': 33, 'set': 'screening', 'M_GA': 0.6965, 'M_B0': 0.6786, 'dM': 0.0179, 'p': 0.043, 'd0': 0.0181, 'd10': 0.0213, 'd20': 0.0146, 'd30': 0.0177}
+  robust {'seed': 44, 'set': 'screening', 'M_GA': 0.701, 'M_B0': 0.6954, 'dM': 0.0056, 'p': 0.52, 'd0': -0.0038, 'd10': 0.0147, 'd20': 0.0096, 'd30': 0.0017}
+  robust {'seed': 55, 'set': 'screening', 'M_GA': 0.6802, 'M_B0': 0.6617, 'dM': 0.0185, 'p': 0.044, 'd0': 0.0272, 'd10': 0.0241, 'd20': 0.014, 'd30': 0.0087}
+  robust {'seed': 66, 'set': 'fresh', 'M_GA': 0.6992, 'M_B0': 0.6875, 'dM': 0.0117, 'p': 0.151, 'd0': 0.0155, 'd10': 0.0139, 'd20': 0.0046, 'd30': 0.0128}
+  robust {'seed': 77, 'set': 'fresh', 'M_GA': 0.6791, 'M_B0': 0.6692, 'dM': 0.0099, 'p': 0.292, 'd0': 0.0179, 'd10': 0.0156, 'd20': 0.0073, 'd30': -0.0012}
+  robust {'seed': 88, 'set': 'fresh', 'M_GA': 0.6914, 'M_B0': 0.6725, 'dM': 0.0189, 'p': 0.025, 'd0': 0.0119, 'd10': 0.0199, 'd20': 0.0256, 'd30': 0.0182}
+  robust {'seed': 99, 'set': 'fresh', 'M_GA': 0.6913, 'M_B0': 0.6771, 'dM': 0.0142, 'p': 0.104, 'd0': 0.0154, 'd10': 0.0238, 'd20': 0.0138, 'd30': 0.0039}
+  robust {'seed': 111, 'set': 'fresh', 'M_GA': 0.6973, 'M_B0': 0.6861, 'dM': 0.0112, 'p': 0.172, 'd0': 0.0103, 'd10': 0.0185, 'd20': 0.0083, 'd30': 0.0077}
+  sens {'ridge_alpha_fixed': 10, 'M': 0.6971, '0m': np.float64(0.7377), '10m': np.float64(0.7113), '20m': np.float64(0.6741), '30m': np.float64(0.6654)}
+  sens {'ridge_alpha_fixed': 100, 'M': 0.6971, '0m': np.float64(0.7425), '10m': np.float64(0.711), '20m': np.float64(0.6736), '30m': np.float64(0.6612)}
+  sens {'ridge_alpha_fixed': 1000, 'M': 0.6972, '0m': np.float64(0.7475), '10m': np.float64(0.7041), '20m': np.float64(0.6752), '30m': np.float64(0.662)}
+  test reproduction gate (G-A 0.8073 / B0 0.7582): G-A 0.8073  B0 0.7582  [PASS]
+  freeze integrity {'max_abs_diff_standalone_vs_in_memory': 2.7755575615628914e-17, 'pass': True, 'in_sample_auroc_OPTIMISTIC_not_a_performance_estimate': {'0m': np.float64(0.773), '10m': np.float64(0.7284), '20m': np.float64(0.7064), '30m': np.float64(0.6941)}}

@@ -1,0 +1,215 @@
+<title>URM Bedside Explainer</title>
+<meta name="description" content="Patient-level risk explanation for the locked URM model, tied to recognisable FHR/CTG variables rather than raw model weights.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<style>
+  :root{
+    --bg:#f3f1ec; --surface:#ffffff; --surface-2:#eae7df; --border:#d8d4c8;
+    --ink:#211f1a; --ink-2:#5b574c; --ink-3:#8a8574;
+    --accent:#1f5f5b; --accent-ink:#0e3230; --accent-soft:#e2ede9;
+    --ok:#2f7a4f; --ok-soft:#e4f1e6;
+    --warn:#a1691a; --warn-soft:#f7ecd8;
+    --bad:#a3402f; --bad-soft:#f6e4df;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#15140f; --surface:#1d1b15; --surface-2:#26241c; --border:#3a3729;
+      --ink:#efece2; --ink-2:#bcb7a5; --ink-3:#867f68;
+      --accent:#5fb3ab; --accent-ink:#bfe8e2; --accent-soft:#20302d;
+      --ok:#6fbf8b; --ok-soft:#1c2e21;
+      --warn:#e0ac54; --warn-soft:#332816;
+      --bad:#e5806c; --bad-soft:#33201b;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#15140f; --surface:#1d1b15; --surface-2:#26241c; --border:#3a3729;
+    --ink:#efece2; --ink-2:#bcb7a5; --ink-3:#867f68;
+    --accent:#5fb3ab; --accent-ink:#bfe8e2; --accent-soft:#20302d;
+    --ok:#6fbf8b; --ok-soft:#1c2e21;
+    --warn:#e0ac54; --warn-soft:#332816;
+    --bad:#e5806c; --bad-soft:#33201b;
+    color-scheme: dark;
+  }
+  *{box-sizing:border-box}
+  body{background:var(--bg); color:var(--ink); font-family:"IBM Plex Sans",system-ui,sans-serif; margin:0; padding:24px 16px 40px;
+       font-size:14.5px; line-height:1.45;}
+  .wrap{max-width:760px; margin:0 auto;}
+  .mono{font-family:"IBM Plex Mono",ui-monospace,monospace; font-variant-numeric:tabular-nums;}
+  header.top{display:flex; flex-direction:column; gap:4px; margin-bottom:18px;}
+  header.top h1{font-size:20px; margin:0; letter-spacing:-.01em;}
+  header.top p{margin:0; color:var(--ink-2); font-size:13px; max-width:60ch;}
+  .banner-caveat{background:var(--surface-2); border:1px solid var(--border); border-radius:10px; padding:10px 14px; font-size:12.3px;
+                 color:var(--ink-2); margin-bottom:20px;}
+  .banner-caveat b{color:var(--ink);}
+
+  .tabs{display:flex; gap:6px; margin-bottom:16px; flex-wrap:wrap;}
+  .tab{border:1px solid var(--border); background:var(--surface); color:var(--ink-2); border-radius:999px; padding:7px 14px;
+       font:inherit; font-size:12.8px; font-weight:500; cursor:pointer;}
+  .tab[aria-selected="true"]{background:var(--accent); border-color:var(--accent); color:#fff;}
+  .tab .dot{display:inline-block; width:7px; height:7px; border-radius:50%; margin-right:6px; vertical-align:middle;}
+
+  .card{background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:18px 20px; margin-bottom:14px;}
+
+  .risk-row{display:flex; align-items:center; gap:16px; flex-wrap:wrap;}
+  .risk-num{font-family:"IBM Plex Mono"; font-size:34px; font-weight:600; line-height:1; letter-spacing:-.02em;}
+  .risk-meta{flex:1; min-width:180px;}
+  .risk-meta .label{font-size:11.5px; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-3); margin-bottom:2px;}
+  .band{display:inline-block; padding:3px 10px; border-radius:999px; font-size:12px; font-weight:600; letter-spacing:.02em;}
+  .band-HIGH{background:var(--bad-soft); color:var(--bad);}
+  .band-BORDERLINE{background:var(--warn-soft); color:var(--warn);}
+  .band-LOW{background:var(--ok-soft); color:var(--ok);}
+  .thr-bar{position:relative; height:8px; background:var(--surface-2); border-radius:99px; margin-top:10px; overflow:visible;}
+  .thr-bar .fill{position:absolute; inset:0; border-radius:99px; background:var(--accent);}
+  .thr-bar .mark{position:absolute; top:-4px; width:2px; height:16px; background:var(--ink);}
+  .thr-bar .mark-label{position:absolute; top:14px; font-size:10.5px; color:var(--ink-3); transform:translateX(-50%); white-space:nowrap;}
+
+  .warn-line{display:flex; align-items:center; gap:9px; margin-top:14px; padding:9px 12px; border-radius:9px; font-size:13px; font-weight:500;}
+  .warn-line.ok{background:var(--ok-soft); color:var(--ok);}
+  .warn-line.no{background:var(--bad-soft); color:var(--bad);}
+
+  h2.section{font-size:12px; text-transform:uppercase; letter-spacing:.07em; color:var(--ink-3); margin:0 0 10px;}
+  .feat-grid{display:grid; grid-template-columns:1fr; gap:1px; background:var(--border); border:1px solid var(--border); border-radius:10px; overflow:hidden;}
+  .feat-row{background:var(--surface); display:grid; grid-template-columns:1fr auto auto; gap:10px; padding:8px 12px; align-items:center; font-size:13px;}
+  .feat-row .name{color:var(--ink);}
+  .feat-row .val{color:var(--ink-2); font-size:12.5px;}
+  .arrow{font-size:11.5px; font-weight:600; padding:2px 8px; border-radius:6px; white-space:nowrap; text-align:center; min-width:104px;}
+  .arrow.worse{background:var(--bad-soft); color:var(--bad);}
+  .arrow.better{background:var(--ok-soft); color:var(--ok);}
+  .arrow.neutral{background:var(--surface-2); color:var(--ink-3);}
+
+  .traj{display:flex; align-items:center; flex-wrap:wrap; gap:0;}
+  .traj .st{padding:5px 11px; border-radius:7px; font-size:12px; font-weight:600; background:var(--surface-2); color:var(--ink-2); white-space:nowrap;}
+  .traj .st.hi{background:var(--bad-soft); color:var(--bad);}
+  .traj .st.mid{background:var(--warn-soft); color:var(--warn);}
+  .traj .st.lo{background:var(--ok-soft); color:var(--ok);}
+  .traj .arr{color:var(--ink-3); margin:0 6px; font-size:13px;}
+
+  .two-col{display:grid; grid-template-columns:1fr 1fr; gap:14px;}
+  @media (max-width:540px){ .two-col{grid-template-columns:1fr;} }
+  .mini-card{background:var(--surface-2); border-radius:10px; padding:12px 14px;}
+  .mini-card .label{font-size:11px; text-transform:uppercase; letter-spacing:.05em; color:var(--ink-3); margin-bottom:4px;}
+  .mini-card .value{font-size:16px; font-weight:600;}
+
+  footer{margin-top:26px; font-size:11.5px; color:var(--ink-3); border-top:1px solid var(--border); padding-top:14px;}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <h1>URM Bedside Explainer</h1>
+    <p>Patient-level risk, tied to the same fetal-heart-rate, deceleration, trajectory and maternal-context variables a clinician already reads on a CTG trace — not raw model weights.</p>
+  </header>
+
+  <div class="banner-caveat">
+    <b>Illustrative, not clinical.</b> These are three real CTU-UHB patients chosen to show the extremes of what the locked URM produces (a clear true positive, a clear true negative, and a case it misses) — this interface is a reporting mock-up, not a bedside deployment.
+  </div>
+
+  <div class="tabs" id="tabs" role="tablist"></div>
+  <div id="content"></div>
+
+  <footer>
+    Risk = URM's fused score (TAM trajectory × 0.35 + parity model × 0.65) at the delivery-time window. Feature directions are z-scores against that patient's own canonical training fold — never their own held-out fold. Operating threshold = the frozen 80%-target-sensitivity cut-point (0.210).
+  </footer>
+</div>
+
+<script>
+const DATA = {"clear_true_positive": {"patient_id": "1419", "outcome_pH_le_715": true, "risk_score": 0.358, "risk_band": "HIGH", "operating_threshold": 0.21, "warned_20min_before_delivery": true, "fhr_and_uterine_features": {"Baseline FHR": {"value": 130.0, "population_mean": 136.52, "z": -0.42, "direction": "->"}, "Short-term variability (STV)": {"value": 0.99, "population_mean": 0.88, "z": 0.36, "direction": "-> (near normal)"}, "Long-term variability (LTV)": {"value": 64.68, "population_mean": 26.52, "z": 2.48, "direction": "UP (better)"}, "Accelerations": {"value": 5.0, "population_mean": 1.53, "z": 1.54, "direction": "UP (better)"}, "Early decelerations": {"value": 3.0, "population_mean": 0.33, "z": 4.01, "direction": "UP"}, "Late decelerations": {"value": 0.0, "population_mean": 0.25, "z": -0.4, "direction": "-> (near normal)"}, "Variable decelerations": {"value": 6.0, "population_mean": 3.41, "z": 0.89, "direction": "UP (worse)"}, "Prolonged decelerations": {"value": 0.0, "population_mean": 0.21, "z": -0.48, "direction": "-> (near normal)"}, "Deceleration depth": {"value": 66.3, "population_mean": 60.91, "z": 0.24, "direction": "-> (near normal)"}, "Deceleration area": {"value": 6.23, "population_mean": 2.75, "z": 1.12, "direction": "UP (worse)"}, "Deceleration burden": {"value": 0.26, "population_mean": 0.15, "z": 1.03, "direction": "UP (worse)"}, "Longest deceleration": {"value": 59.25, "population_mean": 41.1, "z": 0.47, "direction": "-> (near normal)"}, "Baseline severity (domain score)": {"value": 0.0, "population_mean": 0.04, "z": -0.25, "direction": "-> (near normal)"}, "Variability severity (domain score)": {"value": 1.25, "population_mean": 1.57, "z": -0.61, "direction": "DOWN (better)"}, "Deceleration severity (domain score)": {"value": 0.57, "population_mean": 0.8, "z": -0.45, "direction": "-> (near normal)"}, "Uterine-activity severity (domain score)": {"value": 0.0, "population_mean": 0.1, "z": -0.34, "direction": "-> (near normal)"}}, "trajectory_state_sequence": ["State 1 (mildly abnormal)", "State 4 (severely abnormal)", "State 2 (suspicious)", "State 3 (pathological)", "State 4 (severely abnormal)", "State 2 (suspicious)"], "parity_raw": 0.0}, "clear_true_negative": {"patient_id": "1253", "outcome_pH_le_715": false, "risk_score": 0.067, "risk_band": "LOW", "operating_threshold": 0.21, "warned_20min_before_delivery": false, "fhr_and_uterine_features": {"Baseline FHR": {"value": 145.0, "population_mean": 136.61, "z": 0.55, "direction": "UP"}, "Short-term variability (STV)": {"value": 0.79, "population_mean": 0.87, "z": -0.25, "direction": "-> (near normal)"}, "Long-term variability (LTV)": {"value": 12.27, "population_mean": 26.35, "z": -0.93, "direction": "DOWN (worse)"}, "Accelerations": {"value": 3.0, "population_mean": 1.54, "z": 0.64, "direction": "UP (better)"}, "Early decelerations": {"value": 0.0, "population_mean": 0.33, "z": -0.49, "direction": "->"}, "Late decelerations": {"value": 0.0, "population_mean": 0.23, "z": -0.41, "direction": "-> (near normal)"}, "Variable decelerations": {"value": 0.0, "population_mean": 3.46, "z": -1.18, "direction": "DOWN (better)"}, "Prolonged decelerations": {"value": 0.0, "population_mean": 0.21, "z": -0.48, "direction": "-> (near normal)"}, "Deceleration depth": {"value": 24.4, "population_mean": 60.23, "z": -1.6, "direction": "DOWN (better)"}, "Deceleration area": {"value": 0.1, "population_mean": 2.74, "z": -0.86, "direction": "DOWN (better)"}, "Deceleration burden": {"value": 0.03, "population_mean": 0.15, "z": -1.07, "direction": "DOWN (better)"}, "Longest deceleration": {"value": 6.25, "population_mean": 40.99, "z": -0.89, "direction": "DOWN (better)"}, "Baseline severity (domain score)": {"value": 0.0, "population_mean": 0.04, "z": -0.24, "direction": "-> (near normal)"}, "Variability severity (domain score)": {"value": 2.13, "population_mean": 1.58, "z": 1.06, "direction": "UP (worse)"}, "Deceleration severity (domain score)": {"value": 0.2, "population_mean": 0.78, "z": -1.15, "direction": "DOWN (better)"}, "Uterine-activity severity (domain score)": {"value": 0.0, "population_mean": 0.1, "z": -0.34, "direction": "-> (near normal)"}}, "trajectory_state_sequence": ["State 1 (mildly abnormal)", "State 2 (suspicious)", "State 3 (pathological)", "State 4 (severely abnormal)", "State 2 (suspicious)", "State 3 (pathological)"], "parity_raw": 3.0}, "missed_case_false_negative": {"patient_id": "1244", "outcome_pH_le_715": true, "risk_score": 0.122, "risk_band": "LOW", "operating_threshold": 0.21, "warned_20min_before_delivery": false, "fhr_and_uterine_features": {"Baseline FHR": {"value": 130.0, "population_mean": 136.33, "z": -0.41, "direction": "->"}, "Short-term variability (STV)": {"value": 0.9, "population_mean": 0.87, "z": 0.07, "direction": "-> (near normal)"}, "Long-term variability (LTV)": {"value": 33.04, "population_mean": 26.6, "z": 0.43, "direction": "-> (near normal)"}, "Accelerations": {"value": 2.0, "population_mean": 1.57, "z": 0.19, "direction": "-> (near normal)"}, "Early decelerations": {"value": 1.0, "population_mean": 0.32, "z": 1.01, "direction": "UP"}, "Late decelerations": {"value": 0.0, "population_mean": 0.25, "z": -0.41, "direction": "-> (near normal)"}, "Variable decelerations": {"value": 2.0, "population_mean": 3.52, "z": -0.52, "direction": "DOWN (better)"}, "Prolonged decelerations": {"value": 1.0, "population_mean": 0.21, "z": 1.78, "direction": "UP (worse)"}, "Deceleration depth": {"value": 76.4, "population_mean": 60.67, "z": 0.72, "direction": "UP (worse)"}, "Deceleration area": {"value": 1.51, "population_mean": 2.81, "z": -0.42, "direction": "-> (near normal)"}, "Deceleration burden": {"value": 0.07, "population_mean": 0.15, "z": -0.74, "direction": "DOWN (better)"}, "Longest deceleration": {"value": 31.25, "population_mean": 42.05, "z": -0.27, "direction": "-> (near normal)"}, "Baseline severity (domain score)": {"value": 0.0, "population_mean": 0.04, "z": -0.24, "direction": "-> (near normal)"}, "Variability severity (domain score)": {"value": 1.3, "population_mean": 1.56, "z": -0.51, "direction": "DOWN (better)"}, "Deceleration severity (domain score)": {"value": 1.39, "population_mean": 0.8, "z": 1.15, "direction": "UP (worse)"}, "Uterine-activity severity (domain score)": {"value": 0.0, "population_mean": 0.1, "z": -0.34, "direction": "-> (near normal)"}}, "trajectory_state_sequence": ["State 1 (mildly abnormal)", "State 4 (severely abnormal)", "State 2 (suspicious)"], "parity_raw": 1.0}};
+
+const STATE_SEV = {
+  "State 0 (reassuring)": "lo", "State 1 (mildly abnormal)": "lo",
+  "State 2 (suspicious)": "mid", "State 3 (pathological)": "hi", "State 4 (severely abnormal)": "hi"
+};
+
+const TABS = [
+  {key: "clear_true_positive", label: "Clear true positive", dot: "var(--bad)"},
+  {key: "clear_true_negative", label: "Clear true negative", dot: "var(--ok)"},
+  {key: "missed_case_false_negative", label: "Missed case", dot: "var(--warn)"}
+];
+
+function arrowClass(dir){
+  if (dir.includes("worse")) return "worse";
+  if (dir.includes("better")) return "better";
+  return "neutral";
+}
+
+function renderPatient(rec){
+  const bandClass = "band-" + rec.risk_band;
+  const pct = Math.min(100, Math.round(rec.risk_score / 0.5 * 100));
+  const thrPct = Math.round(rec.operating_threshold / 0.5 * 100);
+  const warned = rec.warned_20min_before_delivery;
+
+  const featRows = Object.entries(rec.fhr_and_uterine_features).map(([name, f]) => `
+    <div class="feat-row">
+      <div class="name">${name}</div>
+      <div class="val mono">${f.value} <span style="color:var(--ink-3)">(pop. ${f.population_mean})</span></div>
+      <div class="arrow ${arrowClass(f.direction)}">${f.direction}</div>
+    </div>`).join("");
+
+  const trajParts = rec.trajectory_state_sequence.map((st, i) => {
+    const sev = STATE_SEV[st] || "lo";
+    const arrow = i < rec.trajectory_state_sequence.length - 1 ? '<span class="arr">→</span>' : "";
+    return `<span class="st ${sev}">${st.replace(/State \d+ \(|\)/g, "")}</span>${arrow}`;
+  }).join("");
+
+  return `
+    <div class="card">
+      <div class="risk-row">
+        <div class="risk-num mono" style="color:${rec.risk_band === 'HIGH' ? 'var(--bad)' : rec.risk_band === 'BORDERLINE' ? 'var(--warn)' : 'var(--ok)'}">${rec.risk_score.toFixed(2)}</div>
+        <div class="risk-meta">
+          <div class="label">Current risk</div>
+          <span class="band ${bandClass}">${rec.risk_band}</span>
+        </div>
+        <div style="text-align:right; font-size:12px; color:var(--ink-3);">Actual outcome<br><b style="color:var(--ink); font-size:13px;">${rec.outcome_pH_le_715 ? "pH ≤ 7.15 (acidemic)" : "pH > 7.15 (normal)"}</b></div>
+      </div>
+      <div class="thr-bar">
+        <div class="fill" style="width:${pct}%; background:${rec.risk_band === 'HIGH' ? 'var(--bad)' : rec.risk_band === 'BORDERLINE' ? 'var(--warn)' : 'var(--ok)'}"></div>
+        <div class="mark" style="left:${thrPct}%"></div>
+        <div class="mark-label" style="left:${thrPct}%">alert threshold 0.21</div>
+      </div>
+      <div class="warn-line ${warned ? 'ok' : 'no'}">
+        ${warned ? "⚠ Elevated risk reached the alert threshold ≥20 min before delivery" : "— Score stayed below the alert threshold through the ≥20 min mark"}
+      </div>
+    </div>
+
+    <div class="card">
+      <h2 class="section">FHR &amp; uterine-activity descriptors (delivery-time window)</h2>
+      <div class="feat-grid">${featRows}</div>
+    </div>
+
+    <div class="card">
+      <div class="two-col">
+        <div>
+          <h2 class="section">Trajectory (FIGO-style state sequence)</h2>
+          <div class="traj">${trajParts}</div>
+        </div>
+        <div>
+          <h2 class="section">Maternal context</h2>
+          <div class="mini-card">
+            <div class="label">Parity</div>
+            <div class="value mono">${rec.parity_raw}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function mount(key){
+  document.getElementById("content").innerHTML = renderPatient(DATA[key]);
+  document.querySelectorAll(".tab").forEach(t => t.setAttribute("aria-selected", t.dataset.key === key ? "true" : "false"));
+  try { localStorage.setItem("urm-explainer-tab", key); } catch(e) {}
+}
+
+const tabsEl = document.getElementById("tabs");
+TABS.forEach(t => {
+  const btn = document.createElement("button");
+  btn.className = "tab"; btn.setAttribute("role","tab"); btn.dataset.key = t.key;
+  btn.innerHTML = `<span class="dot" style="background:${t.dot}"></span>${t.label}`;
+  btn.onclick = () => mount(t.key);
+  tabsEl.appendChild(btn);
+});
+
+let initial = "clear_true_positive";
+try { initial = localStorage.getItem("urm-explainer-tab") || initial; } catch(e) {}
+mount(initial);
+</script>

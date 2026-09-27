@@ -1,0 +1,68 @@
+{
+  "label": "EXPLORATORY NO SUPPORT",
+  "D1": true,
+  "D2": true,
+  "L": false,
+  "fresh_dM": [
+    0.0085,
+    0.0119,
+    0.0081,
+    0.0079,
+    0.0085,
+    0.0079,
+    0.0154,
+    0.0151,
+    0.0081,
+    0.0162
+  ],
+  "fresh_mean_dM": 0.0108,
+  "fresh_positive": 10,
+  "fresh_mean_per_horizon_delta": {
+    "0m": 0.0132,
+    "10m": 0.01,
+    "20m": 0.011,
+    "30m": 0.0087
+  },
+  "lead_canonical": {
+    "d_ge20": -0.08420000000000005,
+    "d_median_lead": -2.5,
+    "d_sens": 0.0,
+    "d_far": -0.03200000000000003,
+    "ok": false
+  },
+  "lead_fresh_mean": {
+    "d_ge20": -0.04396000000000001,
+    "d_median_lead": -1.0,
+    "d_sens": -0.013639999999999996,
+    "d_far": -0.04919999999999999,
+    "ok": false
+  },
+  "E_component_works": false,
+  "E_canonical": {
+    "slope": 1.306,
+    "d_brier_vs_V2": -0.006099999999999994,
+    "d_auc_vs_V2": -0.0013999999999999568,
+    "ok": false
+  },
+  "E_fresh_mean": {
+    "slope": 1.2863,
+    "d_brier_vs_V2": -0.0052299999999999985,
+    "d_auc_vs_V2": -0.0015599999999999948,
+    "ok": false
+  },
+  "canonical": {
+    "dM": 0.0012,
+    "dM_p": 0.831,
+    "dM_ci_lo": -0.0092,
+    "dM_ci_hi": 0.0114,
+    "d0": 0.0041,
+    "p0": 0.549,
+    "d10": -0.0004,
+    "p10": 0.922,
+    "d20": -0.0007,
+    "p20": 0.911,
+    "d30": 0.0017,
+    "p30": 0.785
+  },
+  "fresh_pooled_p": 0.006
+}

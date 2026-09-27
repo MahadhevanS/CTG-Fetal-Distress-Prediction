@@ -1,0 +1,11 @@
+ablation_id,description,features,delivery_cv_auroc,delta_vs_model3
+A1_P6_baseline,Single-window P6 baseline,P6,0.6872,-0.0344
+A2_Max_pooling,Max pooling over prefix,Max(r),0.721,-0.0006
+A3_P90_pooling,P90 pooling over prefix,P90(r),0.7178,-0.0038
+A4_Model3,Model 3 causal temporal attention,Model 3,0.7216,0.0
+A5_Parity_fusion,P6 + parity logit modulation,P6 + Parity,0.7094,-0.0121
+A6_Primary_Hybrid,Model 3 logit + parity logit -> LR(C=0.1),Model 3 + Parity,0.7324,0.0108
+A7_Hybrid_Model3_only,Hybrid architecture with Model 3 only,Model 3 only,0.7189,-0.0027
+A8_Hybrid_Parity_only,Hybrid architecture with Parity only,Parity only,0.5732,-0.1484
+A9_Raw_probabilities,Hybrid without logit transform (raw probabilities),Raw p_M3 + Raw p_Parity,0.7254,0.0038
+A10_Interaction_model,Hybrid with explicit interaction term,Model 3 + Parity + (M3 x Parity),0.7348,0.0132

@@ -1,0 +1,14 @@
+  loaded 51102 window-images from 547 patients
+  fold 0: 10410 images, 10410 -- window AUROC (sanity) 0.5551  (102s)
+  fold 1: 10158 images, 10158 -- window AUROC (sanity) 0.5845  (97s)
+  fold 2: 10056 images, 10056 -- window AUROC (sanity) 0.5956  (102s)
+  fold 3: 10284 images, 10284 -- window AUROC (sanity) 0.5359  (97s)
+  fold 4: 10194 images, 10194 -- window AUROC (sanity) 0.6038  (98s)
+
+=== DeepFHR-reconstruction (causal, patient-grouped canonical folds) vs URM ===
+  h= 0m: DeepFHR-recon 0.5365  URM 0.7335  Delta(URM-DeepFHR) +0.1970  95% CI [0.1213, 0.2724]  p=0.0000
+  h=10m: DeepFHR-recon 0.5906  URM 0.6921  Delta(URM-DeepFHR) +0.1015  95% CI [0.0370, 0.1698]  p=0.0020
+  h=20m: DeepFHR-recon 0.5751  URM 0.6638  Delta(URM-DeepFHR) +0.0887  95% CI [0.0153, 0.1580]  p=0.0150
+  h=30m: DeepFHR-recon 0.5667  URM 0.6631  Delta(URM-DeepFHR) +0.0963  95% CI [0.0198, 0.1749]  p=0.0160
+
+Saved -> results/phaseD_deepfhr/d2_urm_comparison.csv

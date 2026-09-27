@@ -1,0 +1,80 @@
+# Frozen paper-derived configuration for Phase D1 (docs/phaseD_deepfhr_reproduction_protocol.md).
+# Every value here is taken directly from Zhao et al. 2019 (BMC Med Inform Decis Mak 19:286), verified by
+# reading the full text (section 0 of the protocol). The one non-literal choice (segment selection) and the
+# one unavoidable substitution (wavelet basis for the CWT) are marked ASSUMPTION / SUBSTITUTION.
+
+dataset:
+  source: data/raw/ctu-chb-intrapartum
+  n_records: 552
+  ph_threshold: 7.15
+  pathological_rule: "ph < 7.15"        # strict less-than, per the paper (this project's own convention is <=)
+  fs_hz: 4.0
+  segment_minutes: 20
+  segment_choice: "last_20_minutes"      # ASSUMPTION: paper does not state which 20-minute segment is used
+
+preprocessing:
+  gap_fill_max_s: 15                     # spline-fill gaps (FHR==0) <=15s
+  gap_long_s: 15                         # gaps >15s: paper says "removed"; here spline-interpolated to preserve
+                                          # the fixed 4800-sample length required by the CWT/CNN pipeline (documented deviation)
+  spike_diff_bpm: 25                     # adjacent-sample jump threshold that triggers despiking interpolation
+  stable_window_n: 5                     # consecutive samples required to end a despiking interpolation
+  stable_diff_bpm: 10                    # max difference among stable_window_n samples
+  clip_min_bpm: 50
+  clip_max_bpm: 200
+
+cwt:
+  mother_wavelets: ["db2", "sym2"]
+  scales: [4, 5, 6]                       # ASSUMPTION: read as scale RANGE 1..K (K scale rows), not a single scale
+                                          # value -- a single scale gives one frequency row, not a 2D image, and
+                                          # Fig. 3's "wavelet scale of 24" example shows a genuine 2D scalogram.
+  images_per_record: 6                   # 2 wavelets x 3 scales
+  substitution: >
+    SUBSTITUTION: MATLAB's legacy cwt() accepts discrete wavelets (db2/sym2) as a real-valued CWT basis via
+    direct convolution with the wavelet's own dilated reconstruction function. No available open-source
+    implementation (pywt.cwt, scipy.signal.cwt) reproduces that exact legacy algorithm. Reconstructed here as:
+    pywt.Wavelet(name).wavefun(level=8)[0] (the wavelet function), dilated by the integer scale, convolved with
+    the signal via scipy.signal.cwt's callable-wavelet interface.
+  colormap: viridis                       # ASSUMPTION: paper's Fig. 3 shows a colored scalogram; exact colormap not stated
+  image_size: [64, 64, 3]
+
+cnn:
+  layers: 8
+  conv_kernel: [5, 5]
+  conv_filters: 15
+  conv_stride: 1
+  conv_padding: 0
+  pool: max
+  pool_size: [2, 2]
+  pool_stride: 2
+  fc_hidden: 256
+  dropout: 0.5
+  l2_weight: 1.0
+  l2_bias: 1.0
+  classes: 2
+
+training:
+  optimizer: sgd
+  momentum: 0.9
+  lr_init: 0.01
+  lr_drop_factor: 0.1
+  lr_drop_period_epochs: 10
+  l2_regularizer: 1.0e-4
+  epochs: 20
+  batch_size: 50
+  augmentation: random_crop
+  data_normalization: zero_center
+
+evaluation:
+  split: image_level_random
+  train_fraction: 0.9
+  test_fraction: 0.1
+  n_folds: 10
+  n_repeats: 10
+  metrics: [accuracy, sensitivity, specificity, quality_index, auroc]
+  qi_definition: "sqrt(sensitivity * specificity)"
+  published_target:
+    accuracy: 98.34
+    sensitivity: 98.22
+    specificity: 94.87
+    quality_index: 96.53
+    auroc: 97.82

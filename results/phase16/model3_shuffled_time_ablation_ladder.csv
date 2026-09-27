@@ -1,0 +1,5 @@
+horizon_min,auroc_model2_cv,auroc_shuffled_model3_cv,auroc_real_model3_cv,auroc_model2_test,auroc_shuffled_model3_test,auroc_real_model3_test,shuffled_vs_real_cv_delta,shuffled_vs_real_cv_p,shuffled_vs_real_cv_ci_low,shuffled_vs_real_cv_ci_high,shuffled_vs_real_test_delta,shuffled_vs_real_test_p,shuffled_vs_model2_cv_delta,shuffled_vs_model2_cv_p,shuffled_vs_model2_cv_ci_low,shuffled_vs_model2_cv_ci_high,shuffled_vs_model2_test_delta,shuffled_vs_model2_test_p
+0,0.7006,0.7003,0.7216,0.6506,0.6506,0.6729,-0.0213,0.217,-0.0554,0.0128,-0.0223,0.708,-0.0003,0.876,-0.0035,0.0032,0.0,1.0
+10,0.6344,0.6345,0.6683,0.6078,0.6061,0.5642,-0.0338,0.009,-0.0606,-0.0073,0.0419,0.278,0.0001,0.906,-0.0023,0.0029,-0.0018,0.853
+20,0.5993,0.5997,0.6015,0.6399,0.6346,0.6203,-0.0017,0.854,-0.0222,0.0179,0.0143,0.726,0.0005,0.775,-0.0024,0.0032,-0.0053,0.265
+30,0.5976,0.5962,0.5976,0.6658,0.6604,0.6658,-0.0015,0.781,-0.0146,0.0112,-0.0053,0.828,-0.0014,0.264,-0.0039,0.0011,-0.0053,0.336

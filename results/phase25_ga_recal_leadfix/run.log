@@ -1,0 +1,66 @@
+  CANONICAL     M_D2 0.6849  M_B0 0.6903  dM -0.0054  alphas [np.float64(0.30000000000000004), np.float64(0.2), np.float64(0.30000000000000004), np.float64(0.30000000000000004), np.float64(0.25)]  OPfar sens D2/B0 0.891/0.873  lead D2/B0 40.0/40.0  ge20 D2/B0 0.888/0.833  cal_slope 1.29
+  resplit_501   M_D2 0.6951  M_B0 0.6893  dM +0.0058  alphas [np.float64(0.25), np.float64(0.30000000000000004), np.float64(0.25), np.float64(0.35000000000000003), np.float64(0.30000000000000004)]  OPfar sens D2/B0 0.900/0.864  lead D2/B0 40.0/37.5  ge20 D2/B0 0.838/0.810  cal_slope 1.17
+  resplit_514   M_D2 0.6692  M_B0 0.6612  dM +0.0080  alphas [np.float64(0.30000000000000004), np.float64(0.4), np.float64(0.30000000000000004), np.float64(0.25), np.float64(0.25)]  OPfar sens D2/B0 0.882/0.846  lead D2/B0 40.0/40.0  ge20 D2/B0 0.825/0.796  cal_slope 1.25
+  resplit_528   M_D2 0.6851  M_B0 0.6704  dM +0.0147  alphas [np.float64(0.4), np.float64(0.35000000000000003), np.float64(0.30000000000000004), np.float64(0.45), np.float64(0.4)]  OPfar sens D2/B0 0.864/0.855  lead D2/B0 35.0/40.0  ge20 D2/B0 0.737/0.830  cal_slope 1.24
+  resplit_541   M_D2 0.6851  M_B0 0.6616  dM +0.0235  alphas [np.float64(0.35000000000000003), np.float64(0.30000000000000004), np.float64(0.4), np.float64(0.4), np.float64(0.30000000000000004)]  OPfar sens D2/B0 0.891/0.846  lead D2/B0 38.75/40.0  ge20 D2/B0 0.827/0.871  cal_slope 1.13
+  resplit_557   M_D2 0.6926  M_B0 0.6755  dM +0.0171  alphas [np.float64(0.30000000000000004), np.float64(0.4), np.float64(0.4), np.float64(0.4), np.float64(0.4)]  OPfar sens D2/B0 0.827/0.864  lead D2/B0 35.0/37.5  ge20 D2/B0 0.780/0.789  cal_slope 1.04
+  resplit_569   M_D2 0.6655  M_B0 0.6467  dM +0.0188  alphas [np.float64(0.35000000000000003), np.float64(0.30000000000000004), np.float64(0.30000000000000004), np.float64(0.15000000000000002), np.float64(0.35000000000000003)]  OPfar sens D2/B0 0.855/0.818  lead D2/B0 40.0/40.0  ge20 D2/B0 0.862/0.833  cal_slope 1.11
+  resplit_583   M_D2 0.6840  M_B0 0.6770  dM +0.0070  alphas [np.float64(0.30000000000000004), np.float64(0.25), np.float64(0.30000000000000004), np.float64(0.30000000000000004), np.float64(0.30000000000000004)]  OPfar sens D2/B0 0.882/0.855  lead D2/B0 40.0/40.0  ge20 D2/B0 0.825/0.777  cal_slope 1.23
+  resplit_598   M_D2 0.6996  M_B0 0.6800  dM +0.0196  alphas [np.float64(0.35000000000000003), np.float64(0.35000000000000003), np.float64(0.45), np.float64(0.4), np.float64(0.4)]  OPfar sens D2/B0 0.846/0.873  lead D2/B0 35.0/40.0  ge20 D2/B0 0.742/0.792  cal_slope 1.18
+  resplit_612   M_D2 0.6934  M_B0 0.6759  dM +0.0175  alphas [np.float64(0.45), np.float64(0.35000000000000003), np.float64(0.35000000000000003), np.float64(0.30000000000000004), np.float64(0.35000000000000003)]  OPfar sens D2/B0 0.882/0.864  lead D2/B0 37.5/40.0  ge20 D2/B0 0.825/0.832  cal_slope 1.32
+  resplit_627   M_D2 0.6877  M_B0 0.6673  dM +0.0204  alphas [np.float64(0.25), np.float64(0.35000000000000003), np.float64(0.4), np.float64(0.35000000000000003), np.float64(0.25)]  OPfar sens D2/B0 0.891/0.800  lead D2/B0 32.5/40.0  ge20 D2/B0 0.725/0.852  cal_slope 1.18
+{
+  "label": "EXPLORATORY NO SUPPORT",
+  "D1": true,
+  "D2crit": true,
+  "L": true,
+  "E": false,
+  "fresh_mean_dM": 0.0152,
+  "fresh_dM_all": [
+    0.0058,
+    0.008,
+    0.0147,
+    0.0235,
+    0.0171,
+    0.0188,
+    0.007,
+    0.0196,
+    0.0175,
+    0.0204
+  ],
+  "fresh_positive": 10,
+  "fresh_mean_per_horizon_delta": {
+    "0m": 0.0116,
+    "10m": 0.0178,
+    "20m": 0.0163,
+    "30m": 0.0153
+  },
+  "lead_canonical_opfar": {
+    "d_sens": 0.0182,
+    "d_median_lead": 0.0,
+    "d_ge20": 0.0545
+  },
+  "lead_fresh_mean_opfar": {
+    "d_sens": 0.0236,
+    "d_median_lead": -2.125,
+    "d_ge20": -0.0198
+  },
+  "calib_slope_canonical": 1.294,
+  "calib_slope_fresh_mean": 1.184,
+  "canonical": {
+    "dM": -0.0054,
+    "dM_p": 0.636,
+    "dM_ci_lo": -0.0296,
+    "dM_ci_hi": 0.0182,
+    "d0": -0.005,
+    "p0": 0.674,
+    "d10": -0.0103,
+    "p10": 0.452,
+    "d20": 0.0017,
+    "p20": 0.936,
+    "d30": -0.008,
+    "p30": 0.587
+  },
+  "fresh_pooled_p": 0.043,
+  "caveat": "No independent/external cohort available; all splits reuse the same 547 CTU-UHB patients."
+}

@@ -1,0 +1,11 @@
+{
+  "tier": "INCONCLUSIVE",
+  "canonical_dM": -0.0065,
+  "canonical_p": 0.259,
+  "resplits_dM_gt0": 0,
+  "resplits_dM_ge_-0.005": 5,
+  "resplits_dM_lt_-0.005": 0,
+  "canonical_worst_horizon_delta": -0.0194,
+  "resplit_mean_worst_horizon_delta": -0.0174,
+  "test_dM": -0.0198
+}
